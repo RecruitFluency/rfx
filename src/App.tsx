@@ -6,6 +6,7 @@ import DashboardPreview from './components/Dashboard/DashboardPreview';
 import IntelligenceSection from './components/Intelligence/IntelligenceSection';
 import TestimonialsSection from './components/Testimonials/TestimonialsSection';
 import CTASection from './components/CTA/CTASection';
+import CoachViewPreview from './components/CoachView/CoachViewPreview';
 import Footer from './components/Footer/Footer';
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
       <MetricsSection />
       <FeaturesSection />
       <DashboardPreview />
+      <CoachViewPreview />
       <IntelligenceSection />
       <TestimonialsSection />
       <CTASection />
