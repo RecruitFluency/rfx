@@ -35,11 +35,11 @@ const DivisionCard = ({
       <div className="mt-4">
         <div className="flex justify-between mb-2">
           <span className="text-gray-400">Interested</span>
-          <span className="text-[#FF2800] font-bold">{stats.interested}</span>
+          <span className="text-[#FF0000] font-bold">{stats.interested}</span>
         </div>
         <div className="w-full bg-[#2a2a2a] rounded-full h-2 mb-4">
           <div 
-            className="bg-[#FF2800] h-2 rounded-full" 
+            className="bg-[#FF0000] h-2 rounded-full" 
             style={{ width: `${interestedPercentage}%` }}
           />
         </div>
@@ -129,7 +129,7 @@ const Dashboard = () => {
         <div className="bg-[#1f1f1f] rounded-2xl p-8 shadow-2xl">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-white">Division Interest Dashboard</h2>
-            <div className="flex items-center bg-[#FF2800]/10 text-[#FF2800] px-4 py-2 rounded-lg">
+            <div className="flex items-center bg-[#FF0000]/10 text-[#FF0000] px-4 py-2 rounded-lg">
               <TrendingUp className="w-5 h-5 mr-2" />
               <span className="text-xl font-bold">225</span>
               <span className="ml-2 text-sm">Total Interested Programs</span>

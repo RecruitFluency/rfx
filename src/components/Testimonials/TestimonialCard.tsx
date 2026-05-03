@@ -35,11 +35,11 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
         />
         <div>
           <h3 className="text-xl font-bold text-white">{name}</h3>
-          <p className="text-[#FF2800]">{title}</p>
+          <p className="text-[#FF0000]">{title}</p>
         </div>
       </div>
       <blockquote className="text-gray-400 mb-4">"{quote}"</blockquote>
-      <div className="bg-[#FF2800]/10 text-[#FF2800] px-4 py-2 rounded-lg inline-block">
+      <div className="bg-[#FF0000]/10 text-[#FF0000] px-4 py-2 rounded-lg inline-block">
         {stats}
       </div>
     </motion.div>

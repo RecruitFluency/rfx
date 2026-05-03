@@ -83,7 +83,7 @@ const DashboardPreview = () => {
         >
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-white">Sample Athlete Dashboard</h2>
-            <div className="flex items-center bg-[#FF2800]/10 text-[#FF2800] px-4 py-2 rounded-lg">
+            <div className="flex items-center bg-[#FF0000]/10 text-[#FF0000] px-4 py-2 rounded-lg">
               <span className="text-xl font-bold">Active Recruitment</span>
             </div>
           </div>

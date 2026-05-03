@@ -2,12 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --rfx-black: #000000;
+  --rfx-matte-black: #121212;
+  --rfx-white: #ffffff;
+  --rfx-cta-red: #FF0000;
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  @apply bg-[#121212] text-white;
+  @apply bg-black text-white;
 }
 
 .transition-all {

@@ -5,25 +5,25 @@ import { Users, Trophy, DollarSign, Gauge } from 'lucide-react';
 
 const metrics = [
   {
-    icon: <Users className="w-8 h-8 text-[#FF2800]" />,
+    icon: <Users className="w-8 h-8 text-[#FF0000]" />,
     value: 2500,
     label: "College Coaches Connected",
     suffix: "+",
   },
   {
-    icon: <Gauge className="w-8 h-8 text-[#FF2800]" />,
+    icon: <Gauge className="w-8 h-8 text-[#FF0000]" />,
     value: 10000,
     label: "Active Athletes",
     suffix: "+",
   },
   {
-    icon: <Trophy className="w-8 h-8 text-[#FF2800]" />,
+    icon: <Trophy className="w-8 h-8 text-[#FF0000]" />,
     value: 85,
     label: "Improved Recruitment Success",
     suffix: "%",
   },
   {
-    icon: <DollarSign className="w-8 h-8 text-[#FF2800]" />,
+    icon: <DollarSign className="w-8 h-8 text-[#FF0000]" />,
     value: 50,
     label: "in Athletic Scholarships",
     prefix: "$",
