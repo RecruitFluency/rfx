@@ -56,7 +56,7 @@ const PhoneMockup = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-br from-[#1a1a1a] to-black text-[#FF2800] font-bold py-3 px-6 rounded-lg shadow-lg flex items-center gap-2 justify-center border border-[#FF2800]/20 hover:border-[#FF2800]/40 transition-all"
+                className="bg-gradient-to-br from-[#1a1a1a] to-black text-[#FF0000] font-bold py-3 px-6 rounded-lg shadow-lg flex items-center gap-2 justify-center border border-[#FF0000]/20 hover:border-[#FF0000]/40 transition-all"
               >
                 <ThumbsDown className="w-5 h-5" />
                 <span>NOT INTERESTED</span>

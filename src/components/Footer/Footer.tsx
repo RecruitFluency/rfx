@@ -14,13 +14,13 @@ const Footer = () => {
           </nav>
           
           <div className="flex gap-6">
-            <a href="#" className="text-gray-400 hover:text-[#FF2800] transition-colors">
+            <a href="#" className="text-gray-400 hover:text-[#FF0000] transition-colors">
               <Instagram className="w-6 h-6" />
             </a>
-            <a href="#" className="text-gray-400 hover:text-[#FF2800] transition-colors">
+            <a href="#" className="text-gray-400 hover:text-[#FF0000] transition-colors">
               <Twitter className="w-6 h-6" />
             </a>
-            <a href="#" className="text-gray-400 hover:text-[#FF2800] transition-colors">
+            <a href="#" className="text-gray-400 hover:text-[#FF0000] transition-colors">
               <Facebook className="w-6 h-6" />
             </a>
           </div>

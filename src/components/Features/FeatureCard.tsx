@@ -18,8 +18,8 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon: Icon, title, descriptio
       transition={{ duration: 0.5, delay }}
       viewport={{ once: true }}
     >
-      <div className="bg-[#FF2800]/10 w-14 h-14 rounded-lg flex items-center justify-center mb-6">
-        <Icon className="w-8 h-8 text-[#FF2800]" />
+      <div className="bg-[#FF0000]/10 w-14 h-14 rounded-lg flex items-center justify-center mb-6">
+        <Icon className="w-8 h-8 text-[#FF0000]" />
       </div>
       <h3 className="text-xl font-bold text-white mb-4">{title}</h3>
       <p className="text-gray-400">{description}</p>

@@ -5,29 +5,34 @@ import AppStoreButtons from './AppStoreButtons';
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
       {/* Gradient Background */}
-      <div 
+      <div
         className="absolute inset-0"
         style={{
-          background: `linear-gradient(135deg, #121212 85%, #FF2800 100%)`
+          background: 'linear-gradient(135deg, #000000 60%, #121212 85%, #FF0000 100%)'
         }}
       />
 
+      <div className="absolute top-6 left-6 z-20 flex items-center gap-3 rounded-lg bg-[#121212]/80 border border-white/10 px-4 py-2">
+        <img src="/rfx-logo.svg" alt="RFX logo" className="h-8 w-8" />
+        <span className="text-white font-semibold tracking-widest">RFX</span>
+      </div>
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Main Headline */}
-        <motion.h1 
+        <motion.h1
           className="text-4xl md:text-6xl font-bold mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          College <span className="bg-gradient-to-r from-[#FF2800] to-[#CC2000] bg-clip-text text-transparent">Soccer</span> Recruitment
+          College <span className="bg-gradient-to-r from-[#FF0000] to-[#CC0000] bg-clip-text text-transparent">Soccer</span> Recruitment
           <br />
           On Autopilot
         </motion.h1>
 
-        <motion.h2 
+        <motion.h2
           className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -42,7 +47,7 @@ const HeroSection = () => {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="space-y-8"
         >
-          <button className="group bg-[#FF2800] hover:bg-[#CC2000] text-white font-bold py-4 px-8 rounded-lg text-lg transition-all inline-flex items-center gap-3">
+          <button className="group bg-[#FF0000] hover:bg-[#CC0000] text-white font-bold py-4 px-8 rounded-lg text-lg transition-all inline-flex items-center gap-3">
             <ArrowDown className="w-5 h-5 transition-transform group-hover:translate-y-1" />
             A Direct Path to Every College Coach In The Nation!
             <ArrowDown className="w-5 h-5 transition-transform group-hover:translate-y-1" />

@@ -48,11 +48,11 @@ const DivisionCard: React.FC<DivisionCardProps> = ({
       <div className="mt-4">
         <div className="flex justify-between mb-2">
           <span className="text-gray-400">Interested</span>
-          <span className="text-[#FF2800] font-bold">{stats.interested}</span>
+          <span className="text-[#FF0000] font-bold">{stats.interested}</span>
         </div>
         <div className="w-full bg-[#2a2a2a] rounded-full h-2 mb-4">
           <div 
-            className="bg-[#FF2800] h-2 rounded-full" 
+            className="bg-[#FF0000] h-2 rounded-full" 
             style={{ width: `${interestedPercentage}%` }}
           />
         </div>
@@ -110,7 +110,7 @@ const DivisionCard: React.FC<DivisionCardProps> = ({
                 {stats.notInterestedSchools.map((school, index) => (
                   <span 
                     key={index} 
-                    className="bg-[#FF2800]/20 text-[#FF2800] px-2 py-1 rounded-full text-xs"
+                    className="bg-[#FF0000]/20 text-[#FF0000] px-2 py-1 rounded-full text-xs"
                   >
                     {school}
                   </span>

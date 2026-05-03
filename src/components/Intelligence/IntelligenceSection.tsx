@@ -75,7 +75,7 @@ const IntelligenceSection = () => {
             viewport={{ once: true }}
             className="text-center"
           >
-            <button className="bg-[#FF2800] hover:bg-[#CC2000] text-white font-bold py-4 px-8 rounded-lg text-lg transition-all">
+            <button className="bg-[#FF0000] hover:bg-[#CC0000] text-white font-bold py-4 px-8 rounded-lg text-lg transition-all">
               Start Your Complete Assessment
             </button>
             <p className="text-gray-400 mt-4 text-sm">

@@ -39,7 +39,7 @@ const AnimatedCounter: React.FC<AnimatedCounterProps> = ({ end, duration, prefix
   }, [end, duration, inView]);
 
   return (
-    <span ref={ref} className="font-bold text-3xl md:text-4xl text-[#FF2800]">
+    <span ref={ref} className="font-bold text-3xl md:text-4xl text-[#FF0000]">
       {prefix}{count.toLocaleString()}{suffix}
     </span>
   );
