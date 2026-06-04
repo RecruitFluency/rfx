@@ -1,0 +1,75 @@
+import { Program } from './types';
+
+// Illustrative sample data — shape only, not real roster figures. Every number here
+// would be sourced + dated + provenance-stamped in the real pipeline (§10).
+export const sampleProgram: Program = {
+  id: 'sample-mens-d1',
+  school: 'Riverside State',
+  gender: 'Men',
+  division: 'D1',
+  rosterSize: 28,
+  rosterIntlPct: 46,
+  rosterIntlPctPrev: 38,
+  positions: {
+    GK: {
+      group: 'GK',
+      intl: 2,
+      resolved: 3, // below the n<4 gate on purpose -> small-sample handling
+      unknown: 0,
+      prevIntlPct: null,
+      upperclassmen: 1,
+      depth: 3,
+      typicalDepth: 3,
+    },
+    DEF: {
+      group: 'DEF',
+      intl: 3,
+      resolved: 9,
+      unknown: 1,
+      prevIntlPct: 44,
+      upperclassmen: 4,
+      depth: 10,
+      typicalDepth: 8,
+    },
+    MID: {
+      group: 'MID',
+      intl: 5,
+      resolved: 8,
+      unknown: 0,
+      prevIntlPct: 50,
+      upperclassmen: 2,
+      depth: 8,
+      typicalDepth: 8,
+    },
+    FWD: {
+      group: 'FWD',
+      intl: 4,
+      resolved: 5,
+      unknown: 0,
+      prevIntlPct: 60,
+      upperclassmen: 1,
+      depth: 5,
+      typicalDepth: 6,
+    },
+  },
+  scholarship: {
+    isEquivalencySport: true,
+    equivalencyLimit: 9.9,
+    fullyFunded: true,
+    confidence: 'medium',
+    source: 'NCAA D1 limits + program funding report',
+    asOf: 'Aug 2025',
+  },
+  competitiveness: {
+    conference: 'Atlantic Coast',
+    record: '14-3-2',
+    nationalRank: 18,
+    rating: 'RPI #12',
+    confidence: 'high',
+    source: 'Conference + United Soccer Coaches poll',
+    asOf: 'Dec 2025',
+  },
+  rosterAsOf: 'Sep 2025',
+  rosterSource: 'Official program roster page',
+  methodologyVersion: 'v1.0',
+};
