@@ -64,9 +64,14 @@ This is **pure, original data nobody has published in one place** — that's the
 - Predictive modeling of "your odds at school X."
 - Coach-contact data (already part of RFX core; link out, don't duplicate).
 
-### Decisions to confirm (see §16 open questions)
-- Men's first, then Women's — or both at launch?
-- How many seasons of history at launch (snapshot vs. 2-yr trend vs. 3–5 yr trend)?
+### Locked decisions (v1)
+- **Gender at launch:** **Men's + Women's D1 together.** Two separate datasets, never
+  blended (see §6 — men's and women's intl intensity differ materially, so every view,
+  average, and export is gender-scoped).
+- **History depth at launch:** **2 seasons — current + immediately prior.** This is the
+  minimum that supports the headline "American spots increasing/decreasing" trend
+  (a single YoY Δ). Deeper history (3–5 seasons) is a v2 item (§15). Implication: the
+  collection pipeline must capture *two* clean snapshots per program before launch.
 
 ---
 
@@ -359,9 +364,9 @@ lucide-react**, static marketing site, dark RFX brand theme.
 
 ## 15. Roadmap (MVP → later)
 
-**MVP (v1)**
-- D1 soccer (gender per §16), current-season snapshot **+ at least one prior season for
-  trend**, browse/filter/sort table, program detail, CSV + branded PDF export, email
+**MVP (v1)** *(scope locked: Men's + Women's D1, 2 seasons)*
+- **Men's + Women's D1 soccer**, **2 seasons (current + prior)** so every program shows a
+  YoY trend, browse/filter/sort table, program detail, CSV + branded PDF export, email
   gate on download, in-product methodology + glossary, source/provenance, corrections
   link.
 
@@ -377,10 +382,14 @@ lucide-react**, static marketing site, dark RFX brand theme.
 
 ## 16. Open questions / decisions needed before build
 
-1. **Gender at launch:** Men's only first (highest international intensity, clearest
-   story) or Men's + Women's together?
-2. **History depth at launch:** snapshot-only, 2-season trend, or 3–5 season trend?
-   (Drives data-collection effort the most.)
+**Resolved**
+- ✅ **Gender at launch:** Men's + Women's D1 together (separate, gender-scoped
+  datasets). — *decided 2026-06-04*
+- ✅ **History depth at launch:** 2 seasons (current + prior) to support YoY trend;
+  3–5 seasons deferred to v2. — *decided 2026-06-04*
+
+**Still open**
+
 3. **Gating:** is *browsing* open with *download* email-gated, or is the whole tool
    behind an email gate?
 4. **Default sort/framing:** rank by lowest intl %, or by *most-improving domestic
