@@ -67,8 +67,10 @@ export interface Program {
 export interface PositionRead {
   group: PositionGroup;
   domestic: number;
-  domesticPct: number | null; // null when below the small-sample gate
-  intlPct: number | null;
+  domesticPct: number | null; // exact %, null when below the small-sample gate
+  intlPct: number | null; // exact %
+  domesticPctLabel: number | null; // rounded for display; pairs with intlPctLabel to sum to 100
+  intlPctLabel: number | null; // rounded for display
   belowGate: boolean;
   trendPp: number | null; // change in DOMESTIC pp vs prior season (+ = more domestic)
   openings: number; // upperclassmen indicator
@@ -81,6 +83,11 @@ export function readPosition(stat: PositionStat): PositionRead {
   const domestic = stat.resolved - stat.intl;
   const intlPct = belowGate ? null : (stat.intl / stat.resolved) * 100;
   const domesticPct = belowGate ? null : (domestic / stat.resolved) * 100;
+
+  // Display rounding: round ONE side and derive the other so the two labels always
+  // sum to exactly 100 and can never contradict the raw "X of N" count.
+  const domesticPctLabel = domesticPct === null ? null : Math.round(domesticPct);
+  const intlPctLabel = domesticPctLabel === null ? null : 100 - domesticPctLabel;
 
   // Trend only when both seasons clear the gate (§6.5).
   const trendPp =
@@ -98,6 +105,8 @@ export function readPosition(stat: PositionStat): PositionRead {
     domestic,
     domesticPct,
     intlPct,
+    domesticPctLabel,
+    intlPctLabel,
     belowGate,
     trendPp,
     openings: stat.upperclassmen,
@@ -134,4 +143,59 @@ function computeSignal(args: {
   if (score >= 2) return 'worth-a-look';
   if (score <= -1) return 'reach';
   return 'mixed';
+}
+
+// ---- Data integrity --------------------------------------------------------
+// The numbers ARE the product. A wrong-but-plausible figure is worse than no
+// figure, so every Program is checked against these invariants before it can be
+// displayed. Anything that fails is surfaced as an error, never silently shown.
+
+export function validateProgram(p: Program): string[] {
+  const errors: string[] = [];
+  const pct = (label: string, v: number) => {
+    if (v < 0 || v > 100) errors.push(`${label} must be 0–100, got ${v}`);
+  };
+  const nonNeg = (label: string, v: number) => {
+    if (!Number.isFinite(v) || v < 0) errors.push(`${label} must be a non-negative number, got ${v}`);
+  };
+
+  pct('rosterIntlPct', p.rosterIntlPct);
+  pct('rosterIntlPctPrev', p.rosterIntlPctPrev);
+  nonNeg('rosterSize', p.rosterSize);
+
+  let sumResolved = 0;
+  let sumUnknown = 0;
+  (Object.keys(p.positions) as PositionGroup[]).forEach((g) => {
+    const s = p.positions[g];
+    nonNeg(`${g}.intl`, s.intl);
+    nonNeg(`${g}.resolved`, s.resolved);
+    nonNeg(`${g}.unknown`, s.unknown);
+    nonNeg(`${g}.depth`, s.depth);
+    nonNeg(`${g}.upperclassmen`, s.upperclassmen);
+
+    // International players can never exceed the resolved denominator.
+    if (s.intl > s.resolved) errors.push(`${g}: intl (${s.intl}) exceeds resolved (${s.resolved})`);
+    // Depth must hold at least the players we counted (resolved + unknown).
+    if (s.depth < s.resolved + s.unknown)
+      errors.push(`${g}: depth (${s.depth}) is less than resolved+unknown (${s.resolved + s.unknown})`);
+    // Upperclassmen can't outnumber the players at the position.
+    if (s.upperclassmen > s.depth)
+      errors.push(`${g}: upperclassmen (${s.upperclassmen}) exceeds depth (${s.depth})`);
+    if (s.prevIntlPct !== null) pct(`${g}.prevIntlPct`, s.prevIntlPct);
+
+    sumResolved += s.resolved;
+    sumUnknown += s.unknown;
+  });
+
+  // Per-position players must reconcile with the roster total.
+  if (sumResolved + sumUnknown > p.rosterSize)
+    errors.push(
+      `position counts (${sumResolved + sumUnknown}) exceed rosterSize (${p.rosterSize})`
+    );
+
+  // Scholarship / competitiveness sanity.
+  nonNeg('scholarship.equivalencyLimit', p.scholarship.equivalencyLimit);
+  if (p.competitiveness.nationalRank !== null) nonNeg('nationalRank', p.competitiveness.nationalRank);
+
+  return errors;
 }

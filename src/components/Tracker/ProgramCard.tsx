@@ -69,7 +69,7 @@ const ConfidenceBadge: React.FC<{ level: Confidence }> = ({ level }) => {
 
 // Phase tag so the build honors the v1 / v1.1 sourcing split (§8.6, roadmap §15).
 const PhaseTag: React.FC<{ phase: 'v1' | 'v1.1' }> = ({ phase }) => (
-  <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 border border-gray-700 rounded px-1.5 py-0.5">
+  <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400 border border-white/15 bg-white/5 rounded px-1.5 py-0.5">
     {phase}
   </span>
 );
@@ -81,7 +81,7 @@ const Tile: React.FC<{
   phase?: 'v1' | 'v1.1';
   children: React.ReactNode;
 }> = ({ icon, title, accent, phase, children }) => (
-  <div className="bg-[#1a1a1a] rounded-xl p-4 flex flex-col gap-2">
+  <div className="bg-white/[0.04] backdrop-blur-md rounded-xl p-4 flex flex-col gap-2 border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
     <div className="flex items-center justify-between">
       <div className={`flex items-center gap-2 ${accent}`}>
         {icon}
@@ -97,9 +97,17 @@ interface ProgramCardProps {
   program: Program;
   position: PositionGroup;
   onSelectPosition: (p: PositionGroup) => void;
+  // true = illustrative numbers, not sourced. Surfaced prominently so demo data is
+  // never mistaken for verified roster facts.
+  sample?: boolean;
 }
 
-const ProgramCard: React.FC<ProgramCardProps> = ({ program, position, onSelectPosition }) => {
+const ProgramCard: React.FC<ProgramCardProps> = ({
+  program,
+  position,
+  onSelectPosition,
+  sample = false,
+}) => {
   const [showMethod, setShowMethod] = useState(false);
   const stat = program.positions[position];
   const read = readPosition(stat);
@@ -115,10 +123,21 @@ const ProgramCard: React.FC<ProgramCardProps> = ({ program, position, onSelectPo
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full max-w-xl bg-[#121212] rounded-2xl shadow-2xl ring-1 ring-white/5 overflow-hidden"
+      className="w-full max-w-xl bg-white/[0.06] backdrop-blur-2xl rounded-3xl shadow-[0_8px_50px_rgba(0,0,0,0.5)] ring-1 ring-white/10 border border-white/10 overflow-hidden"
     >
+      {sample && (
+        <div className="bg-[#FFC107]/15 backdrop-blur-md border-b border-[#FFC107]/30 px-6 py-2 flex items-center gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#FFC107]">
+            Sample data
+          </span>
+          <span className="text-[11px] text-[#FFC107]/80">
+            Illustrative shape only — not sourced roster figures.
+          </span>
+        </div>
+      )}
+
       {/* Header */}
-      <div className="p-6 pb-4 border-b border-white/5">
+      <div className="p-6 pb-4 border-b border-white/10">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h3 className="text-2xl font-bold text-white">{program.school}</h3>
@@ -147,10 +166,10 @@ const ProgramCard: React.FC<ProgramCardProps> = ({ program, position, onSelectPo
               <button
                 key={p}
                 onClick={() => onSelectPosition(p)}
-                className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
+                className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all border ${
                   active
-                    ? 'bg-[#FF0000] text-white'
-                    : 'bg-[#1a1a1a] text-gray-400 hover:text-white hover:bg-[#222]'
+                    ? 'bg-[#FF0000] text-white border-[#FF0000] shadow-[0_0_20px_rgba(255,0,0,0.35)]'
+                    : 'bg-white/[0.04] backdrop-blur-md text-gray-400 border-white/10 hover:text-white hover:bg-white/10'
                 }`}
               >
                 {p}
@@ -162,7 +181,7 @@ const ProgramCard: React.FC<ProgramCardProps> = ({ program, position, onSelectPo
 
       {/* Worth-a-look banner — a signal, never a verdict */}
       <div className="px-6 pt-4">
-        <div className={`rounded-xl p-4 ring-1 ${signal.bg} ${signal.ring}`}>
+        <div className={`rounded-xl p-4 ring-1 backdrop-blur-md border border-white/10 ${signal.bg} ${signal.ring}`}>
           <div className="flex items-center gap-2 mb-1">
             <span className={`text-xs font-bold uppercase tracking-wide ${signal.text}`}>
               {signal.label}
@@ -194,12 +213,12 @@ const ProgramCard: React.FC<ProgramCardProps> = ({ program, position, onSelectPo
             <span className="text-[11px] text-[#FFC107]">n/a · small sample (n&lt;4)</span>
           ) : (
             <>
-              <div className="w-full h-2 rounded-full bg-[#2a2a2a] overflow-hidden flex">
+              <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden flex">
                 <div className="h-full bg-[#64DD17]" style={{ width: `${read.domesticPct}%` }} />
                 <div className="h-full bg-[#FF0000]/70" style={{ width: `${read.intlPct}%` }} />
               </div>
               <span className="text-[11px] text-gray-500">
-                {Math.round(read.domesticPct!)}% domestic · {Math.round(read.intlPct!)}% intl
+                {read.domesticPctLabel}% domestic · {read.intlPctLabel}% intl
                 {stat.unknown > 0 && ` · ${stat.unknown} unknown`}
               </span>
             </>
@@ -313,7 +332,7 @@ const ProgramCard: React.FC<ProgramCardProps> = ({ program, position, onSelectPo
       <div className="px-6 pb-4">
         <a
           href="#"
-          className="flex items-center justify-between gap-2 rounded-xl bg-[#FF0000]/10 hover:bg-[#FF0000]/20 transition-colors p-4 group"
+          className="flex items-center justify-between gap-2 rounded-xl bg-[#FF0000]/10 backdrop-blur-md border border-[#FF0000]/20 hover:bg-[#FF0000]/20 transition-colors p-4 group"
         >
           <div className="flex items-center gap-3">
             <Users className="w-5 h-5 text-[#FF0000]" />
@@ -329,7 +348,7 @@ const ProgramCard: React.FC<ProgramCardProps> = ({ program, position, onSelectPo
       </div>
 
       {/* Provenance / methodology footer */}
-      <div className="px-6 py-3 border-t border-white/5 bg-[#0d0d0d]">
+      <div className="px-6 py-3 border-t border-white/10 bg-white/[0.02]">
         <button
           onClick={() => setShowMethod((s) => !s)}
           className="flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-gray-300"
@@ -393,7 +412,7 @@ function buildSignalSentence(
   if (read.belowGate) {
     return `Only ${program.positions[position].resolved} ${spot}s on the roster — too small a sample to read a domestic-opportunity trend. Look at the raw count and ask the coach directly.`;
   }
-  const dpct = Math.round(read.domesticPct!);
+  const dpct = read.domesticPctLabel!;
   const dir =
     read.trendPp === null
       ? ''
