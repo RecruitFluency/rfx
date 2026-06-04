@@ -17,9 +17,9 @@ const AthleteProgramView: React.FC = () => {
     <div className="relative min-h-screen bg-[#08080a] flex flex-col items-center py-16 px-4 overflow-hidden">
       {/* Ambient color glows so the frosted-glass blur reads */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-32 -left-24 w-[36rem] h-[36rem] rounded-full bg-[#FF0000]/20 blur-[120px]" />
-        <div className="absolute top-1/3 -right-32 w-[32rem] h-[32rem] rounded-full bg-[#00BCD4]/15 blur-[120px]" />
-        <div className="absolute -bottom-40 left-1/4 w-[34rem] h-[34rem] rounded-full bg-[#64DD17]/10 blur-[130px]" />
+        <div className="absolute -top-32 -left-24 w-[36rem] h-[36rem] rounded-full bg-[#FF0000]/25 blur-[120px]" />
+        <div className="absolute top-1/3 -right-32 w-[32rem] h-[32rem] rounded-full bg-[#FF0000]/12 blur-[120px]" />
+        <div className="absolute -bottom-40 left-1/4 w-[34rem] h-[34rem] rounded-full bg-white/[0.06] blur-[130px]" />
       </div>
 
       <div className="relative text-center mb-10 max-w-xl">

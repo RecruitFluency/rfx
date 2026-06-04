@@ -34,31 +34,34 @@ const SIGNAL_STYLE: Record<
   LookSignal,
   { label: string; text: string; bg: string; ring: string }
 > = {
+  // Palette is black/red/white only — meaning is carried by red intensity vs. white
+  // opacity. Red = strong domestic opportunity (worth a look); white-dimmed = muted.
   'worth-a-look': {
     label: 'Worth a look',
-    text: 'text-[#64DD17]',
-    bg: 'bg-[#64DD17]/10',
-    ring: 'ring-[#64DD17]/30',
+    text: 'text-[#FF0000]',
+    bg: 'bg-[#FF0000]/15',
+    ring: 'ring-[#FF0000]/40',
   },
   mixed: {
     label: 'Mixed signal',
-    text: 'text-[#FFC107]',
-    bg: 'bg-[#FFC107]/10',
-    ring: 'ring-[#FFC107]/30',
+    text: 'text-white/80',
+    bg: 'bg-white/10',
+    ring: 'ring-white/20',
   },
   reach: {
     label: 'Likely a reach',
-    text: 'text-[#FF0000]',
-    bg: 'bg-[#FF0000]/10',
-    ring: 'ring-[#FF0000]/30',
+    text: 'text-white/45',
+    bg: 'bg-white/[0.04]',
+    ring: 'ring-white/10',
   },
 };
 
 const ConfidenceBadge: React.FC<{ level: Confidence }> = ({ level }) => {
+  // Confidence is neutral metadata -> encoded as white opacity tiers.
   const map: Record<Confidence, string> = {
-    high: 'text-[#64DD17] bg-[#64DD17]/10',
-    medium: 'text-[#FFC107] bg-[#FFC107]/10',
-    low: 'text-[#FF0000] bg-[#FF0000]/10',
+    high: 'text-white bg-white/10',
+    medium: 'text-white/65 bg-white/5',
+    low: 'text-white/40 bg-white/5',
   };
   return (
     <span className={`text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded ${map[level]}`}>
@@ -126,11 +129,11 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
       className="w-full max-w-xl bg-white/[0.06] backdrop-blur-2xl rounded-3xl shadow-[0_8px_50px_rgba(0,0,0,0.5)] ring-1 ring-white/10 border border-white/10 overflow-hidden"
     >
       {sample && (
-        <div className="bg-[#FFC107]/15 backdrop-blur-md border-b border-[#FFC107]/30 px-6 py-2 flex items-center gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-[#FFC107]">
+        <div className="bg-[#FF0000]/12 backdrop-blur-md border-b border-[#FF0000]/30 px-6 py-2 flex items-center gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#FF0000]">
             Sample data
           </span>
-          <span className="text-[11px] text-[#FFC107]/80">
+          <span className="text-[11px] text-white/60">
             Illustrative shape only — not sourced roster figures.
           </span>
         </div>
@@ -200,7 +203,7 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
         <Tile
           icon={<Globe2 className="w-4 h-4" />}
           title="Domestic opportunity"
-          accent="text-[#00BCD4]"
+          accent="text-[#FF0000]/70"
           phase="v1"
         >
           <div className="flex items-baseline gap-2">
@@ -210,12 +213,13 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
             <span className="text-xs text-gray-400">domestic</span>
           </div>
           {read.belowGate ? (
-            <span className="text-[11px] text-[#FFC107]">n/a · small sample (n&lt;4)</span>
+            <span className="text-[11px] text-white/45">n/a · small sample (n&lt;4)</span>
           ) : (
             <>
+              {/* Domestic opportunity = solid red (the highlight); intl = dim white */}
               <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden flex">
-                <div className="h-full bg-[#64DD17]" style={{ width: `${read.domesticPct}%` }} />
-                <div className="h-full bg-[#FF0000]/70" style={{ width: `${read.intlPct}%` }} />
+                <div className="h-full bg-[#FF0000]" style={{ width: `${read.domesticPct}%` }} />
+                <div className="h-full bg-white/20" style={{ width: `${read.intlPct}%` }} />
               </div>
               <span className="text-[11px] text-gray-500">
                 {read.domesticPctLabel}% domestic · {read.intlPctLabel}% intl
@@ -229,11 +233,11 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
         <Tile
           icon={<TrendingUp className="w-4 h-4" />}
           title="2-yr trend"
-          accent="text-[#00BCD4]"
+          accent="text-[#FF0000]/70"
           phase="v1"
         >
           {read.trendPp === null ? (
-            <span className="text-[11px] text-[#FFC107] mt-1">
+            <span className="text-[11px] text-white/45 mt-1">
               n/a · needs two seasons above the gate
             </span>
           ) : (
@@ -255,7 +259,7 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
         <Tile
           icon={<DoorOpen className="w-4 h-4" />}
           title="Spots opening"
-          accent="text-[#64DD17]"
+          accent="text-[#FF0000]/70"
           phase="v1"
         >
           <div className="flex items-baseline gap-2">
@@ -271,7 +275,7 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
         <Tile
           icon={<Layers className="w-4 h-4" />}
           title="Depth at position"
-          accent="text-[#FFC107]"
+          accent="text-[#FF0000]/70"
           phase="v1"
         >
           <div className="flex items-baseline gap-2">
@@ -287,7 +291,7 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
         <Tile
           icon={<DollarSign className="w-4 h-4" />}
           title="Scholarship context"
-          accent="text-[#64DD17]"
+          accent="text-[#FF0000]/70"
           phase="v1.1"
         >
           <div className="flex items-baseline gap-2">
@@ -311,7 +315,7 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
         <Tile
           icon={<Trophy className="w-4 h-4" />}
           title="Competitiveness"
-          accent="text-[#00BCD4]"
+          accent="text-[#FF0000]/70"
           phase="v1.1"
         >
           <div className="flex items-baseline gap-2">
@@ -367,7 +371,7 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
             shown separately. Position % suppressed below n&lt;4. Scholarship &amp; competitiveness
             are program-level context from secondary sources — never an individual offer. A signal,
             not a verdict.{' '}
-            <a href="#" className="text-[#00BCD4] hover:underline">
+            <a href="#" className="text-[#FF0000] hover:underline">
               Report a correction
             </a>
             .
@@ -383,16 +387,17 @@ const TrendChip: React.FC<{ pp: number; invert?: boolean; showNumber?: boolean }
   invert,
   showNumber = true,
 }) => {
-  // invert=true: the number is an INTL pp move (header), so up = worse for domestic -> red.
+  // invert=true: the number is an INTL pp move (header), so up = worse for domestic.
+  // Palette is black/red/white: red = good for domestic (the highlight), dim white = not.
   const rounded = Math.round(pp);
   if (rounded === 0)
     return (
-      <span className="flex items-center text-gray-400 text-xs">
+      <span className="flex items-center text-white/40 text-xs">
         <Minus className="w-3.5 h-3.5" />
       </span>
     );
   const goodForDomestic = invert ? rounded < 0 : rounded > 0;
-  const color = goodForDomestic ? 'text-[#64DD17]' : 'text-[#FF0000]';
+  const color = goodForDomestic ? 'text-[#FF0000]' : 'text-white/45';
   const Icon = rounded > 0 ? ArrowUpRight : ArrowDownRight;
   return (
     <span className={`flex items-center gap-0.5 text-xs font-semibold ${color}`}>
