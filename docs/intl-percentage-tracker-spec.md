@@ -317,10 +317,11 @@ lucide-react**, static marketing site, dark RFX brand theme.
 
 - Build the tracker as a **route/section within this app** (e.g. `/tracker`), reusing
   brand components, theme tokens, and motion patterns already present.
-- **Data as a static, versioned artifact** (JSON in `public/` or a hosted CDN file)
-  consumed client-side → no server needed for MVP. Table/filter/sort done client-side.
-- Charting: lightweight lib compatible with the stack (e.g. Recharts/visx) or
-  hand-rolled SVG sparklines to avoid heavy deps — **decision in §16.**
+- **Data as a static, versioned artifact** — *recommended: committed JSON in `public/`*
+  (§16.8) — consumed client-side → no server needed for MVP. Table/filter/sort
+  client-side.
+- Charting: *recommended (§16.7)* hand-rolled SVG sparklines for the table, adding a
+  small lib (Recharts) only if the detail-page trend/histogram needs it.
 - CSV/PDF export client-side (CSV trivial; PDF via a small client lib or pre-rendered
   branded template).
 - **The data pipeline (§10) is a separate concern** from this front-end repo; keep the
@@ -388,22 +389,71 @@ lucide-react**, static marketing site, dark RFX brand theme.
 - ✅ **History depth at launch:** 2 seasons (current + prior) to support YoY trend;
   3–5 seasons deferred to v2. — *decided 2026-06-04*
 
-**Still open**
+**Still open** — each carries a **recommended default** below; these are proposals to
+approve or override, not settled decisions. If approved as-is, v1 is fully specified.
 
-3. **Gating:** is *browsing* open with *download* email-gated, or is the whole tool
-   behind an email gate?
-4. **Default sort/framing:** rank by lowest intl %, or by *most-improving domestic
-   trend*? (Recommend the trend framing — it's the differentiated story.)
-5. **Denominator:** confirm "% of resolved players, unknowns shown separately" (§6.3).
-6. **Data source:** official-roster scraping vs. a licensed roster-data provider — and
-   the compliance posture for either.
-7. **Charting dependency:** add a chart lib (Recharts/visx) or keep zero-dep hand-rolled
-   SVG?
-8. **Where the data artifact lives:** committed in `public/`, or hosted on a CDN/endpoint
-   the static app fetches?
-9. **Refresh ownership & cadence:** who runs the seasonal refresh, and how is a new
-   snapshot reviewed/approved before publish?
-10. **Territories & dual-national edge rules:** confirm the §6.1 defaults.
+3. **Gating.** *Options:* whole tool gated vs. browse-open / download-gated.
+   **→ Recommended default: browse open, email-gate the download (and premium cuts).**
+   Open browsing lets the data get discovered, screenshotted, and linked (the whole
+   "data nobody published" distribution play); the **download is the conversion event**
+   where we capture the email into the RFX funnel. A hard gate on the whole tool would
+   kill the organic-distribution upside. *Risk:* lower email capture per visitor —
+   mitigated by also gating the high-value cuts (full export, position-level, "movers").
+
+4. **Default sort / framing.** *Options:* rank by lowest intl % (static snapshot) vs.
+   most-improving domestic trend. **→ Recommended default: most-improving domestic
+   trend (largest positive YoY Δ in domestic %), with intl % as a secondary sortable
+   column.** The trend *is* the differentiated story ("where American spots are
+   increasing") and reframes the product around the family's goal rather than a static
+   ranking anyone could approximate. *Caveat:* with only 2 seasons, a single YoY Δ can
+   be noisy for small rosters — pair the sort with roster-size context and the
+   confidence badge so a 1-player swing on a 22-player roster isn't oversold.
+
+5. **Denominator.** **→ Recommended default: confirm §6.3 — intl % = international ÷
+   *resolved* players (unknowns excluded from the denominator), with roster size and
+   unknown count always shown next to the percentage.** Excluding unknowns avoids
+   silently deflating intl %; showing them keeps it honest. No change needed — this just
+   ratifies the §6.3 default.
+
+6. **Data source.** *Options:* scrape official roster pages vs. license a roster-data
+   provider. **→ Recommended default: start with official roster pages (polite,
+   rate-limited, provenance stored), and run a parallel evaluation of ≥1 licensed
+   provider before scaling.** Official pages are the authoritative, free source and let
+   us validate the methodology immediately; a licensed feed (if affordable and it
+   carries clean country/hometown fields) becomes the durable supply once proven.
+   **Compliance gate:** honor ToS/`robots.txt`, get the quick legal read flagged in §13
+   *before* large-scale collection. This is the single biggest external dependency —
+   treat it as a go/no-go checkpoint, not an assumption.
+
+7. **Charting dependency.** *Options:* add a chart lib (Recharts/visx) vs. hand-rolled
+   SVG. **→ Recommended default: hand-rolled SVG sparklines for the table + one small
+   chart lib (Recharts) only if the detail-page trend/histogram needs it.** With just 2
+   seasons, "trend" is effectively two points + an arrow — a charting lib is overkill for
+   the table. Keep the bundle lean (the site is a lightweight Vite static app); revisit
+   when deeper history (v2) makes real time-series charts worthwhile.
+
+8. **Where the data artifact lives.** *Options:* committed JSON in `public/` vs.
+   hosted CDN/endpoint. **→ Recommended default: committed, versioned JSON in `public/`
+   for v1.** The dataset is small (hundreds of programs), updates seasonally not live,
+   and a committed artifact gives free versioning, diff-able review of each refresh, and
+   zero infra. Move to a CDN/endpoint only if/when refresh frequency or size demands it.
+
+9. **Refresh ownership & cadence.** **→ Recommended default: preseason full refresh
+   (Aug–Sep) as the anchor, owned by a named RFX data owner, with every new snapshot
+   passing the §10 review queue (low-confidence spot-check) before it's committed and
+   published.** Publishing = opening a PR that updates the `public/` artifact, so each
+   refresh is reviewed and reversible. *To assign:* the human owner of the seasonal
+   refresh — needs a name, not just a process.
+
+10. **Territories & dual-national edge rules.** **→ Recommended default: confirm the
+    §6.1 defaults — U.S. territories (PR/Guam/USVI) = domestic (flagged); dual
+    nationals classified by *stated hometown country*, not citizenship; provide a
+    "North American (CAN/MEX)" vs. "overseas" filter since families read those
+    differently.** All defensible and already documented; this item just ratifies them.
+
+> **Net:** items 5, 9, and 10 mainly ratify existing defaults; **3, 4, 6, 7, 8 are the
+> real choices.** Of those, **#6 (data source + compliance)** is the only one that can
+> block the build — the rest are reversible product/UX calls.
 
 ---
 
