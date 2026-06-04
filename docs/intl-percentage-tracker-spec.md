@@ -137,6 +137,14 @@ No live user-generated data in v1.
   international overall yet recruit *zero* domestic forwards; the roster-wide number
   hides exactly the thing the family needs. See §6.5 for grouping rules and the
   small-sample handling that keeps these numbers honest.
+- **Position depth (v1):** count of players at each position group per program (and vs.
+  the typical depth for that position) — a domestic-friendly position that's already 8
+  deep is still a buried opportunity. Derived from the same per-player position capture.
+- **Projected openings / roster churn (v1):** per position group, count of upperclassmen
+  (Jr / Sr / Grad) likely to depart → an *indicator* of spots opening up. Derived from
+  the `class_year` we already capture. **Estimate, not a guarantee** — soccer eligibility
+  is messy (redshirts, COVID-era years, grad transfers, portal moves), so this is framed
+  as "graduating/upperclassmen at your position," never a precise headcount of openings.
 
 ---
 
@@ -238,8 +246,9 @@ Confidence, Source URL, Collected Date`.
 **Per-position columns (v1):** for each group, `GK Intl/Total`, `DEF Intl/Total`,
 `MID Intl/Total`, `FWD Intl/Total` (counts), plus the % where the group clears the
 small-sample gate (§6.5) — below it, the % cell reads `n/a (small sample)` rather than a
-misleading number. A "by position" tab/PDF lets a family export the cut for just their
-spot.
+misleading number. Also per group: **`Depth` (count carried)** and **`Upperclassmen`
+(Jr/Sr/Grad count = projected-openings indicator, §5).** A "by position" tab/PDF lets a
+family export the cut for just their spot.
 
 ### Export intricacies (don't skip these)
 - **Respects current filters/sort** (what you see is what you download) **and** offers
@@ -311,20 +320,21 @@ profile"** step (position required; the rest optional):
   international — likely a reach for a domestic forward"* vs. *"DEF is majority domestic
   and opening up — worth a look."* **Always sourced, always with the underlying numbers
   and small-sample caveat visible** — a signal, never a verdict.
-- **Roster-churn / openings context:** class-year breakdown by position (we already
+- **Roster-churn / openings context (v1):** class-year breakdown by position (we already
   capture class year, §5) → how many at the athlete's position are upperclassmen likely
-  to leave. "Spots opening" matters as much as the current split.
+  to leave. "Spots opening" matters as much as the current split. Framed as an indicator,
+  not a guaranteed headcount (eligibility is messy — see §5).
+- **Position depth (v1):** how many players the program carries at the athlete's position
+  (vs. typical), so a domestic-friendly-but-crowded spot reads honestly.
 - **Save / build-a-list:** let the athlete tag programs into a target list (the bridge
   into the RFX core funnel) ranked by *their* opportunity, not a generic ranking.
 
-> What else belongs in the athlete's read (candidates to confirm in §16): roster size
-> vs. typical for the position (depth chart reality), **scholarship structure**
-> (soccer is equivalency — fewer full rides; domestic % means little if no aid),
-> conference level / competitiveness fit, geography, and recruiting-class timing. These
-> are *context the tracker can surface or link to*, not all new data we must collect —
-> some already live in the RFX core product, so link rather than duplicate (§3 out-of-
-> scope). The discipline: the tracker stays **the international/domestic-opportunity
-> lens**; it *frames* the worth-it question and hands off to RFX for the rest.
+> **Decided (2026-06-04):** the tracker itself surfaces **position %, 2-yr trend, roster
+> churn/openings, and position depth** — all derived from data we already collect.
+> **Scholarship structure, competitive/level fit, geography, and class timing** stay
+> *link-outs to the RFX core product*, not data the tracker collects (§3 out-of-scope).
+> The discipline holds: the tracker stays **the international/domestic-opportunity lens**,
+> *frames* the worth-it question, and hands off to RFX for the rest.
 
 ---
 
@@ -443,10 +453,13 @@ lucide-react**, static marketing site, dark RFX brand theme.
   question.
 - **Athlete's-perspective view (§8.6):** set-your-position re-ranking + a sourced
   "worth-a-look" read + save-to-list hand-off into RFX.
+- **Roster churn / "spots opening" + position depth** by position group (derived from
+  class-year + position we already capture) — *promoted into v1* per the athlete's-
+  perspective decision.
 
 **v1.1**
-- **Roster-churn / "spots opening" by position** (class-year depth) • "movers" report •
-  conference & national rollups • compare view • histogram/leaderboards.
+- "Movers" report • conference & national rollups • compare view • histogram/leaderboards
+  • scholarship/fit link-outs to RFX core.
 
 **v2+**
 - Deeper history (3–5 seasons) • email alerts on changes • D2/D3/NAIA expansion •
