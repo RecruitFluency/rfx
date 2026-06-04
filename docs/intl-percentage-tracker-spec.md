@@ -1,11 +1,13 @@
 # D1 International Percentage Tracker — Product & Feature Specification
 
-> **Status:** **v1 specified (2026-06-04).** §16 items 1–10 accepted. By-position
-> breakdown and an athlete's-perspective view (§8.6) are now v1 features; they open three
-> follow-on choices (§16 items 11–13, each with a recommended default). Two human action
-> items in §18 (compliance read + named refresh owner) remain the only hard blockers
-> before build. This document enumerates every feature, intricacy, edge case, and
-> decision so we build the right thing once.
+> **Status:** **v1 specified (2026-06-04).** §16 items 1–10 accepted. The athlete's-
+> perspective view (§8.6) is the organizing goal — *"is this program worth a look for
+> someone at my position?"* — so by-position breakdown, roster churn, and position depth
+> are **v1**, with program scholarship + competitiveness context added in **v1.1** via
+> new secondary sources (§6.6). Follow-on choices §16 items 11–16 each carry a
+> recommended default. Two human action items in §18 (compliance read + named refresh
+> owner) remain the only hard blockers before build. This document enumerates every
+> feature, intricacy, edge case, and decision so we build the right thing once.
 > **Owner:** RFX (RecruitFluency)
 > **Last updated:** 2026-06-04
 
@@ -75,6 +77,11 @@ This is **pure, original data nobody has published in one place** — that's the
   minimum that supports the headline "American spots increasing/decreasing" trend
   (a single YoY Δ). Deeper history (3–5 seasons) is a v2 item (§15). Implication: the
   collection pipeline must capture *two* clean snapshots per program before launch.
+- **Athlete's-perspective scope:** the tool answers "is this program worth a look *for
+  someone at my position*?" — so by-position breakdown, roster churn, and position depth
+  are **v1**, and **program-level scholarship + competitiveness context** are added in
+  **v1.1** via new secondary sources (§6.6, §8.6). Personalized fit/odds remain RFX-core
+  link-outs (see out-of-scope above).
 
 ---
 
@@ -145,6 +152,17 @@ No live user-generated data in v1.
   the `class_year` we already capture. **Estimate, not a guarantee** — soccer eligibility
   is messy (redshirts, COVID-era years, grad transfers, portal moves), so this is framed
   as "graduating/upperclassmen at your position," never a precise headcount of openings.
+- **Scholarship context (program-level only — new source, see §6.6):** the NCAA
+  **equivalency limit** for the sport (D1 men's soccer ≈ 9.9, women's ≈ 14 — public
+  constants) plus, where knowable, whether the program is **fully funded**. This tells a
+  family "even at full funding this is partial aid spread across the roster." We do **not**
+  publish or estimate any individual athlete's offer — that's not public and stays an RFX-
+  core conversation. Lower confidence than roster data; badged accordingly.
+- **Competitiveness / level indicators (program-level — new source, see §6.6):**
+  conference, recent record / national ranking or RPI-type rating — public signals of
+  program level. The tracker shows *the program's level*; the **personalized "is this the
+  right level for me?" judgment stays in RFX core**, because it depends on the athlete's
+  own rating, which the tracker doesn't hold.
 
 ---
 
@@ -219,7 +237,25 @@ swings the number violently. Rules:
 - The **roster-wide number remains the headline**; position is an expandable detail, so
   we don't lead with the noisiest figure.
 
-### 6.6 Versioning & corrections
+### 6.6 Scholarship & competitiveness data (new, secondary sources)
+These widen the tracker beyond the roster scrape, so they get their own provenance and a
+clear **program-level-only** boundary.
+- **Scholarship:** source the **per-sport NCAA equivalency limit** (public constant) and,
+  where available, **funded status** (some programs don't fund the max; sources vary in
+  reliability). Publish only program-level context ("equivalency sport, ~X scholarships
+  spread across the roster"); **never** an individual athlete's aid. Confidence is lower
+  than roster data — badge it and cite the source/date like everything else.
+- **Competitiveness:** source **conference**, **recent record**, and a **national
+  ranking / RPI-type rating** where a credible public one exists. Show the *program's*
+  level; do not compute a personalized fit (that needs the athlete's own rating → RFX
+  core).
+- **Boundary rule:** anything requiring the *athlete's* data to interpret (their offer,
+  their level, their odds) is an **RFX-core link-out**, not tracker data. The tracker
+  surfaces public, program-level facts; RFX core personalizes them.
+- These are **secondary sources** with their own refresh cadence and confidence; a gap
+  here must never block or degrade the core international-% data.
+
+### 6.7 Versioning & corrections
 - `methodology_version` stamped on every snapshot so historical numbers remain
   reproducible even as rules evolve.
 - Public **changelog** + a **"report a correction"** path (families and coaches will
@@ -249,6 +285,10 @@ small-sample gate (§6.5) — below it, the % cell reads `n/a (small sample)` ra
 misleading number. Also per group: **`Depth` (count carried)** and **`Upperclassmen`
 (Jr/Sr/Grad count = projected-openings indicator, §5).** A "by position" tab/PDF lets a
 family export the cut for just their spot.
+
+**Program context columns (v1.1, §6.6):** `Scholarship Limit (equivalency)`,
+`Funded Status`, `Conference`, `Recent Record`, `National Ranking/Rating` — each with its
+own confidence/source, added when the secondary sources land.
 
 ### Export intricacies (don't skip these)
 - **Respects current filters/sort** (what you see is what you download) **and** offers
@@ -326,15 +366,30 @@ profile"** step (position required; the rest optional):
   not a guaranteed headcount (eligibility is messy — see §5).
 - **Position depth (v1):** how many players the program carries at the athlete's position
   (vs. typical), so a domestic-friendly-but-crowded spot reads honestly.
+- **Scholarship context (§6.6):** equivalency-sport reality + funded status at the
+  program level — so "spots open" is read alongside "is there actually aid." Program-
+  level only; individual offers stay an RFX-core conversation.
+- **Competitiveness / level (§6.6):** conference + record/ranking so the athlete gauges
+  the program's level; the *personalized* fit ("right level for me") links to RFX core.
 - **Save / build-a-list:** let the athlete tag programs into a target list (the bridge
   into the RFX core funnel) ranked by *their* opportunity, not a generic ranking.
 
-> **Decided (2026-06-04):** the tracker itself surfaces **position %, 2-yr trend, roster
-> churn/openings, and position depth** — all derived from data we already collect.
-> **Scholarship structure, competitive/level fit, geography, and class timing** stay
-> *link-outs to the RFX core product*, not data the tracker collects (§3 out-of-scope).
-> The discipline holds: the tracker stays **the international/domestic-opportunity lens**,
-> *frames* the worth-it question, and hands off to RFX for the rest.
+> **Decided (2026-06-04):** the tracker surfaces, at the **program level**, all four
+> athlete-read dimensions — (1) position %, (2) 2-yr trend, (3) roster churn/openings,
+> (4) position depth — *plus* **program scholarship context** and **competitiveness/level
+> indicators**. Dimensions 1–4 are derived from data we already collect (cheap);
+> scholarship + competitiveness need **new secondary sources** (§6.6) and are lower-
+> confidence — see phasing note below.
+>
+> **The boundary that still holds:** anything needing the *athlete's own* data to
+> interpret — their actual offer, their rating, their odds — stays an **RFX-core link-
+> out**, not tracker data. The tracker surfaces public program-level facts and *frames*
+> the worth-it question; RFX core personalizes it.
+>
+> **Phasing recommendation (confirm in §16.14):** ship dimensions 1–4 in **v1** (no new
+> sourcing); bring **scholarship + competitiveness in v1.1** so building two new data
+> pipelines doesn't delay the core international-% launch. The athlete view is designed
+> for all six from day one and simply lights up the last two when their sources land.
 
 ---
 
@@ -359,6 +414,10 @@ profile"** step (position required; the rest optional):
   high school — whatever the page exposes.
 - **Respect each site's Terms of Service and `robots.txt`;** prefer official/licensed
   feeds; rate-limit; cache; store source HTML/URL + timestamp for auditability.
+- **Secondary sources (v1.1, §6.6):** per-sport NCAA scholarship equivalency limits
+  (public constants) + funded status; conference / record / national ranking or RPI-type
+  rating. Separate, lower-confidence pipelines with their own cadence — a gap here must
+  never block or degrade the core international-% data.
 
 ### Refresh cadence
 - Rosters change seasonally (and mid-year). Plan a **preseason full refresh (Aug–Sep)**
@@ -424,7 +483,7 @@ lucide-react**, static marketing site, dark RFX brand theme.
   *"where are American roster spots growing"*, sourced and unemotional.
 - **Sourcing compliance:** honor ToS/`robots.txt`, prefer licensed/official data,
   store provenance. Get a quick legal/compliance read before large-scale collection.
-- **Accuracy disclaimer + corrections process** prominently shown (methodology §6.5).
+- **Accuracy disclaimer + corrections process** prominently shown (methodology §6.7).
 - **"Data as of" dating everywhere** so we never overstate currency.
 
 ---
@@ -458,8 +517,10 @@ lucide-react**, static marketing site, dark RFX brand theme.
   perspective decision.
 
 **v1.1**
-- "Movers" report • conference & national rollups • compare view • histogram/leaderboards
-  • scholarship/fit link-outs to RFX core.
+- **Program scholarship context** (equivalency limit + funded status) and
+  **competitiveness/level indicators** (conference, record, ranking) surfaced in the
+  athlete view — new secondary sources (§6.6), lower confidence, designed-for in v1's UI.
+- "Movers" report • conference & national rollups • compare view • histogram/leaderboards.
 
 **v2+**
 - Deeper history (3–5 seasons) • email alerts on changes • D2/D3/NAIA expansion •
@@ -551,11 +612,26 @@ assignment/action* (not a product decision) and are tracked in §18.
 13. **Position grouping standard.** Confirm the 4-group model (GK/DEF/MID/FWD) + a raw→
     group mapping table with `unknown` for unmapped, hybrids → primary listed position
     (§6.5). **→ Recommended default: as written.** Low risk; just ratify.
+14. **Scholarship + competitiveness phasing.** These two athlete-read dimensions need
+    *new secondary sources* (§6.6). *Options:* (a) hold the whole athlete view until they
+    land; (b) ship the four roster-derived dimensions in v1 and add scholarship +
+    competitiveness in v1.1. **→ Recommended default: (b)** — don't let two new data
+    pipelines delay the core international-% launch; the athlete view is designed for all
+    six and lights up the last two when their sources are ready.
+15. **Scholarship source & reliability.** Equivalency limits are public constants, but
+    *funded status* varies in reliability. **→ Recommended default: publish the
+    equivalency limit always; show funded status only where a credible source exists,
+    badged with confidence + date.** Program-level only; never individual offers.
+16. **Competitiveness rating source.** Which public rating (conference standing, a
+    national poll, an RPI-type rating) — and only where one is credibly available.
+    **→ Recommended default: conference + recent record always; add a national
+    ranking/rating where a credible public one exists**, cited and dated.
 
-> **Net:** items 1–10 remain **accepted**. The by-position cut and the athlete's-
-> perspective view (§8.6) are now **v1**, and they open three follow-on choices (11–13),
-> all with recommended defaults above. The two *human* items in §18 (compliance read,
-> refresh owner) are still the only hard blockers to starting the build.
+> **Net:** items 1–10 remain **accepted**. The by-position cut, the athlete's-perspective
+> view, **roster churn, and position depth** are now **v1** (all roster-derived);
+> **scholarship + competitiveness context** are added in **v1.1** via new secondary
+> sources. Follow-on choices 11–16 all carry recommended defaults. The two *human* items
+> in §18 (compliance read, refresh owner) remain the only hard blockers to the build.
 
 ---
 
@@ -584,5 +660,6 @@ All §16 product decisions are accepted; these two require a person, not a choic
 
 *This spec is intentionally exhaustive on intricacies (methodology, denominators, PII,
 sourcing, provenance, export self-description) because those details — not the table UI —
-are what make the tracker credible and defensible. **Status: v1 fully specified
-(2026-06-04); §18 human action items outstanding before build.***
+are what make the tracker credible and defensible. **Status: v1 specified (2026-06-04);
+athlete's-perspective view (§8.6) is the organizing goal; §16 items 11–16 carry
+recommended defaults; §18 human action items outstanding before build.***
