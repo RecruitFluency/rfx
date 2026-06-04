@@ -1,9 +1,11 @@
 # D1 International Percentage Tracker — Product & Feature Specification
 
-> **Status:** **v1 fully specified (2026-06-04).** All §16 decisions accepted; two human
-> action items in §18 (compliance read + named refresh owner) remain before build. This
-> document enumerates every feature, intricacy, edge case, and decision so we build the
-> right thing once.
+> **Status:** **v1 specified (2026-06-04).** §16 items 1–10 accepted. By-position
+> breakdown and an athlete's-perspective view (§8.6) are now v1 features; they open three
+> follow-on choices (§16 items 11–13, each with a recommended default). Two human action
+> items in §18 (compliance read + named refresh owner) remain the only hard blockers
+> before build. This document enumerates every feature, intricacy, edge case, and
+> decision so we build the right thing once.
 > **Owner:** RFX (RecruitFluency)
 > **Last updated:** 2026-06-04
 
@@ -129,9 +131,12 @@ No live user-generated data in v1.
   `direction` (`increasing_domestic` | `decreasing_domestic` | `stable`) and
   `delta_pct` (most recent vs. prior season).
 - **Conference rollups**, **state rollups**, **national averages** (men's vs women's).
-- **Position-aware view (stretch):** intl % within each position group per program —
-  this is the single most valuable cut for a family (a striker cares about FWD intl %,
-  not roster-wide %).
+- **Position-aware view (v1 — first-class):** intl % within each position group
+  (GK / DEF / MID / FWD) per program. This is **the single most valuable cut for a
+  family** — a striker cares about FWD intl %, not roster-wide %. A program can be 50%
+  international overall yet recruit *zero* domestic forwards; the roster-wide number
+  hides exactly the thing the family needs. See §6.5 for grouping rules and the
+  small-sample handling that keeps these numbers honest.
 
 ---
 
@@ -179,7 +184,34 @@ Tiered, with the basis recorded per entry (`nationality_basis`):
   misleading number.
 - Every program page links to its **source roster URL** and **collection date**.
 
-### 6.5 Versioning & corrections
+### 6.5 Position classification & small-sample handling (for the by-position view)
+Because the by-position cut is now a v1 feature, it needs its own rules — it's where
+the data is most useful **and** most easily misread.
+
+**Grouping.** Normalize each roster's position labels into four groups:
+**GK, DEF, MID, FWD**, plus `unknown`. Roster pages vary wildly (e.g. "Outside Back",
+"Holding Mid", "Forward/Winger", "M/F"). Maintain a **mapping table** from raw labels →
+group, with anything unmapped routed to `unknown` for review (never silently bucketed).
+- **Hybrids (e.g. "M/F", "D/M"):** default to the **first/primary** listed position;
+  record the raw label so the call is auditable.
+- Position is captured per player alongside hometown (§10), so this adds **no extra data
+  source** — it's the same scrape, classified one extra way. Collection cost is low; the
+  intricacy is in classification and presentation.
+
+**The small-sample problem (must handle, or the feature misleads).** Position groups are
+tiny — a roster may have only **3–5 forwards**. At n=4, every player is 25 percentage
+points, so one international forward reads as "75% domestic" and a single roster change
+swings the number violently. Rules:
+- **Show raw counts, never bare percentages, at the position level** — e.g. "FWD: 3 of 5
+  international" *with* the % as secondary, so the reader sees the denominator.
+- **Minimum-sample gate:** below a threshold group size (default **n < 4**), display the
+  count but **suppress or grey out the percentage and any trend**, badged "small sample."
+- **No position-level YoY trend on tiny groups** — a 2-season delta on n=4 is noise.
+  Position trend shown only when both seasons clear the sample gate.
+- The **roster-wide number remains the headline**; position is an expandable detail, so
+  we don't lead with the noisiest figure.
+
+### 6.6 Versioning & corrections
 - `methodology_version` stamped on every snapshot so historical numbers remain
   reproducible even as rules evolve.
 - Public **changelog** + a **"report a correction"** path (families and coaches will
@@ -202,6 +234,12 @@ not a teaser.
 `School, Conference, State, Gender, Season, Roster Size, Intl Count, Domestic Count,
 Unknown Count, Intl %, Domestic %, Prior-Season Intl %, YoY Δ (pp), Trend Direction,
 Confidence, Source URL, Collected Date`.
+
+**Per-position columns (v1):** for each group, `GK Intl/Total`, `DEF Intl/Total`,
+`MID Intl/Total`, `FWD Intl/Total` (counts), plus the % where the group clears the
+small-sample gate (§6.5) — below it, the % cell reads `n/a (small sample)` rather than a
+misleading number. A "by position" tab/PDF lets a family export the cut for just their
+spot.
 
 ### Export intricacies (don't skip these)
 - **Respects current filters/sort** (what you see is what you download) **and** offers
@@ -234,13 +272,17 @@ Confidence, Source URL, Collected Date`.
 - State / region.
 - Intl % range (slider).
 - **Trend direction** (increasing domestic / decreasing / stable) — high value.
-- Position-group intl % (stretch, see §5).
+- **Position-group filter (v1):** "show me programs by FWD/MID/DEF/GK domestic
+  opportunity" — the athlete picks *their* position and the whole table re-ranks to that
+  lens (see §5, §6.5, §8.6).
 - Confidence threshold (default hides low-confidence; toggle to show all w/ badge).
 
 ### 8.3 Program detail
 - Big number: current **Intl %** and **Domestic %** with roster size + unknown count.
 - **Trend chart** across available seasons.
-- Position-group breakdown (stretch).
+- **Position-group breakdown (v1):** GK/DEF/MID/FWD shown as "X of Y international"
+  with % secondary and small-sample badging (§6.5) — so the athlete sees the opportunity
+  at *their* spot, not just the roster-wide number.
 - Conference + national average comparison ("this program vs. D1 men's average").
 - Source link, collection date, confidence badge, methodology link.
 - CTA into RFX core product ("build your outreach list", "see coach contacts").
@@ -254,10 +296,35 @@ Confidence, Source URL, Collected Date`.
 - **"Movers" list:** programs with the largest domestic-opportunity swings — strong
   social/marketing artifact.
 
-### 8.5 Trust & transparency surfaces (non-negotiable)
-- Always-visible **"data as of" date** and **methodology** link.
-- Per-number provenance (source URL, confidence).
-- "Report a correction" affordance.
+### 8.6 Athlete's-perspective view ("is this program worth a look *for me*?")
+The core job isn't "what % international is this program" — it's **"is it worth my time,
+money, and outreach to pursue this program, given who I am?"** Everything above should
+roll up into a per-athlete read. Driven by a lightweight, no-account **"set your
+profile"** step (position required; the rest optional):
+
+- **Position (required):** re-ranks every view to the athlete's spot (§8.2). A forward
+  sees FWD domestic opportunity, not the roster average.
+- **Worth-a-look signal (the headline output):** combine, *for the athlete's position*,
+  (a) current domestic opportunity, (b) the 2-season trend direction, and (c) roster
+  churn (how many of that position graduate / how many spots realistically open). Surface
+  a plain-language read — e.g. *"FWD spots here are limited and trending more
+  international — likely a reach for a domestic forward"* vs. *"DEF is majority domestic
+  and opening up — worth a look."* **Always sourced, always with the underlying numbers
+  and small-sample caveat visible** — a signal, never a verdict.
+- **Roster-churn / openings context:** class-year breakdown by position (we already
+  capture class year, §5) → how many at the athlete's position are upperclassmen likely
+  to leave. "Spots opening" matters as much as the current split.
+- **Save / build-a-list:** let the athlete tag programs into a target list (the bridge
+  into the RFX core funnel) ranked by *their* opportunity, not a generic ranking.
+
+> What else belongs in the athlete's read (candidates to confirm in §16): roster size
+> vs. typical for the position (depth chart reality), **scholarship structure**
+> (soccer is equivalency — fewer full rides; domestic % means little if no aid),
+> conference level / competitiveness fit, geography, and recruiting-class timing. These
+> are *context the tracker can surface or link to*, not all new data we must collect —
+> some already live in the RFX core product, so link rather than duplicate (§3 out-of-
+> scope). The discipline: the tracker stays **the international/domestic-opportunity
+> lens**; it *frames* the worth-it question and hands off to RFX for the rest.
 
 ---
 
@@ -371,10 +438,15 @@ lucide-react**, static marketing site, dark RFX brand theme.
   YoY trend, browse/filter/sort table, program detail, CSV + branded PDF export, email
   gate on download, in-product methodology + glossary, source/provenance, corrections
   link.
+- **By-position breakdown (GK/DEF/MID/FWD)** with small-sample handling (§6.5) — *promoted
+  into v1*, since the per-position cut is what makes the tool answer the athlete's actual
+  question.
+- **Athlete's-perspective view (§8.6):** set-your-position re-ranking + a sourced
+  "worth-a-look" read + save-to-list hand-off into RFX.
 
 **v1.1**
-- Position-group intl % • "movers" report • conference & national rollups • compare view
-  • histogram/leaderboards.
+- **Roster-churn / "spots opening" by position** (class-year depth) • "movers" report •
+  conference & national rollups • compare view • histogram/leaderboards.
 
 **v2+**
 - Deeper history (3–5 seasons) • email alerts on changes • D2/D3/NAIA expansion •
@@ -453,10 +525,24 @@ assignment/action* (not a product decision) and are tracked in §18.
     "North American (CAN/MEX)" vs. "overseas" filter since families read those
     differently.** All defensible and already documented; this item just ratifies them.
 
-> **Net:** all of §16 is **accepted** as of 2026-06-04 — **v1 is fully specified.**
-> The two items that need a *human* (not a decision) are carried into §18: assigning the
-> refresh owner (#9) and the legal/compliance read on sourcing (#6/§13), the latter
-> being the only hard gate that can block the build.
+**New — opened by the by-position / athlete-perspective additions (need decisions)**
+
+11. **Small-sample threshold.** Confirm the position-group cutoff below which we show the
+    count but suppress the % (§6.5). **→ Recommended default: n < 4** (hide % and trend,
+    badge "small sample"). Drives how often the marquee per-position number is visible.
+12. **"Worth-a-look" signal (§8.6) — how prescriptive?** *Options:* (a) show only the raw
+    per-position numbers + trend and let the family judge; (b) add a plain-language,
+    sourced read ("limited / opening up / reach"). **→ Recommended default: (b), but
+    clearly a *signal, not a verdict*** — always with the underlying numbers and
+    small-sample caveat visible. Keeps it useful without overstepping into "your odds."
+13. **Position grouping standard.** Confirm the 4-group model (GK/DEF/MID/FWD) + a raw→
+    group mapping table with `unknown` for unmapped, hybrids → primary listed position
+    (§6.5). **→ Recommended default: as written.** Low risk; just ratify.
+
+> **Net:** items 1–10 remain **accepted**. The by-position cut and the athlete's-
+> perspective view (§8.6) are now **v1**, and they open three follow-on choices (11–13),
+> all with recommended defaults above. The two *human* items in §18 (compliance read,
+> refresh owner) are still the only hard blockers to starting the build.
 
 ---
 
