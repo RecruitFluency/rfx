@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react';
 import { isConfigured } from '../../lib/supabase';
-import { listCoaches, listSports } from '../../lib/api';
+import { listCoaches, listDivisions, listSports } from '../../lib/api';
 import { Coach } from '../../lib/types';
 import { Card, PageHeader, Spinner, ErrorBox, EmptyState, StatusPill } from '../components/ui';
 import NotConnected from '../components/NotConnected';
@@ -14,26 +14,29 @@ export default function Coaches() {
   const search = params.get('search') ?? '';
   const status = (params.get('status') ?? 'active') as 'active' | 'inactive' | 'all';
   const sport = params.get('sport') ?? '';
+  const division = params.get('division') ?? '';
   const page = Number(params.get('page') ?? '0');
 
   const [input, setInput] = useState(search);
   const [coaches, setCoaches] = useState<Coach[] | null>(null);
   const [total, setTotal] = useState(0);
   const [sports, setSports] = useState<string[]>([]);
+  const [divisions, setDivisions] = useState<string[]>([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (!isConfigured) return;
     listSports().then(setSports).catch(() => undefined);
+    listDivisions().then(setDivisions).catch(() => undefined);
   }, []);
 
   useEffect(() => {
     if (!isConfigured) return;
     setCoaches(null);
-    listCoaches({ search, status, sport: sport || undefined, page, pageSize: PAGE_SIZE })
+    listCoaches({ search, status, sport: sport || undefined, division: division || undefined, page, pageSize: PAGE_SIZE })
       .then(({ coaches, total }) => { setCoaches(coaches); setTotal(total); })
       .catch((e) => setError((e as Error).message));
-  }, [search, status, sport, page]);
+  }, [search, status, sport, division, page]);
 
   if (!isConfigured) return <NotConnected feature="the Coach Directory" />;
 
@@ -48,7 +51,18 @@ export default function Coaches() {
 
   return (
     <div>
-      <PageHeader title="Coach Directory" subtitle={`${total.toLocaleString()} coach${total === 1 ? '' : 'es'} matching your filters`} />
+      <PageHeader
+        title="Coach Directory"
+        subtitle={`${total.toLocaleString()} coach${total === 1 ? '' : 'es'} matching your filters`}
+        actions={
+          <Link
+            to="/app/coaches/new"
+            className="flex items-center gap-2 bg-[#FF0000] hover:bg-[#CC0000] text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+          >
+            <UserPlus className="w-4 h-4" /> Add coach
+          </Link>
+        }
+      />
 
       <div className="flex flex-wrap gap-3 mb-6">
         <form
@@ -79,6 +93,14 @@ export default function Coaches() {
         >
           <option value="">All sports</option>
           {sports.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select
+          value={division}
+          onChange={(e) => updateParams({ division: e.target.value })}
+          className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none max-w-[200px]"
+        >
+          <option value="">All divisions</option>
+          {divisions.map((d) => <option key={d} value={d}>{d}</option>)}
         </select>
       </div>
 

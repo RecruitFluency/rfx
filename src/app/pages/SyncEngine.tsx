@@ -4,7 +4,7 @@ import { UploadCloud, FileSpreadsheet, CheckCircle2, ShieldAlert } from 'lucide-
 import { isConfigured } from '../../lib/supabase';
 import { ParsedFile, parseVendorFile } from '../../lib/excel';
 import {
-  createBatch, hasBaseline, listBatches, processBatch, uploadStagingRows,
+  createBatch, hasBaseline, listBatches, listSports, multisportReady, processBatch, uploadStagingRows,
 } from '../../lib/api';
 import { SyncBatch, SyncStats } from '../../lib/types';
 import { Card, PageHeader, Spinner, ErrorBox, StatusPill, EmptyState, formatDateTime } from '../components/ui';
@@ -24,14 +24,26 @@ export default function SyncEngine() {
   const [batches, setBatches] = useState<SyncBatch[]>([]);
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
+  const [sport, setSport] = useState('');
+  const [knownSports, setKnownSports] = useState<string[]>([]);
+  const [multisport, setMultisport] = useState<boolean | null>(null);
 
   const refresh = useCallback(() => {
     if (!isConfigured) return;
-    hasBaseline().then((b) => setBaseline(b)).catch((e) => setError((e as Error).message));
     listBatches().then(setBatches).catch(() => undefined);
+    listSports().then(setKnownSports).catch(() => undefined);
+    multisportReady().then(setMultisport).catch(() => setMultisport(false));
   }, []);
 
   useEffect(refresh, [refresh]);
+
+  // The baseline question is per-sport: the first women's soccer file is a
+  // baseline for women's soccer even if other sports are already loaded.
+  useEffect(() => {
+    if (!isConfigured) return;
+    setBaseline(null);
+    hasBaseline(sport || undefined).then(setBaseline).catch((e) => setError((e as Error).message));
+  }, [sport]);
 
   if (!isConfigured) return <NotConnected feature="the Monthly Sync engine" />;
 
@@ -40,6 +52,9 @@ export default function SyncEngine() {
     setStage({ kind: 'parsing', fileName: f.name });
     try {
       const parsed = await parseVendorFile(f);
+      // If every row in the file names the same sport, preselect it.
+      const sportsInFile = [...new Set(parsed.rows.map((r) => r.sport?.trim()).filter(Boolean))] as string[];
+      if (sportsInFile.length === 1) setSport(sportsInFile[0]);
       setStage({ kind: 'preview', fileName: f.name, parsed });
     } catch (e) {
       setError((e as Error).message);
@@ -52,7 +67,7 @@ export default function SyncEngine() {
     try {
       const isBaseline = baseline === false;
       setStage({ kind: 'uploading', fileName, uploaded: 0, total: parsed.totalRows });
-      const batch = await createBatch(fileName, isBaseline, parsed.totalRows);
+      const batch = await createBatch(fileName, isBaseline, parsed.totalRows, sport.trim() || undefined);
       await uploadStagingRows(batch.id, parsed.rows, (uploaded) =>
         setStage({ kind: 'uploading', fileName, uploaded, total: parsed.totalRows })
       );
@@ -161,6 +176,38 @@ export default function SyncEngine() {
             </div>
           </div>
 
+          <div className="bg-[#1f1f1f] rounded-lg p-4 mb-4 text-sm">
+            <label className="text-gray-400 font-medium block mb-2" htmlFor="sync-sport">
+              Which sport does this file cover?
+            </label>
+            <input
+              id="sync-sport"
+              list="sync-sport-options"
+              value={sport}
+              onChange={(e) => setSport(e.target.value)}
+              placeholder="All sports (leave blank)"
+              disabled={multisport === false}
+              className="w-full max-w-sm bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-white placeholder-gray-600 focus:outline-none focus:border-[#FF0000]/60 disabled:opacity-50"
+            />
+            <datalist id="sync-sport-options">
+              {[...new Set([...knownSports, ...stage.parsed.rows.map((r) => r.sport ?? '').filter(Boolean)])].map(
+                (s) => <option key={s} value={s} />
+              )}
+            </datalist>
+            <p className="text-xs text-gray-500 mt-2">
+              {sport.trim()
+                ? `Only ${sport.trim()} coaches can be marked departed by this file — every other sport is untouched.`
+                : 'Blank means the file covers your entire database: any active coach missing from it counts as departed.'}
+            </p>
+            {multisport === false && (
+              <p className="text-xs text-amber-400 mt-2">
+                Per-sport syncing needs a one-time database update: run{' '}
+                <code className="bg-black px-1.5 py-0.5 rounded">supabase/migrations/0002_multisport.sql</code> in the
+                Supabase SQL editor. Until then, every file is treated as covering all sports.
+              </p>
+            )}
+          </div>
+
           {stage.parsed.missingIdCount > 0 && (
             <div className="flex items-center gap-2 text-amber-400 text-sm mb-4">
               <ShieldAlert className="w-4 h-4" />
@@ -266,6 +313,11 @@ export default function SyncEngine() {
                 <tr key={b.id} className="border-b border-[#1f1f1f] last:border-0">
                   <td className="px-4 py-3 text-gray-200">
                     {b.file_name}
+                    {b.sport && (
+                      <span className="ml-2 text-xs bg-[#1f1f1f] border border-[#2a2a2a] text-gray-400 rounded px-1.5 py-0.5">
+                        {b.sport}
+                      </span>
+                    )}
                     {b.is_baseline && <span className="ml-2 text-xs text-gray-500">(baseline)</span>}
                   </td>
                   <td className="px-4 py-3 text-gray-500">{formatDateTime(b.created_at)}</td>

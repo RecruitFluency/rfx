@@ -37,7 +37,9 @@ export default function Setup() {
         <>
           In Supabase, open <span className="text-gray-200">SQL Editor</span>, paste the contents of{' '}
           <code className="bg-[#1f1f1f] px-1.5 py-0.5 rounded text-xs">supabase/migrations/0001_coach_database.sql</code>{' '}
-          from this project, and click Run — that creates every table plus the sync engine. Then in{' '}
+          from this project, and click Run — that creates every table plus the sync engine. Then run{' '}
+          <code className="bg-[#1f1f1f] px-1.5 py-0.5 rounded text-xs">supabase/migrations/0002_multisport.sql</code>{' '}
+          the same way — it adds per-sport sync scoping so a soccer file can never depart a basketball coach. Then in{' '}
           <span className="text-gray-200">Project Settings → API</span>, copy the Project URL and the anon public key
           into two environment variables where the app is hosted:
           <pre className="bg-black border border-[#2a2a2a] rounded-lg p-3 mt-2 text-xs text-gray-300 overflow-x-auto">

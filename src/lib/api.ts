@@ -10,21 +10,45 @@ const CHUNK_SIZE = 500;
 // Sync engine
 // ---------------------------------------------------------------------------
 
-export async function hasBaseline(): Promise<boolean> {
-  const { count, error } = await db()
+let multisportCache: boolean | null = null;
+
+/**
+ * True once migration 0002 (per-sport sync scoping) has been run — detected
+ * by whether sync_batches has a `sport` column.
+ */
+export async function multisportReady(): Promise<boolean> {
+  if (multisportCache !== null) return multisportCache;
+  const { error } = await db().from('sync_batches').select('sport', { head: true }).limit(1);
+  multisportCache = !error;
+  return multisportCache;
+}
+
+/**
+ * Whether a baseline exists for the given sport. A batch with no sport tag
+ * covers every sport, so it counts as a baseline for all of them.
+ */
+export async function hasBaseline(sport?: string): Promise<boolean> {
+  let query = db()
     .from('sync_batches')
     .select('id', { count: 'exact', head: true })
     .in('status', ['completed', 'needs_review']);
+  if (sport && (await multisportReady())) {
+    query = query.or(`sport.is.null,sport.eq.${sport.replace(/[,()]/g, ' ')}`);
+  }
+  const { count, error } = await query;
   if (error) throw error;
   return (count ?? 0) > 0;
 }
 
-export async function createBatch(fileName: string, isBaseline: boolean, rowCount: number): Promise<SyncBatch> {
-  const { data, error } = await db()
-    .from('sync_batches')
-    .insert({ file_name: fileName, is_baseline: isBaseline, row_count: rowCount })
-    .select()
-    .single();
+export async function createBatch(
+  fileName: string,
+  isBaseline: boolean,
+  rowCount: number,
+  sport?: string
+): Promise<SyncBatch> {
+  const record: Record<string, unknown> = { file_name: fileName, is_baseline: isBaseline, row_count: rowCount };
+  if (sport && (await multisportReady())) record.sport = sport;
+  const { data, error } = await db().from('sync_batches').insert(record).select().single();
   if (error) throw error;
   return data as SyncBatch;
 }
@@ -95,6 +119,7 @@ export interface CoachQuery {
   search?: string;
   status?: 'active' | 'inactive' | 'all';
   sport?: string;
+  division?: string;
   page?: number;
   pageSize?: number;
 }
@@ -106,6 +131,7 @@ export async function listCoaches(q: CoachQuery): Promise<{ coaches: Coach[]; to
 
   if (q.status && q.status !== 'all') query = query.eq('status', q.status);
   if (q.sport) query = query.eq('sport', q.sport);
+  if (q.division) query = query.eq('division', q.division);
   if (q.search) {
     const s = q.search.replace(/[%,()]/g, ' ').trim();
     if (s) {
@@ -173,6 +199,170 @@ export async function listSports(): Promise<string[]> {
   const { data, error } = await db().from('coaches').select('sport').not('sport', 'is', null).limit(2000);
   if (error) throw error;
   return [...new Set((data ?? []).map((r: { sport: string }) => r.sport))].sort();
+}
+
+export async function listDivisions(): Promise<string[]> {
+  const { data, error } = await db().from('coaches').select('division').not('division', 'is', null).limit(2000);
+  if (error) throw error;
+  return [...new Set((data ?? []).map((r: { division: string }) => r.division))].sort();
+}
+
+/** Fields Jen can set by hand (everything except system columns). */
+export type CoachDraft = Pick<
+  Coach,
+  'first_name' | 'last_name' | 'email' | 'phone' | 'school' | 'sport' | 'title' | 'division' | 'conference' | 'state'
+>;
+
+/** Manually add a coach (between vendor files). Gets a generated RFX- ID. */
+export async function createCoach(draft: CoachDraft): Promise<Coach> {
+  const masterId = 'RFX-' + crypto.randomUUID().slice(0, 8);
+  const { data, error } = await db()
+    .from('coaches')
+    .insert({ ...draft, master_id: masterId, status: 'active' })
+    .select()
+    .single();
+  if (error) throw error;
+  const coach = data as Coach;
+  await db().from('coach_history').insert({
+    coach_id: coach.id, change_type: 'hired',
+    school: coach.school, title: coach.title, sport: coach.sport, email: coach.email,
+  });
+  return coach;
+}
+
+/**
+ * Manually edit a coach. Logs the same history entries a sync would, so
+ * hand corrections show up in the job-history timeline.
+ */
+export async function updateCoach(before: Coach, draft: CoachDraft): Promise<void> {
+  const { error } = await db()
+    .from('coaches')
+    .update({ ...draft, updated_at: new Date().toISOString() })
+    .eq('id', before.id);
+  if (error) throw error;
+
+  const history: Record<string, unknown>[] = [];
+  if (draft.school !== before.school && draft.school) {
+    history.push({
+      coach_id: before.id, change_type: 'moved', school: draft.school, title: draft.title,
+      sport: draft.sport, email: draft.email, previous_school: before.school, previous_title: before.title,
+    });
+  } else if (draft.title !== before.title && draft.title) {
+    history.push({
+      coach_id: before.id, change_type: 'title_change', school: before.school, title: draft.title,
+      sport: draft.sport, previous_title: before.title,
+    });
+  }
+  if (draft.email !== before.email && draft.email && before.email) {
+    history.push({
+      coach_id: before.id, change_type: 'email_change', school: draft.school ?? before.school,
+      title: draft.title ?? before.title, email: draft.email, previous_email: before.email,
+    });
+  }
+  if (history.length) await db().from('coach_history').insert(history);
+}
+
+/** Manually mark a coach departed or bring them back. */
+export async function setCoachStatus(coach: Coach, active: boolean): Promise<void> {
+  const { error } = await db()
+    .from('coaches')
+    .update({ status: active ? 'active' : 'inactive', updated_at: new Date().toISOString() })
+    .eq('id', coach.id);
+  if (error) throw error;
+  await db().from('coach_history').insert(
+    active
+      ? { coach_id: coach.id, change_type: 'reinstated', school: coach.school, title: coach.title, sport: coach.sport }
+      : { coach_id: coach.id, change_type: 'departed', previous_school: coach.school, previous_title: coach.title }
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Export (the app feed)
+// ---------------------------------------------------------------------------
+
+export interface ExportFilters {
+  sport?: string;
+  division?: string;
+  status?: 'active' | 'inactive' | 'all';
+}
+
+const EXPORT_PAGE = 1000;
+
+/** Fetch every coach matching the filters (paged under the hood). */
+export async function fetchAllCoaches(
+  f: ExportFilters,
+  onProgress?: (fetched: number) => void
+): Promise<Coach[]> {
+  const all: Coach[] = [];
+  for (let page = 0; ; page++) {
+    let query = db().from('coaches').select('*');
+    if (f.status && f.status !== 'all') query = query.eq('status', f.status);
+    if (f.sport) query = query.eq('sport', f.sport);
+    if (f.division) query = query.eq('division', f.division);
+    const { data, error } = await query
+      .order('last_name')
+      .order('first_name')
+      .range(page * EXPORT_PAGE, page * EXPORT_PAGE + EXPORT_PAGE - 1);
+    if (error) throw error;
+    const rows = (data ?? []) as Coach[];
+    all.push(...rows);
+    onProgress?.(all.length);
+    if (rows.length < EXPORT_PAGE) return all;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Data health — is this list clean enough to push to the app?
+// ---------------------------------------------------------------------------
+
+export interface DataHealth {
+  activeTotal: number;
+  missingEmail: number;
+  missingSchool: number;
+  missingSport: number;
+  stale: number;
+  duplicateEmails: { email: string; count: number }[];
+  staleCutoffIso: string;
+}
+
+const STALE_DAYS = 60;
+
+export async function getDataHealth(): Promise<DataHealth> {
+  const client = db();
+  const cutoff = new Date(Date.now() - STALE_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const active = () => client.from('coaches').select('id', { count: 'exact', head: true }).eq('status', 'active');
+
+  const [total, noEmail, noSchool, noSport, stale, emails] = await Promise.all([
+    active(),
+    active().is('email', null),
+    active().is('school', null),
+    active().is('sport', null),
+    active().lt('last_seen_at', cutoff),
+    client.from('coaches').select('email').eq('status', 'active').not('email', 'is', null).limit(10000),
+  ]);
+  const firstError = total.error ?? noEmail.error ?? noSchool.error ?? noSport.error ?? stale.error ?? emails.error;
+  if (firstError) throw firstError;
+
+  const counts = new Map<string, number>();
+  for (const r of (emails.data ?? []) as { email: string }[]) {
+    const e = r.email.toLowerCase();
+    counts.set(e, (counts.get(e) ?? 0) + 1);
+  }
+  const duplicateEmails = [...counts.entries()]
+    .filter(([, n]) => n > 1)
+    .map(([email, count]) => ({ email, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 50);
+
+  return {
+    activeTotal: total.count ?? 0,
+    missingEmail: noEmail.count ?? 0,
+    missingSchool: noSchool.count ?? 0,
+    missingSport: noSport.count ?? 0,
+    stale: stale.count ?? 0,
+    duplicateEmails,
+    staleCutoffIso: cutoff,
+  };
 }
 
 // ---------------------------------------------------------------------------

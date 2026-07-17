@@ -70,6 +70,8 @@ export interface SyncBatch {
   id: string;
   file_name: string;
   is_baseline: boolean;
+  /** Sport this file covers; null/undefined = all sports (pre-0002 batches too). */
+  sport?: string | null;
   row_count: number;
   status: 'uploading' | 'processing' | 'needs_review' | 'completed' | 'failed';
   stats: SyncStats;
