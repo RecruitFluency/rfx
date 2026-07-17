@@ -39,7 +39,7 @@ export default function AppShell() {
         <div className="px-6 py-5 border-b border-[#2a2a2a] flex items-center gap-3">
           <img src="/rfx-logo.svg" alt="RFX" className="h-8 w-auto" />
           <div>
-            <div className="font-bold tracking-tight leading-tight">RecruitFluency</div>
+            <div className="font-bold tracking-tight leading-tight">RFX</div>
             <div className="text-[11px] text-gray-500 uppercase tracking-widest">Coach Database</div>
           </div>
         </div>
