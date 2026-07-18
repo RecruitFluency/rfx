@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, UploadCloud, ShieldAlert, Users, GraduationCap,
-  Radar, BarChart3, HeartPulse, Download, Settings, Sparkles, Menu, X, Bell, RefreshCcw, BookOpen,
+  Radar, BarChart3, HeartPulse, MailPlus, Download, Settings, Sparkles, Menu, X, Bell, RefreshCcw, BookOpen,
 } from 'lucide-react';
 import { isConfigured } from '../lib/supabase';
-import { Alert, listAlerts, markAlertsRead, pendingReviewCount, runWatchtower, unreadAlertCount } from '../lib/api';
+import {
+  Alert, listAlerts, markAlertsRead, pendingProposalCount, pendingReviewCount, runWatchtower, unreadAlertCount,
+} from '../lib/api';
 import { formatDateTime } from './components/ui';
 import Assistant from './components/Assistant';
 
@@ -18,6 +20,7 @@ const NAV = [
   { to: '/app/tracker', label: 'Coach Tracker', icon: Radar },
   { to: '/app/insights', label: 'Insights', icon: BarChart3 },
   { to: '/app/health', label: 'Data Health', icon: HeartPulse },
+  { to: '/app/proposals', label: 'Found Contacts', icon: MailPlus },
   { to: '/app/export', label: 'Export / App Feed', icon: Download },
   { to: '/app/guide', label: 'Guide', icon: BookOpen },
   { to: '/app/setup', label: 'Settings', icon: Settings },
@@ -25,6 +28,7 @@ const NAV = [
 
 export default function AppShell() {
   const [pending, setPending] = useState(0);
+  const [proposals, setProposals] = useState(0);
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -37,6 +41,7 @@ export default function AppShell() {
     setMobileNav(false);
     if (!isConfigured) return;
     pendingReviewCount().then(setPending).catch(() => setPending(0));
+    pendingProposalCount().then(setProposals).catch(() => setProposals(0));
     unreadAlertCount().then(setUnread).catch(() => setUnread(0));
   }, [location]);
 
@@ -93,6 +98,9 @@ export default function AppShell() {
               <span className="flex-1">{label}</span>
               {label === 'Review Queue' && pending > 0 && (
                 <span className="bg-[#FF0000] text-white text-xs font-bold rounded-full px-2 py-0.5">{pending}</span>
+              )}
+              {label === 'Found Contacts' && proposals > 0 && (
+                <span className="bg-[#FF0000] text-white text-xs font-bold rounded-full px-2 py-0.5">{proposals}</span>
               )}
             </NavLink>
           ))}

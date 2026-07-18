@@ -59,6 +59,11 @@ const HEADER_MAP: Record<string, Field> = {
 
   state: 'state',
   st: 'state',
+
+  landingpage: 'landing_page',
+  landingpages: 'landing_page',
+  teampage: 'landing_page',
+  rosterurl: 'landing_page',
 };
 
 export interface ParsedFile {
@@ -154,6 +159,7 @@ export async function parseVendorFile(file: File): Promise<ParsedFile> {
       const row: StagedRow = {
         master_id: null, first_name: null, last_name: null, email: null, phone: null,
         school: null, sport: null, title: null, division: null, conference: null, state: null,
+        landing_page: null,
       };
       columnFields.forEach((field, col) => {
         if (field && row[field] === null) {

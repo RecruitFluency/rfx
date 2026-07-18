@@ -480,6 +480,49 @@ export async function runWatchtower(): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Email Hunter proposals (migration 0007) — found contact info awaiting review
+// ---------------------------------------------------------------------------
+
+export interface ProposedChange {
+  id: string;
+  coach_id: string;
+  field: 'email' | 'phone';
+  current_value: string | null;
+  proposed_value: string;
+  source_url: string | null;
+  source: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  coaches: { first_name: string; last_name: string; school: string | null; sport: string | null } | null;
+}
+
+/** Returns null when migration 0007 hasn't been run yet. */
+export async function listProposedChanges(status: ProposedChange['status'] = 'pending'): Promise<ProposedChange[] | null> {
+  const { data, error } = await db()
+    .from('proposed_changes')
+    .select('*, coaches(first_name, last_name, school, sport)')
+    .eq('status', status)
+    .order('created_at', { ascending: false })
+    .limit(500);
+  if (error) return null;
+  return (data ?? []) as ProposedChange[];
+}
+
+export async function pendingProposalCount(): Promise<number> {
+  const { count, error } = await db()
+    .from('proposed_changes')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'pending');
+  if (error) return 0;
+  return count ?? 0;
+}
+
+export async function resolveProposedChange(id: string, approve: boolean): Promise<void> {
+  const { error } = await db().rpc('resolve_proposed_change', { p_id: id, p_approve: approve });
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
 // National Radar (migration 0004) — external coaching-news monitoring
 // ---------------------------------------------------------------------------
 

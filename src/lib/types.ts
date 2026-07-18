@@ -11,6 +11,7 @@ export interface Coach {
   division: string | null;
   conference: string | null;
   state: string | null;
+  landing_page: string | null;
   status: 'active' | 'inactive';
   last_seen_at: string;
   created_at: string;
@@ -116,4 +117,5 @@ export interface StagedRow {
   division: string | null;
   conference: string | null;
   state: string | null;
+  landing_page: string | null;
 }
