@@ -149,9 +149,17 @@ function staffCandidates(html, landingUrl) {
   try { const u = new URL(landingUrl); origin = u.origin; path = u.pathname.replace(/\/$/, ''); } catch { /* ignore */ }
 
   // Direct guesses off the landing path (e.g. /sports/womens-soccer/coaches).
+  // These Sidearm-standard sub-pages are where staff emails almost always live.
   if (path) {
     add(origin + path + '/coaches');
     add(origin + path + '/staff');
+    add(origin + path + '/roster'); // some sites put coaches at the top of the roster
+  }
+  // Site-wide staff directory is the richest source when it exists.
+  if (origin) {
+    add(origin + '/staff-directory');
+    add(origin + '/staff.aspx');
+    add(origin + '/coaches');
   }
   // The sport slug (e.g. "womens-soccer") for same-sport link matching.
   const sportSlug = (path.split('/').pop() || '').toLowerCase();
@@ -165,12 +173,10 @@ function staffCandidates(html, landingUrl) {
   for (const href of discovered) {
     if (sportSlug && href.toLowerCase().includes(sportSlug)) add(href);
   }
-  // Site-wide staff directory.
-  add(origin + '/staff-directory');
-  // Any remaining coach/staff/directory links.
+  // Any remaining coach/staff/directory links discovered on the page.
   for (const href of discovered) add(href);
 
-  return out.slice(0, 6);
+  return out.slice(0, 8);
 }
 
 async function huntOne(coach) {
