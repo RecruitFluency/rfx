@@ -59,24 +59,79 @@ const JUNK = /(no-?reply|webmaster|postmaster|info@|admin@|example\.|sentry|goda
 const GENERIC_LOCAL = /^(rec-?sports|athletics|sports|compliance|tickets|marketing|media|sid|communications|ftp|support|help|contact|general|office|mailbox|feedback|hello|team|sports-?info|athleticcommunications)$/i;
 const GENERIC_HINT = /(static|ftp|noreply|donotreply|mailer|newsletter)/i;
 
+const PHONE_RE = /(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
+
 // Decode simple HTML entity / obfuscation so mailto and "name [at] school" show up.
 function normalize(html) {
   return html
     .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(Number(d)))
     .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&amp;/g, '&')
     .replace(/\s*\[\s*at\s*\]\s*/gi, '@')
     .replace(/\s*\(\s*at\s*\)\s*/gi, '@')
     .replace(/\s*\[\s*dot\s*\]\s*/gi, '.')
     .replace(/\s*\(\s*dot\s*\)\s*/gi, '.');
 }
 
-function findEmails(html) {
-  const norm = normalize(html);
-  const found = new Set();
-  // mailto: links first (most reliable)
-  for (const m of norm.matchAll(/mailto:([^"'>?\s]+)/gi)) found.add(m[1].toLowerCase());
-  for (const m of norm.matchAll(EMAIL_RE)) found.add(m[0].toLowerCase());
-  return [...found].filter((e) => !JUNK.test(e) && e.length < 60);
+// Reduce HTML to readable text (mailto: targets preserved inline) so a coach's
+// name and their adjacent email/phone end up near each other in the string.
+function toText(html) {
+  return normalize(html)
+    .replace(/<a[^>]+href\s*=\s*["']mailto:([^"'?]+)[^>]*>/gi, ' $1 ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ');
+}
+
+const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+function cleanEmail(e) {
+  const v = e.toLowerCase().replace(/[.,;:)]+$/, '');
+  if (JUNK.test(v) || v.length > 60) return null;
+  const local = v.split('@')[0];
+  if (GENERIC_LOCAL.test(local) || GENERIC_HINT.test(local)) return null;
+  return v;
+}
+
+// The heart of it: find the coach's NAME in the page text, then take the email
+// (and phone) sitting right next to it — how every staff directory is laid out.
+// This is what stops us from grabbing a different "Lauren" from elsewhere on
+// the page.
+function extractForCoach(text, coach) {
+  const first = (coach.first_name || '').trim();
+  const last = (coach.last_name || '').trim();
+  if (first.length < 2 || last.length < 2) return null;
+
+  const patterns = [
+    new RegExp(esc(first) + '\\s+' + esc(last), 'gi'), // First Last
+    new RegExp(esc(last) + ',\\s*' + esc(first), 'gi'), // Last, First
+  ];
+  const positions = [];
+  for (const re of patterns) for (const m of text.matchAll(re)) positions.push(m.index);
+  if (!positions.length) return null;
+
+  const firstAlpha = first.toLowerCase().replace(/[^a-z]/g, '');
+  const lastAlpha = last.toLowerCase().replace(/[^a-z]/g, '');
+
+  for (const pos of positions) {
+    // Staff cards run: Name → Title → email/phone → (next card). Look forward
+    // from the name (tiny lookback) so we never grab the PREVIOUS coach's data.
+    const scope = text.slice(Math.max(0, pos - 12), pos + 340);
+    const emails = (scope.match(EMAIL_RE) || []).map(cleanEmail).filter(Boolean);
+    // Only accept an email whose local-part actually matches this coach's name
+    // (first.last, jsmith, smithj, …). Positional-only guesses on a crowded
+    // directory produce wrong people and fragments, so we skip them entirely —
+    // opaque logins (lm2aj@) are left for a human rather than guessed at.
+    const email = emails.find((e) => {
+      const local = e.split('@')[0].toLowerCase().replace(/[^a-z]/g, '');
+      return (lastAlpha.length > 2 && local.includes(lastAlpha)) ||
+             (firstAlpha.length > 2 && local.includes(firstAlpha));
+    }) || null;
+    if (!email) continue;
+    // A phone in the same card, next to a confirmed-name email, is safe to take.
+    const phone = (scope.match(PHONE_RE) || [])[0]?.trim() || null;
+    return { email, phone, confidence: 'strong' };
+  }
+  return null;
 }
 
 // Build a prioritized list of sub-pages likely to hold this team's coach
@@ -118,66 +173,26 @@ function staffCandidates(html, landingUrl) {
   return out.slice(0, 6);
 }
 
-// Pick the email most likely to belong to THIS coach. We only propose emails
-// that genuinely match the coach's name — a lone generic department inbox is
-// never proposed, because it's not the coach's address.
-function pickEmail(emails, coach) {
-  const last = (coach.last_name || '').toLowerCase().replace(/[^a-z]/g, '');
-  const first = (coach.first_name || '').toLowerCase().replace(/[^a-z]/g, '');
-  if (!emails.length || last.length < 3) return null;
-
-  const candidates = emails.filter((e) => {
-    const local = e.split('@')[0];
-    const localAlpha = local.toLowerCase().replace(/[^a-z]/g, '');
-    if (GENERIC_LOCAL.test(local) || GENERIC_HINT.test(local)) return false;
-    return localAlpha.length >= 3;
-  });
-
-  // Strong: surname appears in the local-part, or a first-initial+surname
-  // (or surname+first-initial) construction — the standard .edu formats.
-  const fi = first[0] || '';
-  const strong = candidates.find((e) => {
-    const local = e.split('@')[0].toLowerCase().replace(/[^a-z]/g, '');
-    return local.includes(last) || (fi && (local === fi + last || local === last + fi || local.startsWith(fi + last)));
-  });
-  if (strong) return { email: strong, confidence: 'strong' };
-
-  // Medium: first name appears in the local-part (e.g. jamie.davies but we
-  // only caught the first token). Still name-based, flagged for a quick check.
-  if (first.length >= 3) {
-    const medium = candidates.find((e) => e.split('@')[0].toLowerCase().replace(/[^a-z]/g, '').includes(first));
-    if (medium) return { email: medium, confidence: 'weak' };
-  }
-
-  // No name-based match → propose nothing. (A lone generic email is not a lead.)
-  return null;
-}
-
 async function huntOne(coach) {
   const firstHtml = await fetchPage(coach.landing_page);
   const candidates = firstHtml ? staffCandidates(firstHtml, coach.landing_page) : [];
 
-  // Scan the landing page first, then each candidate, stopping as soon as we
-  // get a name match (so we don't hammer six pages when the first one hits).
-  const htmls = [{ url: coach.landing_page, html: firstHtml }];
+  // Scan the landing page, then each candidate page, stopping at the first that
+  // has this coach's name with an adjacent email/phone.
+  const pages = [{ url: coach.landing_page, html: firstHtml }];
   for (const url of candidates) {
     await sleep(DELAY);
-    htmls.push({ url, html: await fetchPage(url) });
+    pages.push({ url, html: await fetchPage(url) });
   }
 
-  const emails = new Set();
-  let sourceUrl = coach.landing_page;
-  for (const { url, html } of htmls) {
+  for (const { url, html } of pages) {
     if (!html) continue;
-    const before = emails.size;
-    for (const e of findEmails(html)) emails.add(e);
-    // Remember the page that first yielded a name-matching email.
-    if (emails.size > before && pickEmail([...emails], coach)) { sourceUrl = url; break; }
+    const hit = extractForCoach(toText(html), coach);
+    if (hit && (hit.email || hit.phone)) {
+      return { email: hit.email, phone: hit.phone, confidence: hit.confidence, source_url: url };
+    }
   }
-
-  const pick = pickEmail([...emails], coach);
-  if (!pick) return null;
-  return { email: pick.email, confidence: pick.confidence, source_url: sourceUrl };
+  return null;
 }
 
 async function main() {
@@ -202,25 +217,32 @@ async function main() {
     try {
       const hit = await huntOne(coach);
       if (hit) {
-        await db('proposed_changes', 'POST', {
-          coach_id: coach.id,
-          field: 'email',
-          current_value: null,
-          proposed_value: hit.email,
-          source_url: hit.source_url,
-          source: `email_hunter:${hit.confidence}`,
-        }, 'resolution=ignore-duplicates');
-        found++;
-        console.log(`  + ${coach.first_name} ${coach.last_name} (${coach.school}) -> ${hit.email} [${hit.confidence}]`);
+        const proposals = [];
+        if (hit.email) proposals.push({ field: 'email', value: hit.email });
+        if (hit.phone) proposals.push({ field: 'phone', value: hit.phone });
+        for (const p of proposals) {
+          await db('proposed_changes', 'POST', {
+            coach_id: coach.id,
+            field: p.field,
+            current_value: null,
+            proposed_value: p.value,
+            source_url: hit.source_url,
+            source: `email_hunter:${hit.confidence}`,
+          }, 'resolution=ignore-duplicates');
+        }
+        if (proposals.length) {
+          found++;
+          console.log(`  + ${coach.first_name} ${coach.last_name} (${coach.school}) -> ${proposals.map((p) => `${p.field}:${p.value}`).join(' ')} [${hit.confidence}]`);
+        }
       }
     } catch (e) {
       console.log(`  ! ${coach.first_name} ${coach.last_name}: ${e.message}`);
     }
-    if (checked % 25 === 0) console.log(`  …${checked}/${targets.length} checked, ${found} proposals`);
+    if (checked % 25 === 0) console.log(`  …${checked}/${targets.length} checked, ${found} coaches with a proposal`);
     await sleep(DELAY);
   }
 
-  console.log(`Done. Checked ${checked}, proposed ${found} emails.`);
+  console.log(`Done. Checked ${checked}, found contact info for ${found} coaches.`);
 }
 
 main().catch((e) => {
