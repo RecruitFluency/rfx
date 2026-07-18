@@ -33,6 +33,9 @@ that feeds the RFX app: what Jen approves here is what the app sees.
    from Supabase with the same URL + anon key — filter to `status = 'active'`.)
 6. **Coach Tracker** (`/app/tracker`) — the movement feed: every hire, school move, departure, and
    title change across the country, filterable by sport and type, tied to each coach's permanent ID.
+   Its **News Radar** tab watches external coaching-news RSS feeds (swept every 6 hours by pg_cron
+   inside Postgres, no API keys) and matches headlines to coaches in the database — catching moves
+   before they reach a vendor file.
 7. **Insights** (`/app/insights`) — patterns across the coaching landscape: monthly movement trends,
    breakdowns by sport/division/state, and the programs with the most churn in the last 90 days.
 8. **The Watchtower** (bell icon) — an around-the-clock agent that runs *inside* Postgres via
@@ -56,6 +59,8 @@ engine runs as SQL functions in the database — no separate Python/Render serve
      per-sport sync scoping (the app detects whether this has been run and reminds you if not).
    - [`supabase/migrations/0003_watchtower.sql`](supabase/migrations/0003_watchtower.sql) —
      the Watchtower alert agent and its daily pg_cron schedule.
+   - [`supabase/migrations/0004_radar.sql`](supabase/migrations/0004_radar.sql) —
+     the National Radar news sweep (external coaching-news feeds, every 6 hours).
 3. **Connect the app** — the production Supabase URL and anon key are baked in as defaults, so a
    fresh deploy is already connected. To point at a different project, set
    `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`:

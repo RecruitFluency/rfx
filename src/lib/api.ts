@@ -418,7 +418,7 @@ export async function getInsights(): Promise<Insights> {
 
 export interface Alert {
   id: string;
-  kind: 'movement_digest' | 'review_reminder' | 'stale_data' | 'mass_departure';
+  kind: 'movement_digest' | 'review_reminder' | 'stale_data' | 'mass_departure' | 'radar_news';
   title: string;
   body: string;
   payload: Record<string, unknown>;
@@ -454,6 +454,45 @@ export async function markAlertsRead(): Promise<void> {
 export async function runWatchtower(): Promise<void> {
   const { error } = await db().rpc('run_watchtower');
   if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// National Radar (migration 0004) — external coaching-news monitoring
+// ---------------------------------------------------------------------------
+
+export interface RadarItem {
+  id: string;
+  source_id: string | null;
+  title: string;
+  link: string;
+  published_at: string | null;
+  matched_coach_id: string | null;
+  status: 'new' | 'reviewed' | 'dismissed';
+  created_at: string;
+}
+
+/** Returns null when migration 0004 hasn't been run yet (no radar tables). */
+export async function listRadarItems(status: RadarItem['status'], limit = 100): Promise<RadarItem[] | null> {
+  const { data, error } = await db()
+    .from('radar_items')
+    .select('*')
+    .eq('status', status)
+    .order('published_at', { ascending: false, nullsFirst: false })
+    .limit(limit);
+  if (error) return null;
+  return (data ?? []) as RadarItem[];
+}
+
+export async function setRadarItemStatus(id: string, status: RadarItem['status']): Promise<void> {
+  const { error } = await db().from('radar_items').update({ status }).eq('id', id);
+  if (error) throw error;
+}
+
+/** Sweep all news sources now (it also runs every 6 hours via pg_cron). */
+export async function runRadar(): Promise<{ new_items?: number }> {
+  const { data, error } = await db().rpc('run_radar');
+  if (error) throw error;
+  return (data ?? {}) as { new_items?: number };
 }
 
 // ---------------------------------------------------------------------------
