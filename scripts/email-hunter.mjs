@@ -79,20 +79,43 @@ function findEmails(html) {
   return [...found].filter((e) => !JUNK.test(e) && e.length < 60);
 }
 
-// Find likely staff/roster sub-pages to also scan.
-function staffLinks(html, baseUrl) {
-  const links = new Set();
+// Build a prioritized list of sub-pages likely to hold this team's coach
+// emails. Modern athletics sites (Sidearm etc.) put emails on a per-sport
+// "coaches" page and/or a site-wide staff directory — NOT the landing page
+// itself. We try those directly, then same-sport discovered links, then
+// generic ones. Same-sport pages come first so another sport's roster can't
+// crowd them out.
+function staffCandidates(html, landingUrl) {
+  const out = [];
+  const seen = new Set();
+  const add = (u) => { try { const h = new URL(u, landingUrl).href; if (!seen.has(h)) { seen.add(h); out.push(h); } } catch { /* skip */ } };
+
+  let origin = '', path = '';
+  try { const u = new URL(landingUrl); origin = u.origin; path = u.pathname.replace(/\/$/, ''); } catch { /* ignore */ }
+
+  // Direct guesses off the landing path (e.g. /sports/womens-soccer/coaches).
+  if (path) {
+    add(origin + path + '/coaches');
+    add(origin + path + '/staff');
+  }
+  // The sport slug (e.g. "womens-soccer") for same-sport link matching.
+  const sportSlug = (path.split('/').pop() || '').toLowerCase();
+
+  const discovered = [];
   for (const m of html.matchAll(/href\s*=\s*["']([^"']+)["']/gi)) {
     const href = m[1];
-    if (/staff|coach|directory|roster|personnel|contact/i.test(href)) {
-      try {
-        links.add(new URL(href, baseUrl).href);
-      } catch {
-        /* skip bad urls */
-      }
-    }
+    if (/staff|coach|directory|personnel|contact/i.test(href)) discovered.push(href);
   }
-  return [...links].slice(0, 4);
+  // Same-sport coach/staff links first.
+  for (const href of discovered) {
+    if (sportSlug && href.toLowerCase().includes(sportSlug)) add(href);
+  }
+  // Site-wide staff directory.
+  add(origin + '/staff-directory');
+  // Any remaining coach/staff/directory links.
+  for (const href of discovered) add(href);
+
+  return out.slice(0, 6);
 }
 
 // Pick the email most likely to belong to THIS coach. We only propose emails
@@ -131,26 +154,30 @@ function pickEmail(emails, coach) {
 }
 
 async function huntOne(coach) {
-  const pages = [coach.landing_page];
   const firstHtml = await fetchPage(coach.landing_page);
-  if (firstHtml) {
-    for (const l of staffLinks(firstHtml, coach.landing_page)) pages.push(l);
+  const candidates = firstHtml ? staffCandidates(firstHtml, coach.landing_page) : [];
+
+  // Scan the landing page first, then each candidate, stopping as soon as we
+  // get a name match (so we don't hammer six pages when the first one hits).
+  const htmls = [{ url: coach.landing_page, html: firstHtml }];
+  for (const url of candidates) {
+    await sleep(DELAY);
+    htmls.push({ url, html: await fetchPage(url) });
   }
 
   const emails = new Set();
-  const htmls = [firstHtml];
-  for (const p of pages.slice(1)) {
-    await sleep(DELAY);
-    htmls.push(await fetchPage(p));
-  }
-  for (const html of htmls) {
+  let sourceUrl = coach.landing_page;
+  for (const { url, html } of htmls) {
     if (!html) continue;
+    const before = emails.size;
     for (const e of findEmails(html)) emails.add(e);
+    // Remember the page that first yielded a name-matching email.
+    if (emails.size > before && pickEmail([...emails], coach)) { sourceUrl = url; break; }
   }
 
   const pick = pickEmail([...emails], coach);
   if (!pick) return null;
-  return { email: pick.email, confidence: pick.confidence, source_url: coach.landing_page };
+  return { email: pick.email, confidence: pick.confidence, source_url: sourceUrl };
 }
 
 async function main() {
