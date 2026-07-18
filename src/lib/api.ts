@@ -488,11 +488,22 @@ export async function setRadarItemStatus(id: string, status: RadarItem['status']
   if (error) throw error;
 }
 
-/** Sweep all news sources now (it also runs every 6 hours via pg_cron). */
-export async function runRadar(): Promise<{ new_items?: number }> {
-  const { data, error } = await db().rpc('run_radar');
+/**
+ * Sweep all news sources now, one call per source so each fits inside the
+ * per-request statement timeout. (pg_cron sweeps everything every 6 hours.)
+ */
+export async function runRadarSweep(onProgress?: (done: number, total: number) => void): Promise<number> {
+  const { data: sources, error } = await db().from('radar_sources').select('id').eq('enabled', true);
   if (error) throw error;
-  return (data ?? {}) as { new_items?: number };
+  let newItems = 0;
+  const list = sources ?? [];
+  for (let i = 0; i < list.length; i++) {
+    const { data, error: sweepError } = await db().rpc('run_radar', { p_source_id: list[i].id });
+    if (sweepError) throw sweepError;
+    newItems += ((data ?? {}) as { new_items?: number }).new_items ?? 0;
+    onProgress?.(i + 1, list.length);
+  }
+  return newItems;
 }
 
 // ---------------------------------------------------------------------------

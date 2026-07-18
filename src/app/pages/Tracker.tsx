@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { isConfigured } from '../../lib/supabase';
 import {
-  listMovements, listRadarItems, listSports, Movement, RadarItem, runRadar, setRadarItemStatus,
+  listMovements, listRadarItems, listSports, Movement, RadarItem, runRadarSweep, setRadarItemStatus,
 } from '../../lib/api';
 import { CoachHistoryEntry } from '../../lib/types';
 import { Card, PageHeader, Spinner, ErrorBox, EmptyState, formatDateTime } from '../components/ui';
@@ -74,12 +74,14 @@ export default function Tracker() {
 
   async function sweepNow() {
     setRadarBusy(true);
+    setError('');
     try {
-      await runRadar();
+      await runRadarSweep();
       const r = await listRadarItems('new');
-      setRadar(r ?? 'unavailable');
-    } catch {
-      setRadar('unavailable');
+      if (r !== null) setRadar(r);
+    } catch (e) {
+      // A sweep failure is an error, not a missing installation.
+      setError(`Radar sweep failed: ${(e as Error).message}`);
     } finally {
       setRadarBusy(false);
     }
