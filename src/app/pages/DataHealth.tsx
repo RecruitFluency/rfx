@@ -28,24 +28,28 @@ export default function DataHealth() {
       label: 'Active coaches with no email',
       value: health.missingEmail,
       hint: 'The app can\'t reach these coaches — the most important gap to close.',
+      to: '/app/coaches?missing=email&status=active',
     },
     {
       icon: School,
       label: 'Active coaches with no school',
       value: health.missingSchool,
       hint: 'Won\'t appear on any program roster.',
+      to: '/app/coaches?missing=school&status=active',
     },
     {
       icon: Trophy,
       label: 'Active coaches with no sport',
       value: health.missingSport,
       hint: 'Invisible to sport filters and unprotected by per-sport syncs.',
+      to: '/app/coaches?missing=sport&status=active',
     },
     {
       icon: Clock,
       label: `Not seen in a file for 60+ days`,
       value: health.stale,
       hint: `Still marked active but absent from every vendor file since ${formatDate(health.staleCutoffIso)}. They may have quietly left.`,
+      to: '/app/coaches?stale=60&status=active',
     },
   ];
 
@@ -57,16 +61,19 @@ export default function DataHealth() {
       />
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {tiles.map(({ icon: Icon, label, value, hint }) => (
-          <Card key={label} className="p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <Icon className="w-4 h-4 text-gray-500" />
-              <HeartPulse className={`w-4 h-4 ml-auto ${tone(value)}`} />
-            </div>
-            <div className={`text-2xl font-bold ${tone(value)}`}>{value.toLocaleString()}</div>
-            <div className="text-sm text-gray-300 mt-1">{label}</div>
-            <div className="text-xs text-gray-500 mt-2 leading-relaxed">{hint}</div>
-          </Card>
+        {tiles.map(({ icon: Icon, label, value, hint, to }) => (
+          <Link key={label} to={to}>
+            <Card className="p-5 h-full hover:border-[#FF0000]/40 transition-colors">
+              <div className="flex items-center gap-2 mb-3">
+                <Icon className="w-4 h-4 text-gray-500" />
+                <HeartPulse className={`w-4 h-4 ml-auto ${tone(value)}`} />
+              </div>
+              <div className={`text-2xl font-bold ${tone(value)}`}>{value.toLocaleString()}</div>
+              <div className="text-sm text-gray-300 mt-1">{label}</div>
+              <div className="text-xs text-gray-500 mt-2 leading-relaxed">{hint}</div>
+              <div className="text-xs text-[#FF6666] mt-3">See who they are →</div>
+            </Card>
+          </Link>
         ))}
       </div>
 

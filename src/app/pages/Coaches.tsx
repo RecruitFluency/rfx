@@ -15,6 +15,8 @@ export default function Coaches() {
   const status = (params.get('status') ?? 'active') as 'active' | 'inactive' | 'all';
   const sport = params.get('sport') ?? '';
   const division = params.get('division') ?? '';
+  const missing = (params.get('missing') ?? '') as '' | 'email' | 'phone' | 'school' | 'sport';
+  const staleDays = Number(params.get('stale') ?? '0');
   const page = Number(params.get('page') ?? '0');
 
   const [input, setInput] = useState(search);
@@ -33,10 +35,17 @@ export default function Coaches() {
   useEffect(() => {
     if (!isConfigured) return;
     setCoaches(null);
-    listCoaches({ search, status, sport: sport || undefined, division: division || undefined, page, pageSize: PAGE_SIZE })
+    listCoaches({
+      search, status,
+      sport: sport || undefined,
+      division: division || undefined,
+      missing: missing || undefined,
+      staleDays: staleDays || undefined,
+      page, pageSize: PAGE_SIZE,
+    })
       .then(({ coaches, total }) => { setCoaches(coaches); setTotal(total); })
       .catch((e) => setError((e as Error).message));
-  }, [search, status, sport, division, page]);
+  }, [search, status, sport, division, missing, staleDays, page]);
 
   if (!isConfigured) return <NotConnected feature="the Coach Directory" />;
 
@@ -101,6 +110,21 @@ export default function Coaches() {
         >
           <option value="">All divisions</option>
           {divisions.map((d) => <option key={d} value={d}>{d}</option>)}
+        </select>
+        <select
+          value={staleDays ? 'stale' : missing}
+          onChange={(e) => {
+            const v = e.target.value;
+            updateParams(v === 'stale' ? { missing: '', stale: '60' } : { missing: v, stale: '' });
+          }}
+          className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none max-w-[220px]"
+        >
+          <option value="">No data-gap filter</option>
+          <option value="email">Missing email</option>
+          <option value="phone">Missing phone</option>
+          <option value="school">Missing school</option>
+          <option value="sport">Missing sport</option>
+          <option value="stale">Not seen in 60+ days</option>
         </select>
       </div>
 

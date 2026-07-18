@@ -31,8 +31,17 @@ that feeds the RFX app: what Jen approves here is what the app sees.
 5. **Export / App Feed** (`/app/export`) — download the current verified contact list as CSV or
    JSON, filtered by sport/division/status. (The RFX app can also read the `coaches` table live
    from Supabase with the same URL + anon key — filter to `status = 'active'`.)
-6. **Command Center** (`/app`) — Jen's home screen: what needs attention, last sync results, recent
-   changes, and a slide-out assistant for quick stats and navigation.
+6. **Coach Tracker** (`/app/tracker`) — the movement feed: every hire, school move, departure, and
+   title change across the country, filterable by sport and type, tied to each coach's permanent ID.
+7. **Insights** (`/app/insights`) — patterns across the coaching landscape: monthly movement trends,
+   breakdowns by sport/division/state, and the programs with the most churn in the last 90 days.
+8. **The Watchtower** (bell icon) — an around-the-clock agent that runs *inside* Postgres via
+   pg_cron: it scans daily for coaching movement, review items going stale, and data drift, and
+   posts alerts in the app. No external server needed.
+9. **Command Center** (`/app`) — Jen's home screen opens on a guided monthly checklist (upload →
+   clear the queue → check health → push to the app), each step computed live from the data, plus
+   a slide-out assistant that answers questions about the actual data ("who is missing an email?",
+   "who moved recently?", "how many soccer coaches?").
 
 ## Going live (one-time, ~10 minutes)
 
@@ -45,6 +54,8 @@ engine runs as SQL functions in the database — no separate Python/Render serve
      all tables plus the `process_sync_batch` / `resolve_review_item` functions.
    - [`supabase/migrations/0002_multisport.sql`](supabase/migrations/0002_multisport.sql) —
      per-sport sync scoping (the app detects whether this has been run and reminds you if not).
+   - [`supabase/migrations/0003_watchtower.sql`](supabase/migrations/0003_watchtower.sql) —
+     the Watchtower alert agent and its daily pg_cron schedule.
 3. **Connect the app** — the production Supabase URL and anon key are baked in as defaults, so a
    fresh deploy is already connected. To point at a different project, set
    `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`:

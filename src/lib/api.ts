@@ -120,6 +120,10 @@ export interface CoachQuery {
   status?: 'active' | 'inactive' | 'all';
   sport?: string;
   division?: string;
+  /** Only coaches where this contact field is empty (data-gap drill-down). */
+  missing?: 'email' | 'phone' | 'school' | 'sport';
+  /** Only coaches not seen in a vendor file for this many days. */
+  staleDays?: number;
   page?: number;
   pageSize?: number;
 }
@@ -132,6 +136,10 @@ export async function listCoaches(q: CoachQuery): Promise<{ coaches: Coach[]; to
   if (q.status && q.status !== 'all') query = query.eq('status', q.status);
   if (q.sport) query = query.eq('sport', q.sport);
   if (q.division) query = query.eq('division', q.division);
+  if (q.missing) query = query.is(q.missing, null);
+  if (q.staleDays) {
+    query = query.lt('last_seen_at', new Date(Date.now() - q.staleDays * 24 * 60 * 60 * 1000).toISOString());
+  }
   if (q.search) {
     const s = q.search.replace(/[%,()]/g, ' ').trim();
     if (s) {
@@ -274,6 +282,178 @@ export async function setCoachStatus(coach: Coach, active: boolean): Promise<voi
       ? { coach_id: coach.id, change_type: 'reinstated', school: coach.school, title: coach.title, sport: coach.sport }
       : { coach_id: coach.id, change_type: 'departed', previous_school: coach.school, previous_title: coach.title }
   );
+}
+
+// ---------------------------------------------------------------------------
+// Coach Tracker — the movement feed
+// ---------------------------------------------------------------------------
+
+export type Movement = CoachHistoryEntry & {
+  coaches: { first_name: string; last_name: string; school: string | null; sport: string | null; status: string } | null;
+};
+
+export interface MovementQuery {
+  type?: CoachHistoryEntry['change_type'];
+  sport?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export async function listMovements(q: MovementQuery): Promise<{ movements: Movement[]; total: number }> {
+  const pageSize = q.pageSize ?? 50;
+  const page = q.page ?? 0;
+  // !inner join lets the sport filter apply to the parent history rows.
+  const embed = q.sport
+    ? 'coaches!inner(first_name, last_name, school, sport, status)'
+    : 'coaches(first_name, last_name, school, sport, status)';
+  let query = db().from('coach_history').select(`*, ${embed}`, { count: 'exact' });
+  if (q.type) query = query.eq('change_type', q.type);
+  if (q.sport) query = query.eq('coaches.sport', q.sport);
+  const { data, count, error } = await query
+    .order('changed_at', { ascending: false })
+    .range(page * pageSize, page * pageSize + pageSize - 1);
+  if (error) throw error;
+  return { movements: (data ?? []) as Movement[], total: count ?? 0 };
+}
+
+// ---------------------------------------------------------------------------
+// Insights — patterns across the coaching landscape
+// ---------------------------------------------------------------------------
+
+export interface Insights {
+  activeTotal: number;
+  sportCount: number;
+  programCount: number;
+  /** Active coach counts, largest first. */
+  bySport: { name: string; count: number }[];
+  byDivision: { name: string; count: number }[];
+  byState: { name: string; count: number }[];
+  /** Monthly movement counts, oldest month first (last 6 months). */
+  byMonth: { month: string; hired: number; moved: number; departed: number }[];
+  /** Programs with the most churn (hires+moves+departures) in the last 90 days. */
+  hotPrograms: { school: string; changes: number }[];
+  /** True when the aggregate queries hit their row caps (numbers are lower bounds). */
+  truncated: boolean;
+}
+
+function tally(rows: (string | null)[]): { name: string; count: number }[] {
+  const m = new Map<string, number>();
+  for (const r of rows) {
+    const key = r?.trim() || 'Unknown';
+    m.set(key, (m.get(key) ?? 0) + 1);
+  }
+  return [...m.entries()].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+}
+
+const AGG_CAP = 10000;
+
+export async function getInsights(): Promise<Insights> {
+  const client = db();
+  const [coachRes, histRes, programRes] = await Promise.all([
+    client.from('coaches').select('sport, division, state').eq('status', 'active').limit(AGG_CAP),
+    client
+      .from('coach_history')
+      .select('change_type, changed_at, school, previous_school')
+      .order('changed_at', { ascending: false })
+      .limit(AGG_CAP),
+    client.from('programs').select('id', { count: 'exact', head: true }),
+  ]);
+  const firstError = coachRes.error ?? histRes.error ?? programRes.error;
+  if (firstError) throw firstError;
+
+  const coaches = (coachRes.data ?? []) as { sport: string | null; division: string | null; state: string | null }[];
+  const hist = (histRes.data ?? []) as {
+    change_type: string; changed_at: string; school: string | null; previous_school: string | null;
+  }[];
+
+  // Last 6 calendar months, oldest first.
+  const months: { key: string; month: string; hired: number; moved: number; departed: number }[] = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      month: d.toLocaleDateString('en-US', { month: 'short' }),
+      hired: 0, moved: 0, departed: 0,
+    });
+  }
+  const monthIndex = new Map(months.map((m, i) => [m.key, i]));
+  const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
+  const hotMap = new Map<string, number>();
+
+  for (const h of hist) {
+    const d = new Date(h.changed_at);
+    const idx = monthIndex.get(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+    if (idx !== undefined) {
+      if (h.change_type === 'hired') months[idx].hired++;
+      else if (h.change_type === 'moved') months[idx].moved++;
+      else if (h.change_type === 'departed') months[idx].departed++;
+    }
+    if (d.getTime() >= ninetyDaysAgo && ['hired', 'moved', 'departed'].includes(h.change_type)) {
+      const school = (h.school ?? h.previous_school)?.trim();
+      if (school) hotMap.set(school, (hotMap.get(school) ?? 0) + 1);
+    }
+  }
+
+  const bySport = tally(coaches.map((c) => c.sport));
+  return {
+    activeTotal: coaches.length,
+    sportCount: bySport.filter((s) => s.name !== 'Unknown').length,
+    programCount: programRes.count ?? 0,
+    bySport,
+    byDivision: tally(coaches.map((c) => c.division)),
+    byState: tally(coaches.map((c) => c.state)),
+    byMonth: months.map(({ month, hired, moved, departed }) => ({ month, hired, moved, departed })),
+    hotPrograms: [...hotMap.entries()]
+      .map(([school, changes]) => ({ school, changes }))
+      .sort((a, b) => b.changes - a.changes)
+      .slice(0, 10),
+    truncated: coaches.length === AGG_CAP || hist.length === AGG_CAP,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Watchtower alerts (migration 0003) — the in-database agent's output
+// ---------------------------------------------------------------------------
+
+export interface Alert {
+  id: string;
+  kind: 'movement_digest' | 'review_reminder' | 'stale_data' | 'mass_departure';
+  title: string;
+  body: string;
+  payload: Record<string, unknown>;
+  read: boolean;
+  created_at: string;
+}
+
+/** Returns null when migration 0003 hasn't been run yet (no alerts table). */
+export async function listAlerts(limit = 20): Promise<Alert[] | null> {
+  const { data, error } = await db()
+    .from('alerts')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) return null;
+  return (data ?? []) as Alert[];
+}
+
+export async function unreadAlertCount(): Promise<number> {
+  const { count, error } = await db()
+    .from('alerts')
+    .select('id', { count: 'exact', head: true })
+    .eq('read', false);
+  if (error) return 0;
+  return count ?? 0;
+}
+
+export async function markAlertsRead(): Promise<void> {
+  await db().from('alerts').update({ read: true }).eq('read', false);
+}
+
+/** Fire the Watchtower scan on demand (it also runs daily via pg_cron). */
+export async function runWatchtower(): Promise<void> {
+  const { error } = await db().rpc('run_watchtower');
+  if (error) throw error;
 }
 
 // ---------------------------------------------------------------------------
