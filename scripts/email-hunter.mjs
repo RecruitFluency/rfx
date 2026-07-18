@@ -55,6 +55,9 @@ async function fetchPage(url, timeoutMs = 12000) {
 
 const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
 const JUNK = /(no-?reply|webmaster|postmaster|info@|admin@|example\.|sentry|godaddy|wixpress|@2x|\.png|\.jpg)/i;
+// Generic mailboxes that belong to a department, not a person — never a coach's address.
+const GENERIC_LOCAL = /^(rec-?sports|athletics|sports|compliance|tickets|marketing|media|sid|communications|ftp|support|help|contact|general|office|mailbox|feedback|hello|team|sports-?info|athleticcommunications)$/i;
+const GENERIC_HINT = /(static|ftp|noreply|donotreply|mailer|newsletter)/i;
 
 // Decode simple HTML entity / obfuscation so mailto and "name [at] school" show up.
 function normalize(html) {
@@ -92,19 +95,38 @@ function staffLinks(html, baseUrl) {
   return [...links].slice(0, 4);
 }
 
-// Pick the email most likely to belong to this coach.
+// Pick the email most likely to belong to THIS coach. We only propose emails
+// that genuinely match the coach's name — a lone generic department inbox is
+// never proposed, because it's not the coach's address.
 function pickEmail(emails, coach) {
   const last = (coach.last_name || '').toLowerCase().replace(/[^a-z]/g, '');
   const first = (coach.first_name || '').toLowerCase().replace(/[^a-z]/g, '');
-  if (!emails.length) return null;
-  // Strong: local-part contains the surname, or first-initial+surname.
-  const strong = emails.find((e) => {
-    const local = e.split('@')[0].replace(/[^a-z]/g, '');
-    return last.length > 2 && (local.includes(last) || local === (first[0] || '') + last || local === last + (first[0] || ''));
+  if (!emails.length || last.length < 3) return null;
+
+  const candidates = emails.filter((e) => {
+    const local = e.split('@')[0];
+    const localAlpha = local.toLowerCase().replace(/[^a-z]/g, '');
+    if (GENERIC_LOCAL.test(local) || GENERIC_HINT.test(local)) return false;
+    return localAlpha.length >= 3;
+  });
+
+  // Strong: surname appears in the local-part, or a first-initial+surname
+  // (or surname+first-initial) construction — the standard .edu formats.
+  const fi = first[0] || '';
+  const strong = candidates.find((e) => {
+    const local = e.split('@')[0].toLowerCase().replace(/[^a-z]/g, '');
+    return local.includes(last) || (fi && (local === fi + last || local === last + fi || local.startsWith(fi + last)));
   });
   if (strong) return { email: strong, confidence: 'strong' };
-  // Weak: exactly one plausible email on the page — offer it, flagged.
-  if (emails.length === 1) return { email: emails[0], confidence: 'weak' };
+
+  // Medium: first name appears in the local-part (e.g. jamie.davies but we
+  // only caught the first token). Still name-based, flagged for a quick check.
+  if (first.length >= 3) {
+    const medium = candidates.find((e) => e.split('@')[0].toLowerCase().replace(/[^a-z]/g, '').includes(first));
+    if (medium) return { email: medium, confidence: 'weak' };
+  }
+
+  // No name-based match → propose nothing. (A lone generic email is not a lead.)
   return null;
 }
 
