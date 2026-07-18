@@ -145,7 +145,10 @@ export default function SyncEngine() {
             <div>
               <div className="font-semibold">{stage.fileName}</div>
               <div className="text-sm text-gray-500">
-                {stage.parsed.totalRows.toLocaleString()} data rows ·{' '}
+                {stage.parsed.totalRows.toLocaleString()} coaches
+                {stage.parsed.sheetsParsed.length > 1 ? ` across ${stage.parsed.sheetsParsed.length} sheets (${stage.parsed.sheetsParsed.join(', ')})` : ''}
+                {stage.parsed.removedCount > 0 ? ` · ${stage.parsed.removedCount} vendor-removed rows skipped` : ''}
+                {' · '}
                 {baseline === false ? 'will be loaded as your baseline master list' : 'will be compared against the master list'}
               </div>
             </div>
