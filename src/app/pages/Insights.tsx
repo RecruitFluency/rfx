@@ -50,10 +50,10 @@ export default function Insights() {
   const monthMax = Math.max(1, ...data.byMonth.flatMap((m) => [m.hired, m.moved, m.departed]));
 
   const tiles = [
-    { icon: Users, label: 'Active coaches', value: data.activeTotal },
-    { icon: Trophy, label: 'Sports covered', value: data.sportCount },
-    { icon: GraduationCap, label: 'Programs tracked', value: data.programCount },
-    { icon: Activity, label: 'Movements this month', value: thisMonth.hired + thisMonth.moved + thisMonth.departed },
+    { icon: Users, label: 'Active coaches', value: data.activeTotal, hint: 'Currently working at a program — departed coaches aren\'t counted.' },
+    { icon: Trophy, label: 'Sports covered', value: data.sportCount, hint: 'Sports with at least one active coach in the database.' },
+    { icon: GraduationCap, label: 'Programs tracked', value: data.programCount, hint: 'Unique school + sport combinations, built from your files.' },
+    { icon: Activity, label: 'Movements this month', value: thisMonth.hired + thisMonth.moved + thisMonth.departed, hint: 'Hires + school moves + departures recorded this calendar month.' },
   ];
 
   return (
@@ -64,18 +64,19 @@ export default function Insights() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {tiles.map(({ icon: Icon, label, value }) => (
+        {tiles.map(({ icon: Icon, label, value, hint }) => (
           <Card key={label} className="p-5">
             <Icon className="w-5 h-5 mb-3 text-gray-500" />
             <div className="text-2xl font-bold">{value.toLocaleString()}</div>
             <div className="text-sm text-gray-400">{label}</div>
+            <div className="text-xs text-gray-600 mt-1.5 leading-relaxed">{hint}</div>
           </Card>
         ))}
       </div>
 
       {/* Movement trend */}
       <Card className="p-6 mb-6">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-1.5">
           <h2 className="font-semibold">Coaching movement — last 6 months</h2>
           <div className="flex gap-4 text-xs text-gray-400">
             {SERIES.map(({ key, label, color }) => (
@@ -85,6 +86,11 @@ export default function Insights() {
             ))}
           </div>
         </div>
+        <p className="text-xs text-gray-600 mb-5 max-w-2xl leading-relaxed">
+          The pulse of the coaching market: per month, how many coaches were hired, changed schools, or departed.
+          The month you load a baseline file shows everyone as "hired" — that's the database being born, not real
+          movement. True churn shows from your next monthly file onward.
+        </p>
         <div className="flex items-end gap-4 h-44" role="img" aria-label="Monthly counts of coaches hired, moved, and departed over the last six months">
           {data.byMonth.map((m) => (
             <div key={m.month} className="flex-1 flex flex-col items-center gap-2 min-w-0 h-full">
