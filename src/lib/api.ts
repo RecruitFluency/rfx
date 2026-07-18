@@ -511,6 +511,14 @@ export async function setRadarItemStatus(id: string, status: RadarItem['status']
   if (error) throw error;
 }
 
+/** Bulk-dismiss every unreviewed headline (keeps items matched to a coach). */
+export async function dismissAllRadarItems(keepMatched = true): Promise<void> {
+  let query = db().from('radar_items').update({ status: 'dismissed' }).eq('status', 'new');
+  if (keepMatched) query = query.is('matched_coach_id', null);
+  const { error } = await query;
+  if (error) throw error;
+}
+
 /**
  * Sweep all news sources now, one call per source so each fits inside the
  * per-request statement timeout. (pg_cron sweeps everything every 6 hours.)

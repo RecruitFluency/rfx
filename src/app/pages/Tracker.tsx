@@ -6,7 +6,8 @@ import {
 } from 'lucide-react';
 import { isConfigured } from '../../lib/supabase';
 import {
-  listMovements, listRadarItems, listSports, Movement, RadarItem, runRadarSweep, setRadarItemStatus,
+  dismissAllRadarItems, listMovements, listRadarItems, listSports, Movement, RadarItem,
+  runRadarSweep, setRadarItemStatus,
 } from '../../lib/api';
 import { CoachHistoryEntry } from '../../lib/types';
 import { Card, PageHeader, Spinner, ErrorBox, EmptyState, formatDateTime } from '../components/ui';
@@ -136,7 +137,24 @@ export default function Tracker() {
 
       {view === 'radar' && (
         <>
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end gap-2 mb-4">
+            {Array.isArray(radar) && radar.length > 1 && (
+              <button
+                onClick={async () => {
+                  if (!window.confirm('Dismiss all unreviewed headlines? Ones matched to a coach in your database are kept.')) return;
+                  try {
+                    await dismissAllRadarItems();
+                    const r = await listRadarItems('new');
+                    if (r !== null) setRadar(r);
+                  } catch (e) {
+                    setError((e as Error).message);
+                  }
+                }}
+                className="flex items-center gap-1.5 bg-[#1f1f1f] hover:bg-[#2a2a2a] border border-[#2a2a2a] text-gray-200 rounded-lg px-3 py-1.5 text-sm transition-colors"
+              >
+                <X className="w-3.5 h-3.5" /> Dismiss all unmatched
+              </button>
+            )}
             <button
               onClick={sweepNow}
               disabled={radarBusy}
