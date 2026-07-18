@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, UploadCloud, ShieldAlert, Users, GraduationCap,
-  Radar, BarChart3, HeartPulse, Download, Settings, Sparkles, Menu, X, Bell, RefreshCcw,
+  Radar, BarChart3, HeartPulse, Download, Settings, Sparkles, Menu, X, Bell, RefreshCcw, BookOpen,
 } from 'lucide-react';
 import { isConfigured } from '../lib/supabase';
 import { Alert, listAlerts, markAlertsRead, pendingReviewCount, runWatchtower, unreadAlertCount } from '../lib/api';
@@ -19,6 +19,7 @@ const NAV = [
   { to: '/app/insights', label: 'Insights', icon: BarChart3 },
   { to: '/app/health', label: 'Data Health', icon: HeartPulse },
   { to: '/app/export', label: 'Export / App Feed', icon: Download },
+  { to: '/app/guide', label: 'Guide', icon: BookOpen },
   { to: '/app/setup', label: 'Settings', icon: Settings },
 ];
 

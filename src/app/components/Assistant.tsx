@@ -48,6 +48,7 @@ export default function Assistant({ onNavigate }: { onNavigate: () => void }) {
       [/health|clean|quality/, '/app/health', 'Data Health'],
       [/export|feed|csv|download/, '/app/export', 'Export / App Feed'],
       [/program|school director/, '/app/programs', 'the Program Directory'],
+      [/guide|help|how|manual/, '/app/guide', 'the Guide'],
       [/setting|setup|connect/, '/app/setup', 'Settings'],
       [/home|dashboard|command/, '/app', 'the Command Center'],
     ];

@@ -10,6 +10,29 @@ const CHUNK_SIZE = 500;
 // Sync engine
 // ---------------------------------------------------------------------------
 
+/**
+ * Live install status of each database component, so Settings can show
+ * exactly what's missing instead of guessing.
+ */
+export interface SetupStatus {
+  schema: boolean;      // 0001 — core tables + sync engine
+  multisport: boolean;  // 0002 — per-sport sync scoping
+  watchtower: boolean;  // 0003 — daily alert agent
+  radar: boolean;       // 0004+ — news radar
+}
+
+export async function getSetupStatus(): Promise<SetupStatus> {
+  const client = db();
+  const probe = async (q: PromiseLike<{ error: unknown }>) => !(await q).error;
+  const [schema, multisport, watchtower, radar] = await Promise.all([
+    probe(client.from('coaches').select('id', { head: true }).limit(1)),
+    probe(client.from('sync_batches').select('sport', { head: true }).limit(1)),
+    probe(client.from('alerts').select('id', { head: true }).limit(1)),
+    probe(client.from('radar_items').select('id', { head: true }).limit(1)),
+  ]);
+  return { schema, multisport, watchtower, radar };
+}
+
 let multisportCache: boolean | null = null;
 
 /**

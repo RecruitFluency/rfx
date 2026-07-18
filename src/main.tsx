@@ -15,6 +15,7 @@ import Insights from './app/pages/Insights.tsx';
 import Programs from './app/pages/Programs.tsx';
 import ProgramProfile from './app/pages/ProgramProfile.tsx';
 import Setup from './app/pages/Setup.tsx';
+import Guide from './app/pages/Guide.tsx';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
@@ -35,6 +36,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="export" element={<Export />} />
           <Route path="programs" element={<Programs />} />
           <Route path="programs/:id" element={<ProgramProfile />} />
+          <Route path="guide" element={<Guide />} />
           <Route path="setup" element={<Setup />} />
         </Route>
       </Routes>

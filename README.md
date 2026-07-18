@@ -1,87 +1,75 @@
-# RFX
+# RFX Coach Database
 
-[Edit in StackBlitz next generation editor ⚡️](https://stackblitz.com/~/github.com/RecruitFluency/rfx)
+**The end goal: RFX owns the single source of truth for every college coach in America — kept
+current by one person in under 30 minutes a month.** Multi-sport, every level (NCAA D1/D2/D3,
+NAIA, junior college), always verified, feeding the RFX app live. The movement history and
+patterns the database accumulates are themselves the asset the company shows investors.
 
-This repo is the **RFX Coach Database** (served at `/app`; the root URL redirects there) — the
-internal tool that keeps the master list of college coaches up to date from vendor spreadsheets,
-across every sport and level (NCAA D1/D2/D3, NAIA, junior college). It is the source of truth
-that feeds the RFX app: what Jen approves here is what the app sees.
+The app lives at `/app` (the root URL redirects there).
 
-## What the Coach Database does
+## The monthly routine (what Jen does)
 
-1. **Monthly Sync Engine** (`/app/sync`) — drag & drop the vendor `.xlsx`/`.csv` and tag which
-   **sport** the file covers. The first upload for a sport becomes that sport's baseline; every
-   later upload is diffed against the master list *inside Postgres*, so huge files are handled
-   server-side. Departure detection is scoped to the file's sport — a women's soccer file can
-   never mark a basketball coach departed. Coaches are tracked by their permanent **Unique ID**,
-   never by email — when a coach moves schools or changes email, their history and notes move
-   with them.
-2. **Review Queue** (`/app/review`) — the safety net. Suspicious data never touches the master list
-   automatically: a "new" coach whose email we already know, rows with no unique ID, duplicate IDs,
-   or a mass disappearance (>15% of the sport's active coaches vanishing at once — usually a
-   truncated vendor file) all pause here for approval.
-3. **Coach & Program Directories** (`/app/coaches`, `/app/programs`) — searchable master list with
-   sport and division filters, full job history, notes, and email logs per coach; program pages
-   with academic stats and the current coaching roster. Coaches can also be **added and edited by
-   hand** (`Add coach`, and Edit / Mark departed on each profile) for corrections between vendor
-   files — manual changes are logged to the same history timeline.
-4. **Data Health** (`/app/health`) — is the list clean enough to push to the app? Flags active
-   coaches with no email/school/sport, coaches missing from every vendor file for 60+ days, and
-   duplicate emails (usually one person under two vendor IDs).
-5. **Export / App Feed** (`/app/export`) — download the current verified contact list as CSV or
-   JSON, filtered by sport/division/status. (The RFX app can also read the `coaches` table live
-   from Supabase with the same URL + anon key — filter to `status = 'active'`.)
-6. **Coach Tracker** (`/app/tracker`) — the movement feed: every hire, school move, departure, and
-   title change across the country, filterable by sport and type, tied to each coach's permanent ID.
-   Its **News Radar** tab watches external coaching-news RSS feeds (swept every 6 hours by pg_cron
-   inside Postgres, no API keys) and matches headlines to coaches in the database — catching moves
-   before they reach a vendor file.
-7. **Insights** (`/app/insights`) — patterns across the coaching landscape: monthly movement trends,
-   breakdowns by sport/division/state, and the programs with the most churn in the last 90 days.
-8. **The Watchtower** (bell icon) — an around-the-clock agent that runs *inside* Postgres via
-   pg_cron: it scans daily for coaching movement, review items going stale, and data drift, and
-   posts alerts in the app. No external server needed.
-9. **Command Center** (`/app`) — Jen's home screen opens on a guided monthly checklist (upload →
-   clear the queue → check health → push to the app), each step computed live from the data, plus
-   a slide-out assistant that answers questions about the actual data ("who is missing an email?",
-   "who moved recently?", "how many soccer coaches?").
+1. **Drop the vendor file(s)** in Monthly Sync, tagged by sport. The engine diffs them against the
+   master list inside Postgres — hires, moves, departures, all worked out automatically. A file
+   tagged for one sport can never touch another sport's coaches.
+2. **Approve/reject the flags** in the Review Queue — anything suspicious (identity conflicts,
+   missing IDs, mass disappearances from truncated files) pauses for a human call. Nothing bad
+   ever auto-applies.
+3. **Glance at Data Health** — missing emails, stale records, duplicates, each drillable to the
+   exact coaches, fixable inline on their profiles.
+4. **The app gets the clean list** — CSV/JSON export by sport/division, or the RFX app reads the
+   `coaches` table live from Supabase (filter `status = 'active'`).
 
-## Going live (one-time, ~10 minutes)
+The Command Center opens on this exact checklist with live green checks, and the in-app **Guide**
+page (`/app/guide`) is the 2-minute manual.
 
-The app is a static Vite/React frontend backed by **Supabase** (hosted Postgres). The entire sync
-engine runs as SQL functions in the database — no separate Python/Render server is needed.
+## Working around the clock (no extra servers)
 
-1. **Create the database** — [supabase.com](https://supabase.com) → New project (free tier is fine).
-2. **Install the schema** — in Supabase's *SQL Editor*, paste and run, in order:
-   - [`supabase/migrations/0001_coach_database.sql`](supabase/migrations/0001_coach_database.sql) —
-     all tables plus the `process_sync_batch` / `resolve_review_item` functions.
-   - [`supabase/migrations/0002_multisport.sql`](supabase/migrations/0002_multisport.sql) —
-     per-sport sync scoping (the app detects whether this has been run and reminds you if not).
-   - [`supabase/migrations/0003_watchtower.sql`](supabase/migrations/0003_watchtower.sql) —
-     the Watchtower alert agent and its daily pg_cron schedule.
-   - [`supabase/migrations/0004_radar.sql`](supabase/migrations/0004_radar.sql) —
-     the National Radar news sweep (external coaching-news feeds, every 6 hours).
-3. **Connect the app** — the production Supabase URL and anon key are baked in as defaults, so a
-   fresh deploy is already connected. To point at a different project, set
-   `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`:
-   - **Vercel**: Project → Settings → Environment Variables, then redeploy.
-   - **Locally**: copy `.env.example` to `.env` and fill in both values.
-4. **Load the baseline** — open `/app/sync` and drop your current master spreadsheet (tag the
-   sport if the file only covers one).
+- **The Watchtower** — a daily in-database agent (pg_cron): flags movement, review items aging
+  past 2 days, and stale data. Surfaced under the bell icon.
+- **The National Radar** — sweeps coaching-news RSS feeds every 6 hours from inside Postgres,
+  matches headlines to coaches in the database, and often catches moves months before a vendor
+  file does. Coach Tracker → News Radar.
 
-The `/app/setup` page inside the app shows live connection status and walks through the same steps.
+## The intelligence layer
 
-> **Note on access:** the app currently ships without a login and the database policies are
-> permissive — anyone with the URL can use it. Fine for a private/internal link; before sharing
-> widely, add Supabase Auth and tighten the RLS policies noted in the migration file.
+- **Coach Tracker** (`/app/tracker`) — every recorded hire/move/departure, filterable, tied to
+  each coach's permanent ID so careers survive school and email changes.
+- **Insights** (`/app/insights`) — movement trends by month, coverage by sport/division/state,
+  hottest programs by churn. The investor page.
+- **Assistant** — answers live-data questions: "who is missing an email?", "who moved recently?",
+  "how many soccer coaches?", "what's our turnover trend?"
+
+## Setup (one time, ~5 minutes)
+
+The frontend is static Vite/React on Vercel; everything else is **Supabase** (hosted Postgres).
+The production credentials are baked in, so a deploy is connected out of the box
+(`VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` env vars override them if you ever need a
+different project).
+
+**Install the database with ONE file:** in Supabase's *SQL Editor*, paste and run
+[`supabase/setup_all.sql`](supabase/setup_all.sql). It creates every table, the sync engine, both
+agents, and their schedules — and it's idempotent, so re-running it any time repairs whatever is
+missing. The in-app **Settings** page shows a live per-component install status and links to this
+file.
+
+(The same SQL also exists as ordered steps in [`supabase/migrations/`](supabase/migrations/) for
+anyone who prefers incremental migrations.)
+
+Then upload your current master spreadsheet in Monthly Sync — that's the baseline.
+
+> **Note on access:** the app ships without a login and the database policies are permissive —
+> anyone with the URL can use it. Fine for a private/internal link; before sharing widely, add
+> Supabase Auth and tighten the RLS policies noted in the migration files.
 
 ## Development
 
 ```bash
 npm install
 npm run dev      # app at /app (root redirects there)
-npm run build    # production build (deployed via Vercel, SPA rewrites in vercel.json)
+npm run build    # production build (SPA rewrites in vercel.json)
 ```
 
-Vendor file columns are matched flexibly (`Coach ID`/`Unique ID`, `First Name`, `School`/`Institution`,
-etc. — see `src/lib/excel.ts`). A unique-ID column is required; unrecognized columns are ignored.
+Vendor file columns are matched flexibly (`Coach ID`/`Unique ID`, `First Name`,
+`School`/`Institution`, etc. — see `src/lib/excel.ts`). A unique-ID column is required;
+unrecognized columns are ignored.
