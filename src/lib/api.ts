@@ -523,6 +523,66 @@ export async function resolveProposedChange(id: string, approve: boolean): Promi
 }
 
 // ---------------------------------------------------------------------------
+// Roster Candidates (migration 0008) — scraped coaches awaiting review
+// ---------------------------------------------------------------------------
+
+export interface RosterCandidate {
+  id: string;
+  first_name: string;
+  last_name: string;
+  title: string | null;
+  sport: string | null;
+  email: string | null;
+  phone: string | null;
+  school: string;
+  division: string | null;
+  conference: string | null;
+  state: string | null;
+  source_url: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+}
+
+/** Returns null when migration 0008 hasn't been run yet. */
+export async function listRosterCandidates(
+  status: RosterCandidate['status'] = 'pending',
+  conference?: string
+): Promise<RosterCandidate[] | null> {
+  let query = db()
+    .from('roster_candidates')
+    .select('*')
+    .eq('status', status)
+    .order('conference')
+    .order('school')
+    .order('sport')
+    .limit(2000);
+  if (conference) query = query.eq('conference', conference);
+  const { data, error } = await query;
+  if (error) return null;
+  return (data ?? []) as RosterCandidate[];
+}
+
+export async function pendingRosterCandidateCount(): Promise<number> {
+  const { count, error } = await db()
+    .from('roster_candidates')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'pending');
+  if (error) return 0;
+  return count ?? 0;
+}
+
+/** Save reviewer edits (name/title/email fixes) before approving. */
+export async function updateRosterCandidate(id: string, fields: Partial<RosterCandidate>): Promise<void> {
+  const { error } = await db().from('roster_candidates').update(fields).eq('id', id);
+  if (error) throw error;
+}
+
+export async function resolveRosterCandidate(id: string, approve: boolean): Promise<void> {
+  const { error } = await db().rpc('resolve_roster_candidate', { p_id: id, p_approve: approve });
+  if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
 // National Radar (migration 0004) — external coaching-news monitoring
 // ---------------------------------------------------------------------------
 

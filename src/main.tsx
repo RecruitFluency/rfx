@@ -11,6 +11,7 @@ import CoachProfile from './app/pages/CoachProfile.tsx';
 import Export from './app/pages/Export.tsx';
 import DataHealth from './app/pages/DataHealth.tsx';
 import Proposals from './app/pages/Proposals.tsx';
+import RosterCandidates from './app/pages/RosterCandidates.tsx';
 import Tracker from './app/pages/Tracker.tsx';
 import Insights from './app/pages/Insights.tsx';
 import Programs from './app/pages/Programs.tsx';
@@ -35,6 +36,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="insights" element={<Insights />} />
           <Route path="health" element={<DataHealth />} />
           <Route path="proposals" element={<Proposals />} />
+          <Route path="roster-candidates" element={<RosterCandidates />} />
           <Route path="export" element={<Export />} />
           <Route path="programs" element={<Programs />} />
           <Route path="programs/:id" element={<ProgramProfile />} />

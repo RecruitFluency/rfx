@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, UploadCloud, ShieldAlert, Users, GraduationCap,
-  Radar, BarChart3, HeartPulse, MailPlus, Download, Settings, Sparkles, Menu, X, Bell, RefreshCcw, BookOpen,
+  Radar, BarChart3, HeartPulse, MailPlus, Users2, Download, Settings, Sparkles, Menu, X, Bell, RefreshCcw, BookOpen,
 } from 'lucide-react';
 import { isConfigured } from '../lib/supabase';
 import {
-  Alert, listAlerts, markAlertsRead, pendingProposalCount, pendingReviewCount, runWatchtower, unreadAlertCount,
+  Alert, listAlerts, markAlertsRead, pendingProposalCount, pendingReviewCount,
+  pendingRosterCandidateCount, runWatchtower, unreadAlertCount,
 } from '../lib/api';
 import { formatDateTime } from './components/ui';
 import Assistant from './components/Assistant';
@@ -21,6 +22,7 @@ const NAV = [
   { to: '/app/insights', label: 'Insights', icon: BarChart3 },
   { to: '/app/health', label: 'Data Health', icon: HeartPulse },
   { to: '/app/proposals', label: 'Found Contacts', icon: MailPlus },
+  { to: '/app/roster-candidates', label: 'Roster Candidates', icon: Users2 },
   { to: '/app/export', label: 'Export / App Feed', icon: Download },
   { to: '/app/guide', label: 'Guide', icon: BookOpen },
   { to: '/app/setup', label: 'Settings', icon: Settings },
@@ -29,6 +31,7 @@ const NAV = [
 export default function AppShell() {
   const [pending, setPending] = useState(0);
   const [proposals, setProposals] = useState(0);
+  const [rosterCands, setRosterCands] = useState(0);
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -42,6 +45,7 @@ export default function AppShell() {
     if (!isConfigured) return;
     pendingReviewCount().then(setPending).catch(() => setPending(0));
     pendingProposalCount().then(setProposals).catch(() => setProposals(0));
+    pendingRosterCandidateCount().then(setRosterCands).catch(() => setRosterCands(0));
     unreadAlertCount().then(setUnread).catch(() => setUnread(0));
   }, [location]);
 
@@ -101,6 +105,9 @@ export default function AppShell() {
               )}
               {label === 'Found Contacts' && proposals > 0 && (
                 <span className="bg-[#FF0000] text-white text-xs font-bold rounded-full px-2 py-0.5">{proposals}</span>
+              )}
+              {label === 'Roster Candidates' && rosterCands > 0 && (
+                <span className="bg-[#FF0000] text-white text-xs font-bold rounded-full px-2 py-0.5">{rosterCands}</span>
               )}
             </NavLink>
           ))}
