@@ -57,7 +57,7 @@ export default function Proposals() {
     <div>
       <PageHeader
         title="Found Contacts"
-        subtitle="The Email Hunter visits each coach's program page overnight and proposes contact info it finds. Nothing is applied until you approve it here."
+        subtitle="Proposed contact info for coaches missing it — found on program pages, or inferred from the school's email pattern. Nothing is applied until you approve it here."
       />
 
       <div className="flex flex-wrap gap-2 mb-6">
@@ -105,12 +105,13 @@ export default function Proposals() {
       {Array.isArray(items) && items.length > 0 && (
         <div className="space-y-3">
           {items.map((item) => {
+            const inferred = item.source.startsWith('pattern');
             const weak = item.source.endsWith('weak');
             return (
               <Card key={item.id} className="p-5">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <MailPlus className="w-4 h-4 text-[#FF6666] shrink-0" />
                       <Link to={`/app/coaches/${item.coach_id}`} className="text-white font-medium hover:text-[#FF6666]">
                         {item.coaches ? `${item.coaches.first_name} ${item.coaches.last_name}` : 'Coach'}
@@ -118,9 +119,17 @@ export default function Proposals() {
                       <span className="text-xs text-gray-500">
                         {[item.coaches?.school, item.coaches?.sport].filter(Boolean).join(' · ')}
                       </span>
-                      {weak && (
+                      {inferred ? (
+                        <span className="flex items-center gap-1 text-xs bg-amber-900/30 text-amber-400 border border-amber-800 rounded px-1.5 py-0.5">
+                          <ShieldQuestion className="w-3 h-3" /> pattern-inferred — verify
+                        </span>
+                      ) : weak ? (
                         <span className="flex items-center gap-1 text-xs bg-amber-900/30 text-amber-400 border border-amber-800 rounded px-1.5 py-0.5">
                           <ShieldQuestion className="w-3 h-3" /> low confidence — verify
+                        </span>
+                      ) : (
+                        <span className="text-xs bg-green-900/30 text-green-400 border border-green-800 rounded px-1.5 py-0.5">
+                          found on page
                         </span>
                       )}
                     </div>
@@ -129,6 +138,7 @@ export default function Proposals() {
                     </div>
                     <div className="flex items-center gap-3 text-xs text-gray-600 mt-1">
                       <span>{formatDateTime(item.created_at)}</span>
+                      {inferred && <span>from this school's email pattern</span>}
                       {item.source_url && (
                         <a href={item.source_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-gray-300">
                           source page <ExternalLink className="w-3 h-3" />
