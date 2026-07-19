@@ -61,7 +61,13 @@ insert into radar_sources (name, url, sport) values
   ('College baseball coaching news',
    'https://news.google.com/rss/search?q=college+baseball+%22head+coach%22+(named+OR+hired+OR+resigns+OR+steps+down)&hl=en-US&gl=US&ceid=US:en', 'Baseball'),
   ('College volleyball coaching news',
-   'https://news.google.com/rss/search?q=college+volleyball+%22head+coach%22+(named+OR+hired+OR+resigns+OR+steps+down)&hl=en-US&gl=US&ceid=US:en', 'Volleyball')
+   'https://news.google.com/rss/search?q=college+volleyball+%22head+coach%22+(named+OR+hired+OR+resigns+OR+steps+down)&hl=en-US&gl=US&ceid=US:en', 'Volleyball'),
+  ('College lacrosse coaching news',
+   'https://news.google.com/rss/search?q=college+lacrosse+%22head+coach%22+(named+OR+hired+OR+resigns+OR+steps+down)&hl=en-US&gl=US&ceid=US:en', 'Lacrosse'),
+  ('College softball coaching news',
+   'https://news.google.com/rss/search?q=college+softball+%22head+coach%22+(named+OR+hired+OR+resigns+OR+steps+down)&hl=en-US&gl=US&ceid=US:en', 'Softball'),
+  ('College ice hockey coaching news',
+   'https://news.google.com/rss/search?q=college+hockey+%22head+coach%22+(named+OR+hired+OR+resigns+OR+steps+down)&hl=en-US&gl=US&ceid=US:en', 'Ice Hockey')
 on conflict (url) do nothing;
 
 create or replace function run_radar()
