@@ -38,6 +38,21 @@ const CONFERENCES = {
       ['yalebulldogs.com', 'Connecticut', 'Yale University'],
     ],
   },
+  patriot: {
+    name: 'Patriot League', division: 'NCAA D1',
+    schools: [
+      ['aueagles.com', 'District of Columbia', 'American University'],
+      ['goarmywestpoint.com', 'New York', 'Army West Point'],
+      ['goterriers.com', 'Massachusetts', 'Boston University'],
+      ['bucknellbison.com', 'Pennsylvania', 'Bucknell University'],
+      ['colgateathletics.com', 'New York', 'Colgate University'],
+      ['goholycross.com', 'Massachusetts', 'College of the Holy Cross'],
+      ['goleopards.com', 'Pennsylvania', 'Lafayette College'],
+      ['lehighsports.com', 'Pennsylvania', 'Lehigh University'],
+      ['loyolagreyhounds.com', 'Maryland', 'Loyola University Maryland'],
+      ['navysports.com', 'Maryland', 'Navy'],
+    ],
+  },
 };
 
 const SPORT_SLUGS = {
@@ -61,12 +76,20 @@ async function db(path, method = 'GET', body, prefer) {
 }
 
 async function get(url, timeout = 12000) {
+  // Native fetch first. Some athletics hosts block the direct datacenter IP and
+  // are only reachable through the outbound proxy, which fetch doesn't use — so
+  // fall back to curl (which honors HTTPS_PROXY) on failure or empty body.
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeout);
   try {
     const r = await fetch(url, { headers: { 'User-Agent': UA }, redirect: 'follow', signal: ctrl.signal });
-    return r.ok ? await r.text() : '';
-  } catch { return ''; } finally { clearTimeout(t); }
+    if (r.ok) { const txt = await r.text(); if (txt) return txt; }
+  } catch { /* fall through to curl */ } finally { clearTimeout(t); }
+  try {
+    const { execFileSync } = await import('node:child_process');
+    return execFileSync('curl', ['-sL', '--max-time', String(Math.ceil(timeout / 1000)), '-A', UA, url],
+      { encoding: 'utf8', maxBuffer: 1 << 27 });
+  } catch { return ''; }
 }
 
 function normalize(h) {
@@ -198,8 +221,19 @@ async function main() {
     return;
   }
 
-  for (let i = 0; i < candidates.length; i += 200) {
-    await db('roster_candidates', 'POST', candidates.slice(i, i + 200), 'resolution=ignore-duplicates');
+  // Drop intra-batch duplicates on (school, sport, email): ignore-duplicates
+  // only resolves conflicts against existing rows, not repeats within one INSERT.
+  const seenKey = new Set();
+  const unique = candidates.filter((c) => {
+    if (!c.email) return true; // null emails never collide (NULLs are distinct)
+    const k = `${c.school}|${c.sport}|${c.email}`;
+    return seenKey.has(k) ? false : seenKey.add(k);
+  });
+  const dropped = candidates.length - unique.length;
+  if (dropped) console.log(`(deduped ${dropped} repeated email row(s) within this batch)`);
+
+  for (let i = 0; i < unique.length; i += 200) {
+    await db('roster_candidates', 'POST', unique.slice(i, i + 200), 'resolution=ignore-duplicates');
   }
   console.log(`Done. Candidates written to the Roster Candidates review queue.`);
 }
