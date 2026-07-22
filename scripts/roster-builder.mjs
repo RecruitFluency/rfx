@@ -53,6 +53,18 @@ const CONFERENCES = {
       ['navysports.com', 'Maryland', 'Navy'],
     ],
   },
+  bigten: {
+    name: 'Big Ten', division: 'NCAA D1',
+    schools: [
+      ['umterps.com', 'Maryland', 'University of Maryland'],
+      ['hopkinssports.com', 'Maryland', 'Johns Hopkins University'],
+      ['mgoblue.com', 'Michigan', 'University of Michigan'],
+      ['ohiostatebuckeyes.com', 'Ohio', 'Ohio State University'],
+      ['gopsusports.com', 'Pennsylvania', 'Penn State University'],
+      ['scarletknights.com', 'New Jersey', 'Rutgers University'],
+      ['nusports.com', 'Illinois', 'Northwestern University'],
+    ],
+  },
 };
 
 const SPORT_SLUGS = {
@@ -102,9 +114,13 @@ function toText(h) {
 }
 
 // Clean a name string ("Connor Buczek", "Mary Beth O'Neill") into first/last.
+// Some sites prefix the link text with the role ("Head Coach John Tillman"),
+// so strip any leading title/role words before splitting.
 function splitName(raw) {
-  const parts = normalize(raw).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-    .replace(/,.*$/, '').split(' ').filter(Boolean);
+  const s = normalize(raw).replace(/<[^>]+>/g, ' ').replace(/,.*$/, '')
+    .replace(/\b(head|assistant|associate|volunteer|graduate|interim|coach|coaches|coordinator|director|operations|recruiting|offensive|defensive|goalkeeping|of|the)\b/gi, ' ')
+    .replace(/\s+/g, ' ').trim();
+  const parts = s.split(' ').filter(Boolean);
   if (parts.length < 2) return null;
   return { first: parts[0], last: parts[parts.length - 1] };
 }
