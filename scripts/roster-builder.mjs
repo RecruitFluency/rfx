@@ -65,6 +65,22 @@ const CONFERENCES = {
       ['nusports.com', 'Illinois', 'Northwestern University'],
     ],
   },
+  acc: {
+    name: 'ACC', division: 'NCAA D1',
+    schools: [
+      ['goduke.com', 'North Carolina', 'Duke University'],
+      ['goheels.com', 'North Carolina', 'University of North Carolina'],
+      ['und.com', 'Indiana', 'University of Notre Dame'],
+      ['cuse.com', 'New York', 'Syracuse University'],
+      ['virginiasports.com', 'Virginia', 'University of Virginia'],
+      ['bceagles.com', 'Massachusetts', 'Boston College'],
+      ['clemsontigers.com', 'South Carolina', 'Clemson University'],
+      ['gocards.com', 'Kentucky', 'University of Louisville'],
+      ['hokiesports.com', 'Virginia', 'Virginia Tech'],
+      ['gostanford.com', 'California', 'Stanford University'],
+      ['calbears.com', 'California', 'University of California'],
+    ],
+  },
 };
 
 const SPORT_SLUGS = {
@@ -185,6 +201,48 @@ function extractCoaches(html, sport) {
   return out;
 }
 
+// Second strategy: the newer WMT/Vue platform (Virginia, Notre Dame, Clemson,
+// Virginia Tech, Stanford, …) renders rosters client-side and ships the data in
+// a <script id="__NUXT_DATA__"> array where objects reference their values by
+// index (devalue format). We resolve the staff objects — cleaner than scraping,
+// since names/titles/emails come straight from structured fields.
+// Only true coaching-staff roles — excludes shared department staff that also
+// appear on roster pages (Associate AD, Sports Nutrition, academic advisors).
+const COACH_POS = /(coach|coordinator|\boperations\b|recruiting)/i;
+
+function extractCoachesNuxt(html, sport) {
+  const m = html.match(/id=["']__NUXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i);
+  if (!m) return [];
+  let arr;
+  try { arr = JSON.parse(m[1]); } catch { return []; }
+  if (!Array.isArray(arr)) return [];
+  const val = (i) => (Number.isInteger(i) && i >= 0 && i < arr.length ? arr[i] : null);
+  const str = (i) => { const v = val(i); return typeof v === 'string' ? v : null; };
+  const out = [];
+  const seen = new Set();
+  for (const x of arr) {
+    if (!x || typeof x !== 'object' || Array.isArray(x)) continue;
+    if (!('first_name' in x) || !('last_name' in x) || !('position' in x)) continue;
+    const first = str(x.first_name), last = str(x.last_name), position = str(x.position);
+    if (!first || !last || !position) continue;
+    if (!COACH_POS.test(position)) continue; // skip players
+    let email = str(x.email);
+    email = email && /@[\w.-]+\.\w+$/.test(email) && !GENERIC.test(email.toLowerCase()) ? email.toLowerCase() : null;
+    const phoneRaw = str(x.phone);
+    const phone = phoneRaw ? (phoneRaw.match(PHONE_RE) || [null])[0] : null;
+    const key = `${first}|${last}|${email || ''}`.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({
+      first_name: first.trim(),
+      last_name: last.trim(),
+      title: position.replace(/\s+/g, ' ').trim().slice(0, 60),
+      email, phone, sport,
+    });
+  }
+  return out;
+}
+
 async function main() {
   const conf = process.argv[2] || 'ivy';
   const sportKey = process.argv[3] || 'lacrosse';
@@ -203,14 +261,18 @@ async function main() {
   for (const [domain, state, fallbackName] of cfg.schools) {
     const school = domainToSchool.get(domain) || fallbackName;
     for (const [sport, slug] of slugs) {
-      let html = '';
+      // Try each page with both strategies: HTML profile links (Sidearm) first,
+      // then the Nuxt payload (WMT/Vue). Stop as soon as one yields coaches.
+      let coaches = [];
       for (const path of [`/sports/${slug}/coaches`, `/sports/${slug}/roster`]) {
-        html = await get(`https://${domain}${path}`);
-        if (html && /coach/i.test(html)) break;
+        const html = await get(`https://${domain}${path}`);
+        if (!html) { await sleep(300); continue; }
+        coaches = extractCoaches(html, sport);
+        if (!coaches.length) coaches = extractCoachesNuxt(html, sport);
+        if (coaches.length) break;
         await sleep(300);
       }
-      if (!html) continue;
-      const coaches = extractCoaches(html, sport);
+      if (!coaches.length) continue;
       for (const c of coaches) {
         if (c.email) withEmail++; else noEmail++;
         candidates.push({
