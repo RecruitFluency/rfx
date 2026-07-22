@@ -299,21 +299,29 @@ async function main() {
     return;
   }
 
-  // Drop intra-batch duplicates on (school, sport, email): ignore-duplicates
-  // only resolves conflicts against existing rows, not repeats within one INSERT.
-  const seenKey = new Set();
+  // Make the load idempotent: skip anything already present (so re-running a
+  // conference to backfill newly-reachable schools doesn't collide). We dedupe
+  // both within this batch and against existing rows in the DB, keyed by
+  // (school, sport, email) — or (school, sport, name) when there's no email.
+  const keyOf = (c) => `${c.school}|${c.sport}|${(c.email || `${c.first_name} ${c.last_name}`).toLowerCase()}`;
+  const existing = new Set();
+  for (const row of await db(`roster_candidates?select=school,sport,email,first_name,last_name&conference=eq.${encodeURIComponent(cfg.name)}`)) {
+    existing.add(keyOf(row));
+  }
+  const seen = new Set();
   const unique = candidates.filter((c) => {
-    if (!c.email) return true; // null emails never collide (NULLs are distinct)
-    const k = `${c.school}|${c.sport}|${c.email}`;
-    return seenKey.has(k) ? false : seenKey.add(k);
+    const k = keyOf(c);
+    if (existing.has(k) || seen.has(k)) return false;
+    seen.add(k); return true;
   });
-  const dropped = candidates.length - unique.length;
-  if (dropped) console.log(`(deduped ${dropped} repeated email row(s) within this batch)`);
+  const skipped = candidates.length - unique.length;
+  if (skipped) console.log(`(skipped ${skipped} already-present / duplicate row(s))`);
+  if (!unique.length) { console.log('Nothing new to add.'); return; }
 
   for (let i = 0; i < unique.length; i += 200) {
     await db('roster_candidates', 'POST', unique.slice(i, i + 200), 'resolution=ignore-duplicates');
   }
-  console.log(`Done. Candidates written to the Roster Candidates review queue.`);
+  console.log(`Done. Added ${unique.length} coach(es) to the Roster Candidates review queue.`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
