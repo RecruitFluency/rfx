@@ -1,0 +1,25 @@
+name: Email Pattern Inference
+
+# Fills missing coach emails by learning each school's email formula from the
+# coaches who already have addresses, then proposing pattern-based emails for
+# the rest — as proposals a human approves in the app. Runs weekly (patterns
+# only change when new coaches arrive) and can be triggered by hand.
+on:
+  schedule:
+    - cron: '30 7 * * 1' # 07:30 UTC every Monday
+  workflow_dispatch:
+
+jobs:
+  infer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run pattern inference
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: node scripts/pattern-inference.mjs

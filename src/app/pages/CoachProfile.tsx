@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Mail, Phone, School, Fingerprint, Plus } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, School, Fingerprint, Plus, Pencil, UserMinus, RefreshCcw } from 'lucide-react';
 import { isConfigured } from '../../lib/supabase';
 import {
   addCoachNote, addEmailLog, getCoach, getCoachHistory, getCoachNotes, getEmailLogs,
+  setCoachStatus, updateCoach,
 } from '../../lib/api';
 import { Coach, CoachHistoryEntry, CoachNote, EmailLog } from '../../lib/types';
 import { Card, Spinner, ErrorBox, StatusPill, formatDate, formatDateTime } from '../components/ui';
+import CoachForm from '../components/CoachForm';
 import NotConnected from '../components/NotConnected';
 
 const HISTORY_LABEL: Record<CoachHistoryEntry['change_type'], string> = {
@@ -28,6 +30,8 @@ export default function CoachProfile() {
   const [error, setError] = useState('');
   const [noteDraft, setNoteDraft] = useState('');
   const [emailDraft, setEmailDraft] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [statusBusy, setStatusBusy] = useState(false);
 
   const load = useCallback(() => {
     if (!isConfigured || !id) return;
@@ -75,25 +79,73 @@ export default function CoachProfile() {
               {coach.title ?? 'Coach'}{coach.sport ? ` · ${coach.sport}` : ''}{coach.school ? ` · ${coach.school}` : ''}
             </div>
           </div>
-          <div className="text-right text-xs text-gray-600">
-            Last seen in a vendor file<br />{formatDate(coach.last_seen_at)}
+          <div className="flex items-start gap-4">
+            {!editing && (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setEditing(true)}
+                  className="flex items-center gap-1.5 bg-[#1f1f1f] hover:bg-[#2a2a2a] border border-[#2a2a2a] text-gray-200 rounded-lg px-3 py-1.5 text-sm transition-colors"
+                >
+                  <Pencil className="w-3.5 h-3.5" /> Edit
+                </button>
+                <button
+                  disabled={statusBusy}
+                  onClick={async () => {
+                    const active = coach.status !== 'active';
+                    if (!active && !window.confirm(`Mark ${coach.first_name} ${coach.last_name} as departed?`)) return;
+                    setStatusBusy(true);
+                    try {
+                      await setCoachStatus(coach, active);
+                      load();
+                    } catch (e) {
+                      setError((e as Error).message);
+                    } finally {
+                      setStatusBusy(false);
+                    }
+                  }}
+                  className="flex items-center gap-1.5 bg-[#1f1f1f] hover:bg-[#2a2a2a] border border-[#2a2a2a] text-gray-200 rounded-lg px-3 py-1.5 text-sm disabled:opacity-50 transition-colors"
+                >
+                  {coach.status === 'active'
+                    ? <><UserMinus className="w-3.5 h-3.5" /> Mark departed</>
+                    : <><RefreshCcw className="w-3.5 h-3.5" /> Reinstate</>}
+                </button>
+              </div>
+            )}
+            <div className="text-right text-xs text-gray-600">
+              Last seen in a vendor file<br />{formatDate(coach.last_seen_at)}
+            </div>
           </div>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-5 text-sm">
-          {[
-            { icon: Fingerprint, label: 'Unique ID', value: coach.master_id },
-            { icon: Mail, label: 'Email', value: coach.email ?? '—' },
-            { icon: Phone, label: 'Phone', value: coach.phone ?? '—' },
-            { icon: School, label: 'Division / Conference', value: [coach.division, coach.conference].filter(Boolean).join(' · ') || '—' },
-          ].map(({ icon: Icon, label, value }) => (
-            <div key={label} className="bg-[#1f1f1f] rounded-lg p-3">
-              <div className="flex items-center gap-1.5 text-gray-500 text-xs mb-1">
-                <Icon className="w-3.5 h-3.5" /> {label}
+        {editing ? (
+          <div className="mt-5">
+            <CoachForm
+              initial={coach}
+              submitLabel="Save changes"
+              onSubmit={async (draft) => {
+                await updateCoach(coach, draft);
+                setEditing(false);
+                load();
+              }}
+              onCancel={() => setEditing(false)}
+            />
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-5 text-sm">
+            {[
+              { icon: Fingerprint, label: 'Unique ID', value: coach.master_id },
+              { icon: Mail, label: 'Email', value: coach.email ?? '—' },
+              { icon: Phone, label: 'Phone', value: coach.phone ?? '—' },
+              { icon: School, label: 'Division / Conference', value: [coach.division, coach.conference].filter(Boolean).join(' · ') || '—' },
+            ].map(({ icon: Icon, label, value }) => (
+              <div key={label} className="bg-[#1f1f1f] rounded-lg p-3">
+                <div className="flex items-center gap-1.5 text-gray-500 text-xs mb-1">
+                  <Icon className="w-3.5 h-3.5" /> {label}
+                </div>
+                <div className="text-gray-200 break-all">{value}</div>
               </div>
-              <div className="text-gray-200 break-all">{value}</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </Card>
 
       <div className="grid lg:grid-cols-3 gap-6">

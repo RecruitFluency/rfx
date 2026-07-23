@@ -1,6 +1,18 @@
-<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="256" height="256" rx="40" fill="#000000"/>
-  <rect x="12" y="12" width="232" height="232" rx="32" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="2"/>
-  <path d="M68 186V70H130C153 70 170 84 170 107C170 126 158 138 140 142L172 186H146L117 146H92V186H68ZM92 126H127C137 126 145 119 145 108C145 97 137 90 127 90H92V126Z" fill="#FFFFFF"/>
-  <path d="M148 70H188L167 102L205 186H179L154 128L171 100L148 70Z" fill="#FF0000"/>
+<svg width="500" height="500" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Official RFX mark: red circle with white play-P cutouts (vector trace of the brand logo) -->
+  <defs>
+    <clipPath id="rfx-circle">
+      <circle cx="250" cy="250" r="155"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#rfx-circle)">
+    <!-- top segment -->
+    <polygon points="80,-20 410,-20 410,209 80,70" fill="#FF0000"/>
+    <!-- left crescent -->
+    <polygon points="90,110 163,110 190,390 90,390" fill="#FF0000"/>
+    <!-- bottom-right segment -->
+    <polygon points="230,349 410,248 410,420 230,420" fill="#FF0000"/>
+  </g>
+  <!-- center play triangle -->
+  <polygon points="233,210 303,248 233,286" fill="#FF0000"/>
 </svg>
