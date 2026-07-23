@@ -81,6 +81,20 @@ const CONFERENCES = {
       ['calbears.com', 'California', 'University of California'],
     ],
   },
+  bigeast: {
+    name: 'Big East', division: 'NCAA D1',
+    schools: [
+      ['denverpioneers.com', 'Colorado', 'University of Denver'],
+      ['guhoyas.com', 'District of Columbia', 'Georgetown University'],
+      ['villanova.com', 'Pennsylvania', 'Villanova University'],
+      ['uconnhuskies.com', 'Connecticut', 'University of Connecticut'],
+      ['gomarquette.com', 'Wisconsin', 'Marquette University'],
+      ['redstormsports.com', 'New York', "St. John's University"],
+      ['gobutler.com', 'Indiana', 'Butler University'],
+      ['goxavier.com', 'Ohio', 'Xavier University'],
+      ['providencefriars.com', 'Rhode Island', 'Providence College'],
+    ],
+  },
 };
 
 const SPORT_SLUGS = {
