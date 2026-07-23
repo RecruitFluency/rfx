@@ -95,10 +95,149 @@ const CONFERENCES = {
       ['providencefriars.com', 'Rhode Island', 'Providence College'],
     ],
   },
+  americaeast: {
+    name: 'America East', division: 'NCAA D1',
+    schools: [
+      ['ualbanysports.com', 'New York', 'University at Albany'],
+      ['bryantbulldogs.com', 'Rhode Island', 'Bryant University'],
+      ['uvmathletics.com', 'Vermont', 'University of Vermont'],
+      ['umbcretrievers.com', 'Maryland', 'University of Maryland, Baltimore County'],
+      ['njithighlanders.com', 'New Jersey', 'New Jersey Institute of Technology'],
+      ['binghamtonbearcats.com', 'New York', 'Binghamton University'],
+      ['goriverhawks.com', 'Massachusetts', 'University of Massachusetts Lowell'],
+      ['unhwildcats.com', 'New Hampshire', 'University of New Hampshire'],
+    ],
+  },
+  caa: {
+    name: 'CAA', division: 'NCAA D1',
+    schools: [
+      ['towsontigers.com', 'Maryland', 'Towson University'],
+      ['drexeldragons.com', 'Pennsylvania', 'Drexel University'],
+      ['stonybrookathletics.com', 'New York', 'Stony Brook University'],
+      ['monmouthhawks.com', 'New Jersey', 'Monmouth University'],
+      ['gohofstra.com', 'New York', 'Hofstra University'],
+      ['fairfieldstags.com', 'Connecticut', 'Fairfield University'],
+      ['hamptonpirates.com', 'Virginia', 'Hampton University'],
+      ['elonphoenix.com', 'North Carolina', 'Elon University'],
+      ['gocamels.com', 'North Carolina', 'Campbell University'],
+      ['tribeathletics.com', 'Virginia', 'William & Mary'],
+    ],
+  },
+  asun: {
+    name: 'ASUN', division: 'NCAA D1',
+    schools: [
+      ['utahutes.com', 'Utah', 'University of Utah'],
+      ['judolphins.com', 'Florida', 'Jacksonville University'],
+      ['goairforcefalcons.com', 'Colorado', 'United States Air Force Academy'],
+      ['mercerbears.com', 'Georgia', 'Mercer University', 'M'], // women's play Big South
+      ['athletics.bellarmine.edu', 'Kentucky', 'Bellarmine University'],
+      ['queensathletics.com', 'North Carolina', 'Queens University of Charlotte'],
+      ['bluehens.com', 'Delaware', 'University of Delaware', 'W'],
+      ['libertyflames.com', 'Virginia', 'Liberty University'],
+      ['lindenwoodlions.com', 'Missouri', 'Lindenwood University', 'W'],
+      ['goccusports.com', 'South Carolina', 'Coastal Carolina University'],
+      ['ksuowls.com', 'Georgia', 'Kennesaw State University'],
+      ['gohatters.com', 'Florida', 'Stetson University'],
+      ['letsgopeay.com', 'Tennessee', 'Austin Peay State University'],
+    ],
+  },
+  maac: {
+    name: 'MAAC', division: 'NCAA D1',
+    schools: [
+      ['goredfoxes.com', 'New York', 'Marist University'],
+      ['sienasaints.com', 'New York', 'Siena University'],
+      ['sacredheartpioneers.com', 'Connecticut', 'Sacred Heart University'],
+      ['merrimackathletics.com', 'Massachusetts', 'Merrimack College'],
+      ['gobobcats.com', 'Connecticut', 'Quinnipiac University'],
+      ['gojaspers.com', 'New York', 'Manhattan University'],
+      ['mountathletics.com', 'Maryland', "Mount St. Mary's University"],
+      ['gogriffs.com', 'New York', 'Canisius University'],
+      ['ionagaels.com', 'New York', 'Iona University'],
+      ['fairfieldstags.com', 'Connecticut', 'Fairfield University', 'W'], // men's play CAA
+      ['purpleeagles.com', 'New York', 'Niagara University'],
+      ['gobroncs.com', 'New Jersey', 'Rider University'],
+    ],
+  },
+  aac: {
+    name: 'American', division: 'NCAA D1', // women's-only conference
+    schools: [
+      ['gousfbulls.com', 'Florida', 'University of South Florida', 'W'],
+      ['jmusports.com', 'Virginia', 'James Madison University', 'W'],
+      ['owlsports.com', 'Pennsylvania', 'Temple University', 'W'],
+      ['ecupirates.com', 'North Carolina', 'East Carolina University', 'W'],
+      ['vucommodores.com', 'Tennessee', 'Vanderbilt University', 'W'],
+      ['charlotte49ers.com', 'North Carolina', 'University of North Carolina at Charlotte', 'W'],
+      ['odusports.com', 'Virginia', 'Old Dominion University', 'W'],
+    ],
+  },
+  bigsouth: {
+    name: 'Big South', division: 'NCAA D1',
+    schools: [
+      ['mercerbears.com', 'Georgia', 'Mercer University', 'W'], // men's play ASUN
+      ['highpointpanthers.com', 'North Carolina', 'High Point University'],
+      ['woffordterriers.com', 'South Carolina', 'Wofford College'],
+      ['furmanpaladins.com', 'South Carolina', 'Furman University'],
+      ['radfordathletics.com', 'Virginia', 'Radford University'],
+      ['longwoodlancers.com', 'Virginia', 'Longwood University'],
+      ['gobluehose.com', 'South Carolina', 'Presbyterian College'],
+      ['gwusports.com', 'North Carolina', 'Gardner-Webb University'],
+      ['winthropeagles.com', 'South Carolina', 'Winthrop University'],
+    ],
+  },
+  big12: {
+    name: 'Big 12', division: 'NCAA D1', // women's-only lacrosse league
+    schools: [
+      ['thesundevils.com', 'Arizona', 'Arizona State University', 'W'],
+      ['gobearcats.com', 'Ohio', 'University of Cincinnati', 'W'],
+      ['cubuffs.com', 'Colorado', 'University of Colorado Boulder', 'W'],
+      ['floridagators.com', 'Florida', 'University of Florida', 'W'],
+      ['goaztecs.com', 'California', 'San Diego State University', 'W'],
+      ['ucdavisaggies.com', 'California', 'University of California, Davis', 'W'],
+    ],
+  },
+  nec: {
+    name: 'NEC', division: 'NCAA D1',
+    schools: [
+      ['wagnerathletics.com', 'New York', 'Wagner College'],
+      ['liuathletics.com', 'New York', 'Long Island University'],
+      ['lemoynedolphins.com', 'New York', 'Le Moyne College'],
+      ['hurstathletics.com', 'Pennsylvania', 'Mercyhurst University'],
+      ['rmucolonials.com', 'Pennsylvania', 'Robert Morris University', 'M'],
+      ['csuvikings.com', 'Ohio', 'Cleveland State University', 'M'],
+      ['detroittitans.com', 'Michigan', 'University of Detroit Mercy', 'M'],
+      ['vmikeydets.com', 'Virginia', 'Virginia Military Institute', 'M'],
+      ['stonehillskyhawks.com', 'Massachusetts', 'Stonehill College', 'W'],
+      ['fduknights.com', 'New Jersey', 'Fairleigh Dickinson University', 'W'],
+      ['newhavenchargers.com', 'Connecticut', 'University of New Haven', 'W'],
+      ['ccsubluedevils.com', 'Connecticut', 'Central Connecticut State University', 'W'],
+      ['hubison.com', 'District of Columbia', 'Howard University', 'W'],
+      ['dsuhornets.com', 'Delaware', 'Delaware State University', 'W'],
+    ],
+  },
+  atlantic10: {
+    name: 'Atlantic 10', division: 'NCAA D1',
+    schools: [
+      ['gomason.com', 'Virginia', 'George Mason University'],
+      ['gwsports.com', 'District of Columbia', 'George Washington University'],
+      ['davidsonwildcats.com', 'North Carolina', 'Davidson College'],
+      ['goduquesne.com', 'Pennsylvania', 'Duquesne University'],
+      ['goexplorers.com', 'Pennsylvania', 'La Salle University'],
+      ['sjuhawks.com', 'Pennsylvania', "Saint Joseph's University"],
+      ['gorhody.com', 'Rhode Island', 'University of Rhode Island'],
+      ['richmondspiders.com', 'Virginia', 'University of Richmond'],
+      ['vcuathletics.com', 'Virginia', 'Virginia Commonwealth University'],
+      ['gobonnies.com', 'New York', 'St. Bonaventure University'],
+    ],
+  },
 };
 
+// Each gender lists the URL-slug variants seen across platforms. Most use
+// mens-lacrosse / womens-lacrosse, but some use mlax/wlax or a bare "lacrosse".
 const SPORT_SLUGS = {
-  lacrosse: [["Men's Lacrosse", 'mens-lacrosse'], ["Women's Lacrosse", 'womens-lacrosse']],
+  lacrosse: [
+    ["Men's Lacrosse", ['mens-lacrosse', 'mlax', 'lacrosse']],
+    ["Women's Lacrosse", ['womens-lacrosse', 'wlax']],
+  ],
 };
 
 // Team inboxes and role accounts — the coach is still captured (named from the
@@ -272,19 +411,27 @@ async function main() {
 
   const candidates = [];
   let withEmail = 0, noEmail = 0;
-  for (const [domain, state, fallbackName] of cfg.schools) {
+  for (const [domain, state, fallbackName, genders = 'MW'] of cfg.schools) {
     const school = domainToSchool.get(domain) || fallbackName;
-    for (const [sport, slug] of slugs) {
-      // Try each page with both strategies: HTML profile links (Sidearm) first,
-      // then the Nuxt payload (WMT/Vue). Stop as soon as one yields coaches.
-      let coaches = [];
-      for (const path of [`/sports/${slug}/coaches`, `/sports/${slug}/roster`]) {
-        const html = await get(`https://${domain}${path}`);
-        if (!html) { await sleep(300); continue; }
-        coaches = extractCoaches(html, sport);
-        if (!coaches.length) coaches = extractCoachesNuxt(html, sport);
-        if (coaches.length) break;
-        await sleep(300);
+    for (const [sport, slugVariants] of slugs) {
+      // Honour an optional per-school gender flag ('M', 'W', or 'MW') so a
+      // conference only claims the gender(s) it actually sponsors for a school
+      // that splits genders across conferences (e.g. Fairfield, Mercer).
+      if (sport.startsWith('Men') && !genders.includes('M')) continue;
+      if (sport.startsWith('Women') && !genders.includes('W')) continue;
+      // Try each slug variant × page, with both strategies: HTML profile links
+      // (Sidearm) first, then the Nuxt payload (WMT/Vue). Stop at the first hit.
+      let coaches = [], hitSlug = slugVariants[0];
+      outer:
+      for (const slug of slugVariants) {
+        for (const path of [`/sports/${slug}/coaches`, `/sports/${slug}/roster`]) {
+          const html = await get(`https://${domain}${path}`);
+          if (!html) { await sleep(200); continue; }
+          coaches = extractCoaches(html, sport);
+          if (!coaches.length) coaches = extractCoachesNuxt(html, sport);
+          if (coaches.length) { hitSlug = slug; break outer; }
+          await sleep(200);
+        }
       }
       if (!coaches.length) continue;
       for (const c of coaches) {
@@ -293,8 +440,8 @@ async function main() {
           first_name: c.first_name, last_name: c.last_name, title: c.title,
           sport, email: c.email, phone: c.phone,
           school, division: cfg.division, conference: cfg.name, state,
-          landing_page: `https://${domain}/sports/${slug}`,
-          source_url: `https://${domain}/sports/${slug}/coaches`, source: 'roster_builder',
+          landing_page: `https://${domain}/sports/${hitSlug}`,
+          source_url: `https://${domain}/sports/${hitSlug}/coaches`, source: 'roster_builder',
         });
       }
       console.log(`  ${school} — ${sport}: ${coaches.length} coaches`);
@@ -313,14 +460,17 @@ async function main() {
     return;
   }
 
-  // Make the load idempotent: skip anything already present (so re-running a
-  // conference to backfill newly-reachable schools doesn't collide). We dedupe
-  // both within this batch and against existing rows in the DB, keyed by
+  // Make the load idempotent: skip anything already present ANYWHERE in the
+  // queue (not just this conference), so re-runs and cross-conference overlaps
+  // — e.g. a school that plays men's and women's in different conferences —
+  // never collide with the (school, sport, email) unique constraint. Keyed by
   // (school, sport, email) — or (school, sport, name) when there's no email.
   const keyOf = (c) => `${c.school}|${c.sport}|${(c.email || `${c.first_name} ${c.last_name}`).toLowerCase()}`;
   const existing = new Set();
-  for (const row of await db(`roster_candidates?select=school,sport,email,first_name,last_name&conference=eq.${encodeURIComponent(cfg.name)}`)) {
-    existing.add(keyOf(row));
+  for (let off = 0; ; off += 1000) {
+    const page = await db(`roster_candidates?select=school,sport,email,first_name,last_name&limit=1000&offset=${off}`);
+    for (const row of page) existing.add(keyOf(row));
+    if (!page || page.length < 1000) break;
   }
   const seen = new Set();
   const unique = candidates.filter((c) => {
