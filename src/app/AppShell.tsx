@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, UploadCloud, ShieldAlert, Users, GraduationCap,
-  Settings, Sparkles, Menu, X,
+  Settings, Sparkles, Menu, X, Zap,
 } from 'lucide-react';
 import { isConfigured } from '../lib/supabase';
 import { pendingReviewCount } from '../lib/api';
@@ -10,6 +10,7 @@ import Assistant from './components/Assistant';
 
 const NAV = [
   { to: '/app', label: 'Command Center', icon: LayoutDashboard, end: true },
+  { to: '/app/briefing', label: 'AI Briefing', icon: Zap },
   { to: '/app/sync', label: 'Monthly Sync', icon: UploadCloud },
   { to: '/app/review', label: 'Review Queue', icon: ShieldAlert },
   { to: '/app/coaches', label: 'Coaches', icon: Users },
