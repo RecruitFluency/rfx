@@ -229,6 +229,108 @@ const CONFERENCES = {
       ['gobonnies.com', 'New York', 'St. Bonaventure University'],
     ],
   },
+
+  // ===== Field hockey (women's-only sport) — run with sport key 'fieldhockey'.
+  // Separate keys from lacrosse because field-hockey membership differs.
+  fhbigten: {
+    name: 'Big Ten', division: 'NCAA D1',
+    schools: [
+      ['iuhoosiers.com', 'Indiana', 'Indiana University'],
+      ['hawkeyesports.com', 'Iowa', 'University of Iowa'],
+      ['umterps.com', 'Maryland', 'University of Maryland'],
+      ['mgoblue.com', 'Michigan', 'University of Michigan'],
+      ['msuspartans.com', 'Michigan', 'Michigan State University'],
+      ['nusports.com', 'Illinois', 'Northwestern University'],
+      ['ohiostatebuckeyes.com', 'Ohio', 'Ohio State University'],
+      ['gopsusports.com', 'Pennsylvania', 'Penn State University'],
+      ['scarletknights.com', 'New Jersey', 'Rutgers University'],
+    ],
+  },
+  fhacc: {
+    name: 'ACC', division: 'NCAA D1',
+    schools: [
+      ['bceagles.com', 'Massachusetts', 'Boston College'],
+      ['calbears.com', 'California', 'University of California'],
+      ['goduke.com', 'North Carolina', 'Duke University'],
+      ['gocards.com', 'Kentucky', 'University of Louisville'],
+      ['goheels.com', 'North Carolina', 'University of North Carolina'],
+      ['gostanford.com', 'California', 'Stanford University'],
+      ['cuse.com', 'New York', 'Syracuse University'],
+      ['virginiasports.com', 'Virginia', 'University of Virginia'],
+      ['godeacs.com', 'North Carolina', 'Wake Forest University'],
+    ],
+  },
+  fhivy: {
+    name: 'Ivy League', division: 'NCAA D1',
+    schools: [
+      ['brownbears.com', 'Rhode Island', 'Brown University'],
+      ['gocolumbialions.com', 'New York', 'Columbia University'],
+      ['cornellbigred.com', 'New York', 'Cornell University'],
+      ['dartmouthsports.com', 'New Hampshire', 'Dartmouth College'],
+      ['gocrimson.com', 'Massachusetts', 'Harvard University'],
+      ['pennathletics.com', 'Pennsylvania', 'University of Pennsylvania'],
+      ['goprincetontigers.com', 'New Jersey', 'Princeton University'],
+      ['yalebulldogs.com', 'Connecticut', 'Yale University'],
+    ],
+  },
+  fhbigeast: {
+    name: 'Big East', division: 'NCAA D1',
+    schools: [
+      ['guhoyas.com', 'District of Columbia', 'Georgetown University'],
+      ['villanova.com', 'Pennsylvania', 'Villanova University'],
+      ['uconnhuskies.com', 'Connecticut', 'University of Connecticut'],
+      ['friars.com', 'Rhode Island', 'Providence College'],
+      ['odusports.com', 'Virginia', 'Old Dominion University'],
+      ['libertyflames.com', 'Virginia', 'Liberty University'],
+      ['gobobcats.com', 'Connecticut', 'Quinnipiac University'],
+      ['owlsports.com', 'Pennsylvania', 'Temple University'],
+    ],
+  },
+  fhpatriot: {
+    name: 'Patriot League', division: 'NCAA D1',
+    schools: [
+      ['aueagles.com', 'District of Columbia', 'American University'],
+      ['goterriers.com', 'Massachusetts', 'Boston University'],
+      ['bucknellbison.com', 'Pennsylvania', 'Bucknell University'],
+      ['colgateathletics.com', 'New York', 'Colgate University'],
+      ['goholycross.com', 'Massachusetts', 'College of the Holy Cross'],
+      ['goleopards.com', 'Pennsylvania', 'Lafayette College'],
+      ['lehighsports.com', 'Pennsylvania', 'Lehigh University'],
+    ],
+  },
+  fhamericaeast: {
+    name: 'America East', division: 'NCAA D1',
+    schools: [
+      ['uvmathletics.com', 'Vermont', 'University of Vermont'],
+      ['unhwildcats.com', 'New Hampshire', 'University of New Hampshire'],
+      ['ualbanysports.com', 'New York', 'University at Albany'],
+      ['goriverhawks.com', 'Massachusetts', 'University of Massachusetts Lowell'],
+      ['goblackbears.com', 'Maine', 'University of Maine'],
+      ['bryantbulldogs.com', 'Rhode Island', 'Bryant University'],
+    ],
+  },
+  fhnec: {
+    name: 'NEC', division: 'NCAA D1',
+    schools: [
+      ['fairfieldstags.com', 'Connecticut', 'Fairfield University'],
+      ['sfuathletics.com', 'Pennsylvania', 'Saint Francis University'],
+      ['wagnerathletics.com', 'New York', 'Wagner College'],
+      ['gobroncs.com', 'New Jersey', 'Rider University'],
+      ['sacredheartpioneers.com', 'Connecticut', 'Sacred Heart University'],
+      ['stonehillskyhawks.com', 'Massachusetts', 'Stonehill College'],
+      ['liuathletics.com', 'New York', 'Long Island University'],
+      ['merrimackathletics.com', 'Massachusetts', 'Merrimack College'],
+      ['hurstathletics.com', 'Pennsylvania', 'Mercyhurst University'],
+      ['newhavenchargers.com', 'Connecticut', 'University of New Haven'],
+    ],
+  },
+  fhmpsf: {
+    name: 'MPSF', division: 'NCAA D1',
+    schools: [
+      ['ucdavisaggies.com', 'California', 'University of California, Davis'],
+      ['bluehens.com', 'Delaware', 'University of Delaware'],
+    ],
+  },
 };
 
 // Each gender lists the URL-slug variants seen across platforms. Most use
@@ -240,7 +342,7 @@ const SPORT_SLUGS = {
   ],
   // Field hockey is an NCAA women's-only sport — one team per school.
   fieldhockey: [
-    ['Field Hockey', ['field-hockey', 'fieldhockey', 'fh']],
+    ['Field Hockey', ['field-hockey', 'fhockey', 'fieldhockey', 'fh']],
   ],
 };
 
