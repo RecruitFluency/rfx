@@ -539,6 +539,7 @@ export interface RosterCandidate {
   conference: string | null;
   state: string | null;
   source_url: string | null;
+  source: string | null;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
 }

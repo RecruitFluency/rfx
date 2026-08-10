@@ -134,7 +134,14 @@ export default function RosterCandidates() {
                     onChange={(e) => edit(item.id, 'title', e.target.value)}
                     className={`${inputCls} w-40`}
                   />
-                  <span className="text-gray-300 flex-1 min-w-[180px] break-all">{item.email}</span>
+                  <span className="text-gray-300 flex-1 min-w-[180px] break-all">
+                    {item.email}
+                    {item.source?.startsWith('pattern_inferred') && item.email && (
+                      <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-amber-400" title="Generated from this school's email format — confirm before relying on it">
+                        <ShieldQuestion className="w-3 h-3" /> pattern guess — verify
+                      </span>
+                    )}
+                  </span>
                   {needsName && (
                     <span className="flex items-center gap-1 text-xs text-amber-400">
                       <ShieldQuestion className="w-3 h-3" /> add name
