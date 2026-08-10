@@ -331,6 +331,43 @@ const CONFERENCES = {
       ['bluehens.com', 'Delaware', 'University of Delaware'],
     ],
   },
+  fha10: {
+    name: 'Atlantic 10', division: 'NCAA D1',
+    schools: [
+      ['davidsonwildcats.com', 'North Carolina', 'Davidson College'],
+      ['goexplorers.com', 'Pennsylvania', 'La Salle University'],
+      ['richmondspiders.com', 'Virginia', 'University of Richmond'],
+      ['sjuhawks.com', 'Pennsylvania', "Saint Joseph's University"],
+      ['slubillikens.com', 'Missouri', 'Saint Louis University'],
+      ['vcuathletics.com', 'Virginia', 'Virginia Commonwealth University'],
+    ],
+  },
+  fhcaa: {
+    name: 'CAA', division: 'NCAA D1',
+    schools: [
+      ['drexeldragons.com', 'Pennsylvania', 'Drexel University'],
+      ['gohofstra.com', 'New York', 'Hofstra University'],
+      ['monmouthhawks.com', 'New Jersey', 'Monmouth University'],
+      ['nuhuskies.com', 'Massachusetts', 'Northeastern University'],
+      ['towsontigers.com', 'Maryland', 'Towson University'],
+      ['tribeathletics.com', 'Virginia', 'William & Mary'],
+    ],
+  },
+  fhmac: {
+    name: 'MAC', division: 'NCAA D1',
+    schools: [
+      ['appstatesports.com', 'North Carolina', 'Appalachian State University'],
+      ['ballstatesports.com', 'Indiana', 'Ball State University'],
+      ['athletics.bellarmine.edu', 'Kentucky', 'Bellarmine University'],
+      ['cmuchippewas.com', 'Michigan', 'Central Michigan University'],
+      ['jmusports.com', 'Virginia', 'James Madison University'],
+      ['kentstatesports.com', 'Ohio', 'Kent State University'],
+      ['longwoodlancers.com', 'Virginia', 'Longwood University'],
+      ['umassathletics.com', 'Massachusetts', 'University of Massachusetts'],
+      ['miamiredhawks.com', 'Ohio', 'Miami University'],
+      ['ohiobobcats.com', 'Ohio', 'Ohio University'],
+    ],
+  },
 };
 
 // Each gender lists the URL-slug variants seen across platforms. Most use
