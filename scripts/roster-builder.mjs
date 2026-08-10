@@ -238,6 +238,10 @@ const SPORT_SLUGS = {
     ["Men's Lacrosse", ['mens-lacrosse', 'mlax', 'lacrosse']],
     ["Women's Lacrosse", ['womens-lacrosse', 'wlax']],
   ],
+  // Field hockey is an NCAA women's-only sport — one team per school.
+  fieldhockey: [
+    ['Field Hockey', ['field-hockey', 'fieldhockey', 'fh']],
+  ],
 };
 
 // Team inboxes and role accounts — the coach is still captured (named from the
