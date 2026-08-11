@@ -1,0 +1,470 @@
+<title>RFX Prep Basketball Outreach Dossier — Pilot</title>
+<style>
+  :root{
+    --bg:#FAF8F5; --panel:#FFFFFF; --panel-2:#F3EFE9; --ink:#1B1613; --ink-2:#5C544d;
+    --line:#E7E0D7; --accent:#E0362F; --accent-ink:#B8241E;
+    --ok:#2E9E6B; --ok-bg:#E6F3EC; --warn:#B77C1E; --warn-bg:#F7EEDD;
+    --mute:#8C837a; --mute-bg:#EFEAE3; --stale:#C2352C; --stale-bg:#FBEAE8;
+    --best:#B8241E;
+    --shadow:0 1px 2px rgba(30,20,15,.06),0 6px 18px rgba(30,20,15,.05);
+    --radius:14px;
+    --display:"Helvetica Neue",Arial,system-ui,sans-serif;
+    --body:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  :root:not([data-theme="light"]){ }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#161311; --panel:#211C19; --panel-2:#1B1714; --ink:#F1EBE3; --ink-2:#B3A99e;
+      --line:#332B26; --accent:#F2554C; --accent-ink:#F2554C;
+      --ok:#4FC38C; --ok-bg:#16241d; --warn:#E0A94B; --warn-bg:#2a2114;
+      --mute:#9a9089; --mute-bg:#26201c; --stale:#F0685E; --stale-bg:#2c1815; --best:#F2554C;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#161311; --panel:#211C19; --panel-2:#1B1714; --ink:#F1EBE3; --ink-2:#B3A99e;
+    --line:#332B26; --accent:#F2554C; --accent-ink:#F2554C;
+    --ok:#4FC38C; --ok-bg:#16241d; --warn:#E0A94B; --warn-bg:#2a2114;
+    --mute:#9a9089; --mute-bg:#26201c; --stale:#F0685E; --stale-bg:#2c1815; --best:#F2554C;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);
+    line-height:1.5;-webkit-font-smoothing:antialiased;font-size:15px}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+  a{color:var(--accent-ink);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* Masthead */
+  header.mast{padding:44px 0 26px;border-bottom:1px solid var(--line)}
+  .kicker{font-family:var(--display);text-transform:uppercase;letter-spacing:.22em;
+    font-size:12px;font-weight:700;color:var(--accent-ink)}
+  h1{font-family:var(--display);font-weight:800;letter-spacing:-.01em;text-wrap:balance;
+    font-size:clamp(28px,4.4vw,44px);margin:.28em 0 .1em;line-height:1.03}
+  .sub{color:var(--ink-2);max-width:64ch;font-size:15.5px}
+  .stats{display:flex;flex-wrap:wrap;gap:26px;margin-top:22px}
+  .stat .n{font-family:var(--display);font-weight:800;font-size:26px;letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums}
+  .stat .l{font-size:11.5px;text-transform:uppercase;letter-spacing:.13em;color:var(--mute);font-weight:600}
+
+  /* Controls */
+  .controls{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 0;margin-bottom:26px}
+  .controls .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  input.search{flex:1;min-width:200px;padding:10px 13px;border:1px solid var(--line);border-radius:10px;
+    background:var(--panel);color:var(--ink);font:inherit;font-size:14px}
+  input.search:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+  .chip{font:inherit;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:999px;
+    border:1px solid var(--line);background:var(--panel);color:var(--ink-2);cursor:pointer;white-space:nowrap}
+  .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chip.best[aria-pressed="true"]{background:var(--best);border-color:var(--best)}
+
+  /* School panel */
+  .school{margin:34px 0}
+  .school-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 14px;padding-bottom:8px}
+  .school-head h2{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.02em;
+    font-size:20px;margin:0}
+  .loc{color:var(--mute);font-size:13px;font-weight:600}
+  .tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;
+    padding:3px 8px;border-radius:6px;background:var(--panel-2);color:var(--ink-2);border:1px solid var(--line)}
+  .note{font-size:13px;color:var(--ink-2);margin:2px 0 4px;display:flex;gap:8px;align-items:flex-start}
+  .note .ic{color:var(--mute);flex:none;font-weight:700}
+  .banner{display:flex;gap:9px;padding:9px 13px;border-radius:10px;font-size:13px;margin:8px 0 2px;
+    background:var(--stale-bg);color:var(--stale);border:1px solid color-mix(in srgb,var(--stale) 30%,transparent)}
+  .banner b{color:var(--stale)}
+  .banner.best{background:var(--warn-bg);color:var(--warn);border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+  .banner.best b{color:var(--warn)}
+
+  /* Cards */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin-top:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 16px 14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:9px;position:relative}
+  .card.best{border-color:color-mix(in srgb,var(--best) 45%,var(--line))}
+  .card.best::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:3px;background:var(--best)}
+  .card.thin{opacity:.9}
+  .cname{font-family:var(--display);font-weight:800;font-size:16.5px;letter-spacing:-.01em;line-height:1.15}
+  .best-star{color:var(--best);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-left:6px}
+  .ctitle{font-size:12.5px;color:var(--ink-2);font-weight:600;margin-top:-3px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .st{font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:6px;display:inline-flex;gap:5px;align-items:center;
+    font-variant-numeric:tabular-nums}
+  .st.ok{background:var(--ok-bg);color:var(--ok)}
+  .st.no{background:var(--mute-bg);color:var(--mute)}
+  .st.ver{background:var(--warn-bg);color:var(--warn)}
+  .st.soc{background:var(--panel-2);color:var(--ink-2);border:1px solid var(--line)}
+  .bg{font-size:13px;color:var(--ink-2)}
+  .hooks{font-size:13px;margin:0;padding-left:16px;display:flex;flex-direction:column;gap:2px}
+  .hooks li{color:var(--ink)}
+  .opener{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 11px;
+    font-size:13px;color:var(--ink);position:relative}
+  .opener .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--mute);font-weight:700;
+    display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+  .copy{font:inherit;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    border:1px solid var(--line);background:var(--panel);color:var(--ink-2);border-radius:6px;padding:3px 8px;cursor:pointer}
+  .copy:hover{color:var(--accent-ink);border-color:var(--accent)}
+  .copy.done{color:var(--ok);border-color:var(--ok)}
+  .empty{padding:40px;text-align:center;color:var(--mute)}
+  footer{border-top:1px solid var(--line);margin-top:40px;padding:22px 0 50px;color:var(--mute);font-size:12.5px}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:8px;font-size:12px;color:var(--ink-2)}
+  .legend span{display:inline-flex;gap:6px;align-items:center}
+  .dot{width:9px;height:9px;border-radius:3px;display:inline-block}
+  @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
+</style>
+
+<header class="mast"><div class="wrap">
+  <div class="kicker">RFX · Recruiting Intelligence</div>
+  <h1>Prep Basketball Outreach Dossier</h1>
+  <p class="sub">Pilot pass — the six flagship national academies. Every basketball coach on staff, with the contact route that actually works, a public-footprint read, and a personalized opener ready to send. Nothing invented: “not found” means the school publishes nothing.</p>
+  <div class="stats">
+    <div class="stat"><div class="n">6</div><div class="l">Academies</div></div>
+    <div class="stat"><div class="n">63</div><div class="l">Coaches profiled</div></div>
+    <div class="stat"><div class="n">17</div><div class="l">Verified emails</div></div>
+    <div class="stat"><div class="n">4</div><div class="l">Stale rosters caught</div></div>
+    <div class="stat"><div class="n">18</div><div class="l">Priority targets</div></div>
+  </div>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--ok)"></i> Email on file</span>
+    <span><i class="dot" style="background:var(--warn)"></i> Pattern — verify</span>
+    <span><i class="dot" style="background:var(--mute)"></i> Not published</span>
+    <span><i class="dot" style="background:var(--best)"></i> Priority target</span>
+  </div>
+</div></header>
+
+<div class="controls"><div class="wrap"><div class="row">
+  <input class="search" id="q" type="search" placeholder="Search coaches, schools, backgrounds…" aria-label="Search">
+  <button class="chip" data-school="all" aria-pressed="true">All schools</button>
+  <button class="chip" data-school="IMG Academy" aria-pressed="false">IMG</button>
+  <button class="chip" data-school="Montverde Academy" aria-pressed="false">Montverde</button>
+  <button class="chip" data-school="Oak Hill Academy" aria-pressed="false">Oak Hill</button>
+  <button class="chip" data-school="Link Academy" aria-pressed="false">Link</button>
+  <button class="chip" data-school="Sunrise Christian" aria-pressed="false">Sunrise</button>
+  <button class="chip" data-school="Prolific Prep" aria-pressed="false">Prolific</button>
+  <button class="chip best" id="bestBtn" aria-pressed="false">★ Priority only</button>
+</div></div></div>
+
+<main class="wrap" id="app"></main>
+
+<footer><div class="wrap">
+  Pilot of the 69-academy national list · contacts &amp; enrichment from public sources, current as of research date · verify “pattern” emails and any uncertain social handle before sending. Do not cold-email Carmelo Anthony (route through Coach Zito).
+</div></footer>
+
+<script>
+const SCHOOLS = [
+  {name:"IMG Academy", loc:"Bradenton, FL", tag:"National Academy · ~18 teams",
+   contact:"No individual emails/phones public — main line 1-800-872-6425",
+   stale:"Sean McAloon (ex boys HC) departed 2026 — his bio 404s. Jackson Johnson replaced him.",
+   best:"Priority: Frank Oliver Jr., Jackson Johnson, Daniel Santiago, Billy Clapper, Mike Gillian"},
+  {name:"Montverde Academy", loc:"Montverde, FL", tag:"National Academy · emails published",
+   contact:"Publishes coach emails on profile pages — firstname.lastname@montverde.org (many verified)",
+   stale:"Kevin Boyle left for SPIRE (Mar 2025). Steve Turner is HC; nearly the whole staff turned over. Ignore pre-2025 lists.",
+   best:"Priority: Austin Kelley (CBD, 100+ players), Steve Turner, Joe Katuka, Anthony Jones, Taneka Rubin (NIL)"},
+  {name:"Oak Hill Academy", loc:"Mouth of Wilson, VA", tag:"National Academy · multi-team",
+   contact:"Live domain is oak-hill.net (old .org is dead). No individual emails — school line (276) 579-2619",
+   stale:"Steve Smith retired 2022 — not current. 2025: Carmelo Anthony + Bay Frazier Co-GMs, John Zito HC.",
+   best:"Priority: John Zito (flagship, active social) + BJ Jackson (AD gatekeeper). Do NOT cold-email Carmelo."},
+  {name:"Link Academy", loc:"Branson, MO", tag:"Boys prep/postgrad",
+   contact:"No individual emails/phones — school 417-266-5465 · info@linkacademylions.com",
+   stale:"MaxPreps still lists Chad Myers as HC — he left for Vanderbilt (Dir. of Recruiting), May 2026. Mike Peck is HC.",
+   best:"Priority: Mike Peck (rich, quotable) + Adam Donyes (founder, author)"},
+  {name:"Sunrise Christian", loc:"Bel Aire, KS", tag:"4 programs · Post Grad + HS Elite",
+   contact:"Emails @sunrisechristian.org but redacted/unverified — office (316) 744-9262",
+   stale:"",
+   best:"Priority: Kyle Lindsted & Chris Popp (both active on X); ops gatekeepers Pat Wolz & Garrett Sankey; AD Tim Simoneau"},
+  {name:"Prolific Prep", loc:"Napa, CA → Deerfield Beach, FL", tag:"National Academy",
+   contact:"No emails/phones published — reach via verified socials or the site form. Program relocated to FL.",
+   stale:"Older assistant names (Pierre, Laymon, etc.) are stale — the 5 below are current.",
+   best:"Priority: Ryan Bernardi (HC). Whole staff is an Elon/Burlington coaching tree — a shared-origin opener works for any of them."},
+];
+
+const C = (school,name,title,email,estat,phone,soc,bg,hooks,opener,best,thin)=>({school,name,title,email,estat,phone,soc,bg,hooks,opener,best:!!best,thin:!!thin});
+
+const COACHES = [
+  // ---- IMG ----
+  C("IMG Academy","Mike Gillian","Director of Basketball","not found","no","",[["in","LinkedIn"]],
+    "At IMG since 2019; ex-Longwood HC (school D1 wins record); George Mason assistant who recruited the 2006 Final Four class.",
+    ["Recruited George Mason's 2006 Final Four Cinderella class","Holds Longwood's all-time D-I wins record"],
+    "Mike — congratulations on stepping into the Director of Basketball role at IMG. Knowing you helped recruit the George Mason class that made the 2006 Final Four run, you clearly have an eye for talent that translates — I'd love to share how our service could support the players coming through your program.",1),
+  C("IMG Academy","Jackson Johnson","Boys National Head Coach","not found","no","",[],
+    "Appointed May 2026. Tulane (baseball→hoops); Northfield Mount Hermon assistant; The Newman School HC — back-to-back NEPSAC AAA titles + 2026 National Prep Championship.",
+    ["Won the 2026 National Prep Championship at Newman","Publicly endorsed by Tommy Amaker & Dusty May","Northeast-FL native returning home"],
+    "Coach Johnson — congratulations on the move to IMG, and on capping your Newman run with the 2026 National Prep Championship before heading back to your home state. With Tommy Amaker and Dusty May both vouching publicly for how you develop players, I'd love to show you how our service can help your IMG guys reach the college programs that fit them best.",1),
+  C("IMG Academy","Frank Oliver Jr.","Girls National Head Coach","not found","no","",[["x","@justiceoliver"],["ig","@coacholiverjr"]],
+    "Girls National HC since 2023. FAMU grad; DeMatha; HD Woodson (7 DCIAA titles); Bishop McNamara; led IMG girls to 2025 Chipotle National Championship over #1 Montverde.",
+    ["Won IMG girls' first-ever national title (2025), beating #1 Montverde","Public 'college-first' philosophy: titles mean nothing if players don't reach college","Deep HBCU roots (FAMU)"],
+    "Coach Oliver — winning IMG's first-ever Chipotle National Championship over Montverde was a statement, but what stuck with me was your line in Andscape that the titles would mean nothing if your players didn't get to college. That college-first mission is exactly what we're built around, and I'd love to show you how we can help place your athletes.",1),
+  C("IMG Academy","Daniel Santiago","Assistant / Skill Development","not found","no","",[["in","LinkedIn"]],
+    "Former NBA center (Suns, Bucks); Puerto Rico national team, 2 Olympics; Univ. of New Mexico; at IMG since 2016.",
+    ["Lubbock-to-NBA-to-two-Olympics arc IMG featured itself","Guested on the Hoop Heads Podcast on skill development"],
+    "Daniel — your journey from Lubbock to the NBA and two Olympics with Puerto Rico is one heck of a story, and it's easy to see why IMG has you developing their post players. I'd love to share how our recruiting service can help the athletes you're coaching turn that skill work into college opportunities.",1),
+  C("IMG Academy","Billy Clapper","Varsity Head Coach / Skills","not found","no","",[["yt","YouTube"]],
+    "At IMG since 2015; Penn State Altoona HC 6 seasons; Pitt-Johnstown, Indiana State.",
+    ["GM of 'Sideline Cancer' (TBT) — funds pancreatic cancer research","Runs his own camps/clinics; motivational speaker"],
+    "Billy — what you've built with Sideline Cancer, using the game to fund pancreatic cancer research, is genuinely impressive and says a lot about how you use basketball for more than wins. As you lead IMG's varsity and post-grad players, I'd love to show you how our service can help get them the college exposure they've earned.",1),
+  C("IMG Academy","Travis Lyons","Associate Head Coach, Boys National","not found","no","",[["in","LinkedIn"]],
+    "Prior at Riverdale Baptist (MD); DC-area; selected to the NBA's Future Basketball Operations Stars program (2025-26).",
+    ["Tapped for the NBA's Future Basketball Operations Stars program"],
+    "Travis — congrats on being tapped for the NBA's Future Basketball Operations Stars program; that's real recognition of where you're headed in this game. As you help run IMG's national team, I'd love to share how our recruiting service can add another channel to get your players in front of college coaches.",0),
+  C("IMG Academy","Brian Nash","VP of Athletics","not found","no","",[],
+    "At IMG since 2016; 20+ yrs D1 (Duquesne assoc HC, Saint Francis PA HC, Seton Hall, Siena, St. Bonaventure); Keene State captain.",
+    ["Long D-I head-coaching pedigree; captained Keene State"],
+    "Brian — your path from captaining Keene State to two-plus decades on Division I benches before building IMG's basketball program is exactly the kind of experience that shapes a great development pipeline. I'd value a few minutes to show how we help programs like yours get players seen by the right college staffs.",0,1),
+  C("IMG Academy","Dan “DT” Torres","Post Grad National Head Coach","not found","no","",[],
+    "Runs IMG's post-grad national team; FSU grad assistant; Wisconsin manager. (Verify current title.)",
+    ["Runs one of the toughest post-grad national schedules in the country"],
+    "Coach Torres — the post-grad national schedule you run at IMG is one of the toughest in the country, which makes that extra year such a valuable springboard for your players. I'd love to show you how our service can help those post-grads convert that exposure into the right college landing spots.",0,1),
+  C("IMG Academy","Shawn Greenfield","Head Basketball Coach (team unconfirmed)","not found","no","",[["in","LinkedIn"]],
+    "Ex-Maryland HS head coach (Northern, Southern); Mount Aloysius. Limited public footprint.",
+    ["Maryland HS head-coaching background; Mount Aloysius tie with Billy Clapper"],
+    "Shawn — from head-coaching roles in Maryland to IMG, you've clearly committed your career to developing young players. I'd welcome the chance to show you how our service can help get your athletes in front of the college coaches who'd be a fit.",0,1),
+
+  // ---- Montverde ----
+  C("Montverde Academy","Austin Kelley","Director, Center for Basketball Development","austin.kelley@montverde.org","ok","",[],
+    "Runs the CBD (100+ athletes) and assists the national team; 5 yrs Niagara; Gonzaga (DC) roots with HC Turner; ex-Hoop Group Elite Director.",
+    ["Oversees 100+ developing players — best single point of program-wide reach","Deep Hoop Group / DC AAU network; shared Gonzaga roots with Turner"],
+    "Coach Kelley — directing a Center for Basketball Development with 100-plus athletes is exactly the scale where our recruiting service can add the most value. Given your Hoop Group and DC AAU background, I suspect you'll immediately see how it fits how you already develop and place players.",1),
+  C("Montverde Academy","Steve Turner","National Boys Head Coach","steve.turner@montverde.org","ok","",[],
+    "First season 2025-26. 21 yrs HC at Gonzaga College HS (DC), 497-176; Gatorade National Coach of the Year (2016).",
+    ["2025 Washington Metropolitan Basketball Hall of Fame induction","497 career wins across two decades at one school"],
+    "Coach Turner — congratulations on the 2025 Washington Metropolitan Basketball Hall of Fame induction; 497 wins at Gonzaga is a staggering way to earn it. Stepping into the Montverde program is a fascinating new chapter, and I'd love to introduce a resource that could support how you evaluate and place your national-team talent.",1),
+  C("Montverde Academy","Joe Katuka","Associate Head Coach","joseph.katuka@montverde.org","ok","",[],
+    "Montverde '07 alum; George Washington U; coaches Nigeria's U-18 national team; founded the Joe Katuka Basketball Foundation.",
+    ["Founder of a foundation supporting kids in Africa","Full-circle alum now on staff; coaches Nigeria U-18"],
+    "Coach Katuka — the full-circle story of coming back to coach at the school where you won a title in '07, on top of leading Nigeria's U-18s, is genuinely inspiring. The work your foundation does in Africa is the kind of player-first mindset our recruiting service is built around, and I'd love to share how we could help your guys get seen.",1),
+  C("Montverde Academy","Anthony Jones","Head Girls Basketball Coach","anthony.jones@montverde.org","ok","",[],
+    "First season 2025-26. ~24 yrs at Dr. Phillips HS (Orlando) — 6 FHSAA state titles + 2 national titles.",
+    ["Six state titles at Dr. Phillips before the leap to Montverde","Reputation for sending players to the college level"],
+    "Coach Jones — leaving Dr. Phillips after building six state championships to launch a new era at Montverde is one of the bigger stories in Florida girls hoops this year. As you build the roster, I'd love to introduce a recruiting service that could help your players land the college opportunities you've always been known for creating.",1),
+  C("Montverde Academy","Taneka Rubin","Student-Athlete Dev Coordinator / Asst Girls","taneka.rubin@montverde.org","ok","",[],
+    "Dual role since 2022; owns NIL education school-wide; FAMU; played pro in England, Portugal, Spain, Romania.",
+    ["Owns NIL education at Montverde — directly adjacent to recruiting","Pro career across four European countries"],
+    "Coach Rubin — your pro career across England, Spain, Portugal, and Romania, plus owning NIL education at Montverde, is a rare combination. Since NIL and recruiting go hand in hand, I'd love to show you a service that could complement the development work you're already leading.",1),
+  C("Montverde Academy","Bradley Jacks","National Boys Assistant","bradley.jacks@montverde.org","ok","",[],
+    "Joined 2025. 5 seasons Quinnipiac (2 MAAC titles); captained Babson to the 2017 D-III national title.",
+    ["Won a D-III national title as player-captain at Babson (2017)","Climbed GA → video → assistant at Quinnipiac"],
+    "Coach Jacks — captaining Babson to the 2017 D-III national title and then climbing from GA to assistant at Quinnipiac says a lot about how you value the developmental grind. That player-development focus is exactly why I wanted to reach out about a recruiting resource for your Montverde guys.",0),
+  C("Montverde Academy","Christian Iozza","National Boys Assistant","christian.iozza@montverde.org","ok","",[],
+    "Joined 2025. Medford MA; Proctor Academy; Seton Hill (D2).",
+    ["Focus on student-athlete mental health, rooted in his own AAU senior project","Golf & bowling off the court"],
+    "Coach Iozza — I really respect that your coaching started with a senior project running an AAU team and has stayed centered on players' mental health as much as their game. That whole-person approach is the spirit behind our recruiting service, and I'd love to tell you more.",0),
+  C("Montverde Academy","Malick Koné","CBD Staff Coach","malick.kone@montverde.org","ok","",[],
+    "Joined 2025. Head coach of Guinea's Senior Women's national team; Rutgers 2011-15; charity well-building in Guinea.",
+    ["Leads Guinea's senior women's national team","Runs well-building charity work in Guinea"],
+    "Coach Koné — leading Guinea's senior women's national team while coaching at Montverde, on top of your well-building work back home, is a remarkable footprint. I'd love to share how our recruiting service could help the players you develop find the right college fit.",0),
+  C("Montverde Academy","Chris Spears","CBD Staff Coach","chris.spears@montverde.org","ok","",[],
+    "At CBD since 2022 (longest-tenured CBD coach). Sacramento native; Pacific Union College; M.Ed. Colorado.",
+    ["Continuity figure across the Boyle→Turner transition","Higher-education background (M.Ed.)"],
+    "Coach Spears — being the steady hand through Montverde's coaching transition says a lot about the culture you help hold together at the CBD. I'd welcome a few minutes to share how we support programs in placing their developing players.",0,1),
+  C("Montverde Academy","Shea Feehan","CBD Prep Coach","shea.feehan@montverde.org","ver","",[],
+    "Second season at CBD; Eureka College grad — played both basketball and golf.",
+    ["Two-sport college background (basketball + golf) at Eureka"],
+    "Coach Feehan — a two-sport college athlete now developing prep players at Montverde is a great background to draw on. I'd love to introduce a recruiting resource that could help your CBD guys get to the next level.",0,1),
+  C("Montverde Academy","Caleb Smith","CBD Staff Coach","caleb.smith@montverde.org","ver","",[],
+    "On CBD staff since 2024; 2023 Cornell University graduate.",
+    ["Ivy League (Cornell) academic background"],
+    "Coach Smith — bringing a Cornell background into player development at Montverde is a distinctive mix of academics and hoops. I'd love to share how our service helps prep players find the right academic-and-athletic college fit.",0,1),
+  C("Montverde Academy","Jason Wade","CBD Staff Coach","jason.wade@montverde.org","ver","",[],
+    "Joined 2025; Nike EYBL circuit; graduate assistant at Old Dominion (2024-25).",
+    ["EYBL grassroots + ODU college experience"],
+    "Coach Wade — your EYBL and Old Dominion background means you already live in the recruiting ecosystem. I'd value a quick conversation about how our service supports prep staffs on that side.",0,1),
+  C("Montverde Academy","Brady Harrington","CBD Staff Coach","brady.harrington@montverde.org","ver","",[],
+    "Joined 2025; six years college coaching (College of Saint Rose, Elmira lead assistant).","",[],
+    "Coach Harrington — with six years on college benches before Montverde, you know exactly what college staffs look for. I'd love to show you how our recruiting service can help surface your CBD players to them.",0,1),
+  C("Montverde Academy","Ryan Salzberg","CBD Staff Coach","ryan.salzberg@montverde.org","ver","",[],
+    "Joined 2025; recent BBA/MBA grad.","",[],"",0,1),
+  C("Montverde Academy","Cedric Lindsay","CBD Staff Coach","not found","no","",[],
+    "Listed on the staff directory; limited public footprint — confirm details before outreach.","",[],"",0,1),
+  C("Montverde Academy","Sam Brown","Assistant Girls","sam.brown@montverde.org","ok","",[],
+    "Joined 2025 following Jones from Dr. Phillips (three straight FHSAA titles).",
+    ["Part of three straight state titles at Dr. Phillips","Orlando roots — played at Dr. Phillips himself"],
+    "Coach Brown — three straight state titles at Dr. Phillips and now bringing that championship experience to Montverde with Coach Jones is a heck of a run. I'd love to share a recruiting resource that could help the talent you develop get in front of the right college programs.",0),
+  C("Montverde Academy","Abner Ham","Assistant Girls","abner.ham@montverde.org","ok","",[],
+    "Joined 2025. Fort Lauderdale; UCF psychology grad.",
+    ["Applies a UCF psychology background to player development","Enjoys travel and comedy"],
+    "Coach Ham — bringing a psychology background from UCF into player development is exactly the kind of thoughtful approach that stands out. I'd love to introduce a recruiting service built to support how you and the Montverde staff get your players to the next level.",0),
+
+  // ---- Oak Hill ----
+  C("Oak Hill Academy","John Zito","Head Coach, National Team","not found","no","(276) 579-2619",[["x","@CoachZitoZito"],["ig","@zitozito_oha"]],
+    "Hired 2024-25. Ran Carmelo's Team Melo EYBL; John Carroll (MD) MIAA title (coached Immanuel Quickley); developed Bub Carrington, Cam Whitmore.",
+    ["Hand-picked by Carmelo Anthony via Team Melo","Developed Quickley, Carrington, Whitmore","Opens a new era on a 9-national-title program"],
+    "Coach Zito — congratulations on taking the helm of Oak Hill's national team; the player-development track record you built with Team Melo, from Bub Carrington to Cam Whitmore, is exactly the kind of pipeline our families follow closely. Stepping into a program with nine national banners is no small thing, and we'd love to be a resource as you build this next era on The Hill.",1),
+  C("Oak Hill Academy","BJ Jackson","Athletic Director / Head Coach, Red Team","not found","no","(276) 579-2619",[],
+    "Oak Hill's Athletic Director and Red Team head coach — the department gatekeeper for athletics partnerships.",
+    ["As AD, the front-door contact for the whole basketball operation"],
+    "Mr. Jackson — as Oak Hill's athletic director you set the tone for how the program supports its athletes off the court; we'd welcome a brief conversation about how our recruiting service could be a resource for your basketball families across all the teams.",1),
+  C("Oak Hill Academy","Dion Dacons","Assistant (Gold) / Athletics Fund Coordinator","not found","no","",[["ig","@diondacons"]],
+    "Oak Hill playing alum (2002-03); Temple letterman + Coordinator of Student-Athlete Development; ex-UNC Asheville assistant.",
+    ["Alum 'coming home' — the school spotlighted his return","Temple student-athlete-development background"],
+    "Coach Dacons — it's clear from Oak Hill's own coach spotlight that returning to The Hill as an alum means a lot to you, and that pride shows. Given your background developing student-athletes at Temple, we think you'd find real value in what we do to help players get seen by the right programs.",0),
+  C("Oak Hill Academy","Bryan Meagher","Associate HC / Director of Basketball Ops / S&C","not found","no","",[],
+    "~16 yrs at Oak Hill (longest-tenured); part of 5 national titles; co-founder of The Athlete Maker.",
+    ["Coach & AD '40 Under 40' honoree (2018)","Championship-era continuity; blends coaching with elite S&C"],
+    "Coach Meagher — being named to Coach & AD's 40 Under 40 is a real testament to the mark you've made, and your blend of on-court coaching and strength development at Oak Hill is exactly the kind of holistic approach we admire. As the program enters a new chapter, we'd love to support your players' recruiting journeys.",0),
+  C("Oak Hill Academy","Carmelo Anthony","Co-GM, Basketball Operations","route via program","no","",[],
+    "Oak Hill '02 alum, Basketball HOF; appointed Co-GM May 2025. As a global celebrity, don't cold-email — reference his program vision when writing to Coach Zito.",
+    ["Do not cold-email; use his stated vision as context in outreach to Zito"],"",0,1),
+  C("Oak Hill Academy","Bay Frazier","Co-GM, Basketball Operations","not found","no","",[],
+    "Carmelo Anthony's longtime advisor; decades of basketball-ops experience. Limited public footprint — route through the head coach.","",[],"",0,1),
+  C("Oak Hill Academy","Robert Logan","Head Coach, International Team","not found","no","",[],
+    "Also Dean of Boys & Resident Manager — supports international student-athletes on and off the court.",
+    ["Coach + Dean of Boys + residential life — a whole-student mentor"],
+    "Coach Logan — the way you support international student-athletes both on the court and as Dean of Boys speaks to a real commitment to the whole player; we'd value the chance to help those students navigate their recruiting options.",0,1),
+  C("Oak Hill Academy","William Hunter","Head Coach, White Team","not found","no","",[],
+    "Also a science instructor; ECU grad; up-tempo, player-development focus.",
+    ["Educator-coach — coaches White Team and teaches science"],
+    "Coach Hunter — balancing an up-tempo White Team with teaching science in the classroom is a real testament to the educator-coach you are; we'd love to help your players who are chasing the college level.",0,1),
+  C("Oak Hill Academy","Spencer Taylor","Assistant, International Team","not found","no","",[],"Limited public footprint — route through the head coach.",[],"",0,1),
+  C("Oak Hill Academy","Lorenzo White","Assistant / Player Dev, White Team","not found","no","",[],"Player-development specialist; limited public footprint.",[],"",0,1),
+  C("Oak Hill Academy","Joseph Stroman","Assistant / Player Dev, White Team","not found","no","",[],"Player-development focus; limited public footprint.",[],"",0,1),
+  C("Oak Hill Academy","Clif Conley","Head Coach, Red Team","not found","no","",[],"Limited public footprint — program-level opener recommended.",[],"",0,1),
+  C("Oak Hill Academy","Mareo Thompson","Assistant, Red Team","not found","no","",[],"Limited public footprint — route through the head coach / AD.",[],"",0,1),
+
+  // ---- Link ----
+  C("Link Academy","Mike Peck","Head Coach, National Team","not found","no","417-266-5465",[["x","@CoachMikePeck"],["in","LinkedIn"]],
+    "Hired 2026. Findlay Prep HC 157-8 with 3 ESPN national titles; coached Anthony Bennett (#1 '13), Tristan Thompson, CJ McCollum; ex-Idaho Stampede (G-League) HC; UTSA assoc HC.",
+    ["Developed multiple NBA lottery picks at Findlay Prep","Quote: the 'itch to get back in that seat'","His son is joining him at Link"],
+    "Coach Peck — congratulations on taking the reins of the National team at Link Academy; going from developing lottery picks like Anthony Bennett and Tristan Thompson at Findlay Prep back to running your own prep program is a heck of a full-circle move. I read you talked about finally scratching that 'itch to get back in that seat' — that competitive edge is exactly why I wanted to reach out.",1),
+  C("Link Academy","Adam Donyes","PG ELITE Head Coach & Founder/President","not found","no","417-266-5465",[],
+    "Founder & President of Link Academy. D1 guard at Boise State; founded Link Year Prep in 2011 (grew to 50+ D-I alumni); author of 'Win by Two'.",
+    ["Kanakuk-counselor-to-founder origin story","Published author of 'Win by Two' (basketball + faith)"],
+    "Adam — what you've built at Link Academy is remarkable; going from a Kanakuk camp counselor to founding a prep program with 50-plus D-I alumni is the kind of origin story that sticks with you. I also came across 'Win by Two' — the faith-and-friendship angle clearly runs through how you develop players, and that's part of why I wanted to connect.",1),
+  C("Link Academy","Garrett Luinstra","PG Premier Head Coach","not found","no","417-266-5465",[],
+    "From Lawrence KS; Free State HS single-season scoring record (456 pts); walked on at Kansas under Bill Self; started at PG for Central Missouri; MOKAN Elite (EYBL) roots.",
+    ["KU walk-on under Bill Self — a grinder's path","Set Free State's single-season scoring record","MOKAN Elite grassroots coaching roots"],
+    "Garrett — your path stands out to me: setting Free State's single-season scoring record, walking on at Kansas under Coach Self, then starting at the point for Central Missouri. That grinder's perspective is exactly what post-grad kids at Link need, and it's why I wanted to reach out about how we might support your guys' recruitment.",0),
+  C("Link Academy","Mook Evans","PG Hybrid Head Coach & S&C","not found","no","417-266-5465",[],
+    "Runs the PG Hybrid team and strength & conditioning. Limited public footprint — full name/bio not publicly verifiable; use a program-level opener.",[],"",0,1),
+
+  // ---- Sunrise ----
+  C("Sunrise Christian","Kyle Lindsted","Head Coach, H.S. Elite","not found","no","(316) 744-9262",[["x","@CoachKLindsted"]],
+    "Son of Sunrise's founder; Sunrise AD/HC 2000-15 (35 D-I players); Wichita State assistant under Marshall (3 NCAAs); Minnesota assistant; Brooklyn Nets scout.",
+    ["Family legacy — his father founded the school","Scouted talent for the Brooklyn Nets; D-I pedigree"],
+    "Coach Lindsted — from building Sunrise into a national name to scouting talent for the Nets, you've evaluated players at every level there is. That perspective is exactly why I wanted to reach out: our recruiting service works to get prep players in front of the right college programs, and I think it'd complement what you're doing with H.S. Elite.",1),
+  C("Sunrise Christian","Chris Popp","Head Coach, Post Grad","not found","no","(316) 744-9262",[["x","@CoachPopp"],["in","LinkedIn"]],
+    "Tabor College; MSU-West Plains HC (off probation → Region XVI title, national ranking); Arkansas-Fort Smith.",
+    ["Took MSU-West Plains from probation to a regional title in two years","JUCO head-coaching = fluent in the placement pipeline"],
+    "Coach Popp — what you built at Missouri State–West Plains, taking a program off probation to a Region XVI title in just two seasons, is exactly the kind of player-development track record that caught our eye. I follow the Post Grad group's placements closely and wanted to introduce what we do on the recruiting side.",1),
+  C("Sunrise Christian","Pat Wolz","Assistant / General Manager, Post Grad","not found","no","417-693-7993",[],
+    "9th year at Sunrise; GM of the Post Grad program (ops, logistics, roster) — the operational gatekeeper. Direct line on his bio page.",
+    ["Nine years running Post Grad operations — day-to-day gatekeeper"],
+    "Coach Wolz — nine years running point on the Post Grad program's operations, you've probably seen every kind of recruiting outreach there is. I'll keep this short and useful: here's specifically how we'd lighten the placement load for your guys.",1),
+  C("Sunrise Christian","Garrett Sankey","Assistant / Director of Operations, H.S. Elite","not found","no","(316) 744-9262",[],
+    "Assistant + Director of Operations (scheduling, travel, recruiting logistics); TBT and Wichita Wind Surge event background.",
+    ["Owns Elite's scheduling/travel/recruiting logistics — ops gatekeeper"],
+    "Coach Sankey — running operations and recruiting logistics for H.S. Elite, you're the person who actually feels the crunch of coordinating exposure for every player. That's precisely where our recruiting service takes work off your plate — could I send a short overview?",1),
+  C("Sunrise Christian","Tim Simoneau","Athletic Director / Varsity Boys HC","not found","no","(316) 744-9262",[],
+    "School AD and domestic varsity boys HC; performance-training background (Pure-Formance, Wichita Hoops). Institutional decision-maker across programs.",
+    ["Top-of-funnel institutional contact across all Sunrise programs"],
+    "Mr. Simoneau — as Sunrise's AD and varsity boys coach, you've built an athletics culture that clearly develops players from the ground up. I lead a recruiting service and would value a brief conversation about how we could support your student-athletes' next step.",0),
+  C("Sunrise Christian","Kerry “Chief” Rosenboom","Strength & Conditioning (Post Grad + Elite)","not found","no","",[],
+    "30+ yrs; joined Wichita State's staff in 1987; trained Fred VanVleet, Austin Reaves, Ron Baker; rare dual master-level certification.",
+    ["Trained Fred VanVleet & Austin Reaves before the NBA","One of ~15 nationally with dual master S&C credentials"],
+    "Coach Rosenboom — having put in the work with guys like Fred VanVleet and Austin Reaves before they made the league, you know the full arc from prep to pro better than almost anyone. I'd love to share how our recruiting service helps get Sunrise's players seen at the stage where it counts.",0),
+  C("Sunrise Christian","Keyaun Hoskin","Assistant, H.S. Elite","not found","no","",[],
+    "Duncanville TX state champ; Bethel College (KS) standout (2024 Newcomer of the Year); tied to development of Ron Holland & Anthony Black.",
+    ["Duncanville pedigree + Ron Holland / Anthony Black connections","Recent college standout — close to the recruits he coaches"],
+    "Coach Hoskin — coming out of Duncanville and having been around the development of guys like Ron Holland and Anthony Black, you know what a real recruiting runway looks like. As a recent college standout yourself, I think you'll get what our service is trying to do for Sunrise's players — mind if I share more?",0),
+  C("Sunrise Christian","Spencer Dexter","Assistant, H.S. Elite","not found","no","",[],
+    "At H.S. Elite since 2019; also Director of Coaches at Sunrise Basketball Academy; developed McDonald's All-Americans.",
+    ["Six seasons developing Elite players incl. McDonald's All-Americans"],
+    "Coach Dexter — six years with H.S. Elite and now directing coaches at the academy, you've had a hand in developing McDonald's All-Americans. I'd love to show you how our recruiting service could support the next group coming through.",0,1),
+  C("Sunrise Christian","Kaleb Gaddis","Assistant / Player Development, Post Grad","not found","no","",[],
+    "Recent KS player (class of 2021); now runs player development for Post Grad.",
+    ["Recent Kansas-area player — relatable to current recruits"],
+    "Coach Gaddis — having come up as a point guard in the Kansas prep scene yourself, you know how much the right exposure matters at the postgrad stage. That's exactly the gap our recruiting service helps close, and I'd love to show you how.",0,1),
+  C("Sunrise Christian","Logan Ward","Assistant / Video Coordinator, Post Grad","not found","no","",[],
+    "WSU grad; ex-Wichita Wind Surge audio engineer; runs film for Post Grad.",
+    ["Production background — the person cutting the highlight film recruiters live on"],
+    "Coach Ward — coming from the production side with the Wind Surge and now running Sunrise's film, you get how much a well-cut clip moves the needle for a recruit. We work the recruiting side of that same pipeline and I'd value 10 minutes of your time.",0,1),
+  C("Sunrise Christian","Erik Talton","Assistant, Post Grad","not found","no","",[],"Title inconsistent across sources (verify). Limited public bio.",[],"",0,1),
+  C("Sunrise Christian","Terry Michael","Varsity Head Coach (Women's)","not found","no","(316) 744-9262",[],
+    "Girls varsity HC; public bio is a coaching-philosophy statement (relationships, faith, competing).",
+    ["Player-first philosophy quote on the athletics page"],
+    "Coach Michael — I read your note about valuing the lifelong relationships your players form as teammates, and it's clear development at Sunrise is about more than wins. That player-first approach is exactly why I wanted to introduce our recruiting service and how we help girls-program athletes find the right college fit.",0,1),
+  C("Sunrise Christian","Victor Stevenson","Junior High Head Coach (Girls)","not found","no","",[],
+    "Sunrise alum (Class of 2004) who played there; now coaches junior-high girls.",
+    ["Alum who returned to coach — authentic loyalty hook"],
+    "Coach Stevenson — coming back to coach at the school you played for in '04 says a lot about what Sunrise means to you. I'd love to share how our recruiting service could help the players you're developing carry that forward to the next level.",0,1),
+  C("Sunrise Christian","Kelsey Hoesch","Assistant (Women's)","not found","no","",[],"Limited public footprint — program-level opener.",[],"",0,1),
+
+  // ---- Prolific ----
+  C("Prolific Prep","Ryan Bernardi","Head Coach & Director of Basketball","not found","no","",[["x","@Coach_Bernardi"],["ig","@coach.bernardi"],["in","LinkedIn"]],
+    "Elon grad (came up as an undergrad manager); took his first HC job at 19; 2 NC titles at The Burlington School; 203-46 career; player Yves Missi made the 2024 NBA All-Rookie Team.",
+    ["Ran a varsity program at age 19 — rare origin story","Elon manager-to-head-coach arc","Yves Missi's 2024 NBA All-Rookie nod — the program's first NBA player"],
+    "Coach Bernardi — what you've built at Prolific is remarkable, especially knowing you took your first head-coaching job at 19 and worked your way up from an undergrad manager role at Elon. Seeing Yves Missi land on the NBA All-Rookie team last year felt like a real marker of the player-development culture you've created.",1),
+  C("Prolific Prep","Matt Handy","Head Assistant / Director of Development","not found","no","",[["in","LinkedIn"]],
+    "10+ yrs skills training; mentored under Drew Hanlen; worked with 50+ NBA players (Tatum, Randle, Wade, Beal); founder of Cross Court Training.",
+    ["Development lineage under Drew Hanlen + NBA stars","Quote: 'every rep has a purpose, and every player has a path'"],
+    "Coach Handy — your development background is elite; coming up under Drew Hanlen and putting in reps with guys like Jayson Tatum and Julius Randle is exactly the pedigree that draws families to Prolific. Your line that 'every rep has a purpose, and every player has a path' mirrors how we think about matching players to the right college fit.",0),
+  C("Prolific Prep","Caleb Vanderburg","Associate Head Coach","not found","no","",[["x","@_Coach_CV"],["in","LinkedIn"]],
+    "Elon grad ('21, Public Health); defensive coordinator at The Burlington School during back-to-back NC titles.",
+    ["Elon coaching-tree link with Bernardi","Defensive identity: 'pride, communication, and trust'"],
+    "Coach Vanderburg — the defensive identity you've carried from your coordinator days at The Burlington School through to Prolific really stands out; that line about defense being 'pride, communication, and trust' is exactly the mindset our players need more of. Great to see you and Coach Bernardi keep the Elon-to-championship pipeline going.",0),
+  C("Prolific Prep","Paul Murray","Assistant Coach (Golden State Prep)","not found","no","",[["x","@itspaulmurray"]],
+    "Elon grad who played there (met Bernardi); HC at Henderson Collegiate (conference title) before Prolific.",
+    ["Elon teammate-turned-colleague of Bernardi","Won a conference title in his lone year running Henderson Collegiate"],
+    "Coach Murray — your path is a great one to follow: winning a conference title in your first year running Henderson Collegiate before coming out to lead Golden State Prep. The way you and Coach Bernardi have stuck together since your Elon days clearly shapes the culture at Prolific, and that's the kind of program we love partnering with.",0),
+  C("Prolific Prep","Austin Sherrell","Assistant Coach","not found","no","",[],
+    "'Coach Sauce'; Detroit native; grassroots — Vegas Elite (EYBL), The Family, Hillcrest Prep; helped develop brother Aiden Sherrell (McDonald's AA).",
+    ["EYBL/grassroots pedigree","Helped develop a McDonald's All-American (Aiden Sherrell)"],
+    "Coach Sauce — your grassroots track record speaks for itself; the work you put in across Vegas Elite and Hillcrest, and helping develop a McDonald's All-American in Aiden, is exactly the kind of player-first background we look for in a partner. Would love to connect on how we're helping prep-level bigs find the right college landing spots.",0,1),
+];
+
+const SOC_LABEL={x:"𝕏",ig:"IG",in:"in",yt:"▶"};
+const app=document.getElementById('app');
+let fSchool="all", fBest=false, fQ="";
+
+function esc(s){return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function render(){
+  const q=fQ.trim().toLowerCase();
+  const rows=COACHES.filter(c=>c.name && c.name.trim());
+  let html="";
+  for(const S of SCHOOLS){
+    if(fSchool!=="all" && S.name!==fSchool) continue;
+    let list=rows.filter(c=>c.school===S.name);
+    if(fBest) list=list.filter(c=>c.best);
+    if(q) list=list.filter(c=>(c.name+" "+c.title+" "+c.bg+" "+(c.hooks||[]).join(" ")+" "+S.name).toLowerCase().includes(q));
+    if(!list.length) continue;
+    html+=`<section class="school"><div class="school-head">
+      <h2>${esc(S.name)}</h2><span class="loc">${esc(S.loc)}</span><span class="tag">${esc(S.tag)}</span></div>
+      <div class="note"><span class="ic">✉</span><span>${esc(S.contact)}</span></div>
+      ${S.stale?`<div class="banner"><span>⚠</span><span><b>Roster changed:</b> ${esc(S.stale)}</span></div>`:``}
+      ${S.best?`<div class="banner best"><span>★</span><span>${esc(S.best)}</span></div>`:``}
+      <div class="grid">`;
+    for(const c of list){
+      const chips=[];
+      if(c.estat==="ok") chips.push(`<span class="st ok">✓ ${esc(c.email)}</span>`);
+      else if(c.estat==="ver") chips.push(`<span class="st ver">◑ ${esc(c.email)} · verify</span>`);
+      else chips.push(`<span class="st no">✉ ${esc(c.email||'not found')}</span>`);
+      if(c.phone) chips.push(`<span class="st no">☎ ${esc(c.phone)}</span>`);
+      for(const s of (c.soc||[])) chips.push(`<span class="st soc">${SOC_LABEL[s[0]]||s[0]} ${esc(s[1])}</span>`);
+      html+=`<article class="card ${c.best?'best':''} ${c.thin?'thin':''}">
+        <div><span class="cname">${esc(c.name)}</span>${c.best?'<span class="best-star">★ priority</span>':''}</div>
+        <div class="ctitle">${esc(c.title)}</div>
+        <div class="chips">${chips.join("")}</div>
+        ${c.bg?`<div class="bg">${esc(c.bg)}</div>`:''}
+        ${(c.hooks&&c.hooks.length)?`<ul class="hooks">${c.hooks.map(h=>`<li>${esc(h)}</li>`).join("")}</ul>`:''}
+        ${c.opener?`<div class="opener"><div class="lbl">Draft opener <button class="copy" type="button">Copy</button></div>${esc(c.opener)}</div>`:''}
+      </article>`;
+    }
+    html+=`</div></section>`;
+  }
+  app.innerHTML=html||`<div class="empty">No coaches match your filters.</div>`;
+  app.querySelectorAll('.copy').forEach(btn=>btn.addEventListener('click',()=>{
+    const txt=btn.closest('.opener').textContent.replace(/^Draft opener\s*Copy/,'').trim();
+    navigator.clipboard&&navigator.clipboard.writeText(txt);
+    btn.textContent="Copied";btn.classList.add('done');
+    setTimeout(()=>{btn.textContent="Copy";btn.classList.remove('done');},1400);
+  }));
+}
+document.getElementById('q').addEventListener('input',e=>{fQ=e.target.value;render();});
+document.querySelectorAll('.chip[data-school]').forEach(b=>b.addEventListener('click',()=>{
+  fSchool=b.dataset.school;
+  document.querySelectorAll('.chip[data-school]').forEach(x=>x.setAttribute('aria-pressed', x===b));
+  render();
+}));
+document.getElementById('bestBtn').addEventListener('click',b=>{
+  fBest=!fBest;document.getElementById('bestBtn').setAttribute('aria-pressed',fBest);render();
+});
+render();
+</script>
