@@ -98,7 +98,7 @@ export default function ProgramProfile() {
                 <button onClick={() => setEditing(false)} className="text-gray-500 hover:text-white" aria-label="Cancel">
                   <X className="w-4 h-4" />
                 </button>
-                <button onClick={save} disabled={saving} className="text-[#FF6666] hover:text-white disabled:opacity-50" aria-label="Save">
+                <button onClick={save} disabled={saving} className="text-volt hover:text-white disabled:opacity-50" aria-label="Save">
                   <Save className="w-4 h-4" />
                 </button>
               </div>
@@ -116,7 +116,7 @@ export default function ProgramProfile() {
                   <input
                     value={draft[f.key] ?? ''}
                     onChange={(e) => setDraft((d) => ({ ...d, [f.key]: e.target.value }))}
-                    className="w-40 bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-2 py-1 text-right text-white focus:outline-none focus:border-[#FF0000]/60"
+                    className="w-40 bg-matte2 border border-white/[0.08] rounded-lg px-2 py-1 text-right text-white focus:outline-none focus:border-volt/60"
                   />
                 ) : (
                   <dd className="text-gray-200">{f.format(program[f.key])}</dd>
@@ -133,9 +133,9 @@ export default function ProgramProfile() {
           ) : (
             <ul className="space-y-2">
               {roster.map((c) => (
-                <li key={c.id} className="flex items-center justify-between bg-[#1f1f1f] rounded-lg px-4 py-2.5 text-sm">
+                <li key={c.id} className="flex items-center justify-between bg-matte2 rounded-lg px-4 py-2.5 text-sm">
                   <div>
-                    <Link to={`/app/coaches/${c.id}`} className="text-white font-medium hover:text-[#FF6666]">
+                    <Link to={`/app/coaches/${c.id}`} className="text-white font-medium hover:text-volt">
                       {c.first_name} {c.last_name}
                     </Link>
                     <div className="text-xs text-gray-500">{c.title ?? 'Coach'}</div>

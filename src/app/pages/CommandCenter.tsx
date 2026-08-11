@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Users, GraduationCap, ShieldAlert, UploadCloud, ArrowRight,
-  UserPlus, ArrowRightLeft, UserMinus, Mail, RefreshCcw, Briefcase,
+  UserPlus, ArrowRightLeft, UserMinus, Mail, RefreshCcw, Briefcase, Sparkles, HeartPulse,
 } from 'lucide-react';
 import { isConfigured } from '../../lib/supabase';
 import { DashboardStats, getDashboardStats } from '../../lib/api';
+import { buildClubHealth } from '../../lib/insights';
 import { Card, Spinner, ErrorBox, StatusPill, formatDateTime } from '../components/ui';
+import { PlainEnglish, InsightList } from '../components/PlainEnglish';
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -38,7 +40,7 @@ export default function CommandCenter() {
     return (
       <div>
         <h1 className="text-3xl font-bold">
-          {greeting()}, Jen<span className="text-[#FF0000]">.</span>
+          {greeting()}, Jen<span className="text-volt">.</span>
         </h1>
         <p className="text-gray-400 mt-2 mb-8">One step left: connect your live database and you're ready to sync real files.</p>
         <Card className="p-8 max-w-2xl">
@@ -48,7 +50,7 @@ export default function CommandCenter() {
           </p>
           <Link
             to="/app/setup"
-            className="inline-flex items-center gap-2 bg-[#FF0000] hover:bg-[#CC0000] text-white font-medium rounded-lg px-4 py-2 text-sm transition-colors"
+            className="inline-flex items-center gap-2 bg-volt hover:bg-volt/80 text-black font-medium rounded-lg px-4 py-2 text-sm transition-colors"
           >
             Connect the database <ArrowRight className="w-4 h-4" />
           </Link>
@@ -67,10 +69,17 @@ export default function CommandCenter() {
     { label: 'Former Coaches', value: stats.inactiveCoaches, icon: UserMinus, to: '/app/coaches?status=inactive' },
   ];
 
+  const health = buildClubHealth(stats);
+  const BAND_COLOR: Record<string, string> = {
+    Healthy: 'text-green-400',
+    Steady: 'text-amber-400',
+    'Needs attention': 'text-volt',
+  };
+
   return (
     <div>
       <h1 className="text-3xl font-bold">
-        {greeting()}, Jen<span className="text-[#FF0000]">.</span>
+        {greeting()}, Jen<span className="text-volt">.</span>
       </h1>
       <p className="text-gray-400 mt-2 mb-8">
         {stats.pendingReviews > 0
@@ -81,8 +90,8 @@ export default function CommandCenter() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {tiles.map(({ label, value, icon: Icon, to, alert }) => (
           <Link key={label} to={to}>
-            <Card className={`p-5 hover:border-[#FF0000]/40 transition-colors ${alert ? 'border-[#FF0000]/60' : ''}`}>
-              <Icon className={`w-5 h-5 mb-3 ${alert ? 'text-[#FF0000]' : 'text-gray-500'}`} />
+            <Card className={`p-5 hover:border-volt/40 transition-colors ${alert ? 'border-volt/60' : ''}`}>
+              <Icon className={`w-5 h-5 mb-3 ${alert ? 'text-volt' : 'text-gray-500'}`} />
               <div className="text-2xl font-bold">{value.toLocaleString()}</div>
               <div className="text-sm text-gray-400">{label}</div>
             </Card>
@@ -90,11 +99,58 @@ export default function CommandCenter() {
         ))}
       </div>
 
+      {/* Club Health — the numbers, translated into plain English */}
+      <Card className="p-6 mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 className="font-semibold flex items-center gap-2">
+            <HeartPulse className="w-4 h-4 text-volt" /> Club Health
+          </h2>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-gray-500">Health score</span>
+            <span className={`font-display font-bold text-lg ${BAND_COLOR[health.band]}`}>{health.score}</span>
+            <span className="text-gray-600">/100</span>
+            <span className={`ml-1 text-xs font-medium rounded-full px-2.5 py-0.5 border ${
+              health.band === 'Healthy' ? 'border-green-800 text-green-400 bg-green-900/20'
+              : health.band === 'Steady' ? 'border-amber-800 text-amber-400 bg-amber-900/20'
+              : 'border-volt/40 text-volt bg-volt/10'
+            }`}>{health.band}</span>
+          </div>
+        </div>
+
+        <PlainEnglish label="What this means">
+          {health.summary}
+        </PlainEnglish>
+
+        <div className="mt-5">
+          <div className="text-xs uppercase tracking-widest text-gray-500 mb-3 font-mono">The details, and what to do next</div>
+          <InsightList items={health.insights} />
+        </div>
+      </Card>
+
+      {/* Program Match teaser — the plain-English recruiting console */}
+      <Link to="/app/match" className="block mb-6">
+        <Card className="p-6 hover:border-volt/40 transition-colors">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-lg bg-volt/10 border border-volt/30 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 text-volt" />
+            </div>
+            <div className="min-w-0">
+              <div className="font-semibold flex items-center gap-2">
+                Program Match <ArrowRight className="w-4 h-4 text-volt" />
+              </div>
+              <p className="text-sm text-gray-400 mt-1 leading-relaxed">
+                Describe a student-athlete in plain English — “a right back on the eastern seaboard, 3.2 GPA, who wants a business degree on a rural campus” — and syncmob names the college programs recruiting that player. Perfect for showing an athlete or parent exactly where they fit.
+              </p>
+            </div>
+          </div>
+        </Card>
+      </Link>
+
       <div className="grid lg:grid-cols-2 gap-6">
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold">Last Sync</h2>
-            <Link to="/app/sync" className="text-sm text-[#FF6666] hover:text-white flex items-center gap-1">
+            <Link to="/app/sync" className="text-sm text-volt hover:text-white flex items-center gap-1">
               Monthly Sync <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -113,7 +169,7 @@ export default function CommandCenter() {
                     ['Moved', stats.lastBatch.stats.moved],
                     ['Departed', stats.lastBatch.stats.departed],
                   ].map(([l, v]) => (
-                    <div key={l as string} className="bg-[#1f1f1f] rounded-lg p-2 text-center">
+                    <div key={l as string} className="bg-matte2 rounded-lg p-2 text-center">
                       <div className="font-bold">{(v as number) ?? 0}</div>
                       <div className="text-xs text-gray-500">{l}</div>
                     </div>
@@ -124,7 +180,7 @@ export default function CommandCenter() {
           ) : (
             <div className="text-sm text-gray-500">
               No syncs yet.{' '}
-              <Link to="/app/sync" className="text-[#FF6666] hover:text-white underline underline-offset-2">
+              <Link to="/app/sync" className="text-volt hover:text-white underline underline-offset-2">
                 Upload your baseline file
               </Link>{' '}
               to load the database.
@@ -132,7 +188,7 @@ export default function CommandCenter() {
           )}
           <Link
             to="/app/sync"
-            className="mt-5 inline-flex items-center gap-2 bg-[#FF0000] hover:bg-[#CC0000] text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+            className="mt-5 inline-flex items-center gap-2 bg-volt hover:bg-volt/80 text-black text-sm font-medium rounded-lg px-4 py-2 transition-colors"
           >
             <UploadCloud className="w-4 h-4" /> Upload this month's file
           </Link>
@@ -151,7 +207,7 @@ export default function CommandCenter() {
                   <li key={c.id} className="flex items-start gap-3 text-sm">
                     <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${meta.color}`} />
                     <div className="min-w-0">
-                      <Link to={`/app/coaches/${c.coach_id}`} className="text-gray-200 hover:text-[#FF6666] font-medium">
+                      <Link to={`/app/coaches/${c.coach_id}`} className="text-gray-200 hover:text-volt font-medium">
                         {c.coaches ? `${c.coaches.first_name} ${c.coaches.last_name}` : 'Unknown coach'}
                       </Link>
                       <span className="text-gray-500">

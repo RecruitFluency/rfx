@@ -51,7 +51,7 @@ export default function Programs() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Search school, sport, or conference — press Enter"
-          className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#FF0000]/60"
+          className="w-full bg-matte border border-white/[0.08] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-volt/60"
         />
       </form>
 
@@ -66,7 +66,7 @@ export default function Programs() {
           <Card className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-500 border-b border-[#2a2a2a]">
+                <tr className="text-left text-gray-500 border-b border-white/[0.08]">
                   <th className="px-4 py-3 font-medium">School</th>
                   <th className="px-4 py-3 font-medium">Sport</th>
                   <th className="px-4 py-3 font-medium">Division</th>
@@ -76,9 +76,9 @@ export default function Programs() {
               </thead>
               <tbody>
                 {programs.map((p) => (
-                  <tr key={p.id} className="border-b border-[#1f1f1f] last:border-0 hover:bg-[#1f1f1f]/60">
+                  <tr key={p.id} className="border-b border-white/[0.06] last:border-0 hover:bg-matte2/60">
                     <td className="px-4 py-3">
-                      <Link to={`/app/programs/${p.id}`} className="text-white font-medium hover:text-[#FF6666]">
+                      <Link to={`/app/programs/${p.id}`} className="text-white font-medium hover:text-volt">
                         {p.school}
                       </Link>
                     </td>
@@ -99,7 +99,7 @@ export default function Programs() {
                 <button
                   disabled={page === 0}
                   onClick={() => { const p = new URLSearchParams(params); p.set('page', String(page - 1)); setParams(p, { replace: true }); }}
-                  className="p-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg disabled:opacity-40 hover:border-[#FF0000]/50"
+                  className="p-2 bg-matte border border-white/[0.08] rounded-lg disabled:opacity-40 hover:border-volt/50"
                   aria-label="Previous page"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -107,7 +107,7 @@ export default function Programs() {
                 <button
                   disabled={page + 1 >= pages}
                   onClick={() => { const p = new URLSearchParams(params); p.set('page', String(page + 1)); setParams(p, { replace: true }); }}
-                  className="p-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg disabled:opacity-40 hover:border-[#FF0000]/50"
+                  className="p-2 bg-matte border border-white/[0.08] rounded-lg disabled:opacity-40 hover:border-volt/50"
                   aria-label="Next page"
                 >
                   <ChevronRight className="w-4 h-4" />

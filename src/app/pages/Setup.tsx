@@ -36,11 +36,11 @@ export default function Setup() {
       body: (
         <>
           In Supabase, open <span className="text-gray-200">SQL Editor</span>, paste the contents of{' '}
-          <code className="bg-[#1f1f1f] px-1.5 py-0.5 rounded text-xs">supabase/migrations/0001_coach_database.sql</code>{' '}
+          <code className="bg-matte2 px-1.5 py-0.5 rounded text-xs">supabase/migrations/0001_coach_database.sql</code>{' '}
           from this project, and click Run — that creates every table plus the sync engine. Then in{' '}
           <span className="text-gray-200">Project Settings → API</span>, copy the Project URL and the anon public key
           into two environment variables where the app is hosted:
-          <pre className="bg-black border border-[#2a2a2a] rounded-lg p-3 mt-2 text-xs text-gray-300 overflow-x-auto">
+          <pre className="bg-black border border-white/[0.08] rounded-lg p-3 mt-2 text-xs text-gray-300 overflow-x-auto">
 {`VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...`}
           </pre>
@@ -97,7 +97,7 @@ VITE_SUPABASE_ANON_KEY=eyJ...`}
               )}
               <div className="min-w-0">
                 <div className="flex items-center gap-2 font-semibold mb-1.5">
-                  <Icon className="w-4 h-4 text-[#FF0000]" /> {title}
+                  <Icon className="w-4 h-4 text-volt" /> {title}
                 </div>
                 <div className="text-sm text-gray-400 leading-relaxed">{body}</div>
               </div>
