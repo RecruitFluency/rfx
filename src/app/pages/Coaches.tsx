@@ -60,13 +60,13 @@ export default function Coaches() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Search name, email, or school — press Enter"
-            className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#FF0000]/60"
+            className="w-full bg-matte border border-white/[0.08] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-volt/60"
           />
         </form>
         <select
           value={status}
           onChange={(e) => updateParams({ status: e.target.value })}
-          className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none"
+          className="bg-matte border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none"
         >
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>
@@ -75,7 +75,7 @@ export default function Coaches() {
         <select
           value={sport}
           onChange={(e) => updateParams({ sport: e.target.value })}
-          className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none max-w-[200px]"
+          className="bg-matte border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none max-w-[200px]"
         >
           <option value="">All sports</option>
           {sports.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -93,7 +93,7 @@ export default function Coaches() {
           <Card className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-gray-500 border-b border-[#2a2a2a]">
+                <tr className="text-left text-gray-500 border-b border-white/[0.08]">
                   <th className="px-4 py-3 font-medium">Name</th>
                   <th className="px-4 py-3 font-medium">School</th>
                   <th className="px-4 py-3 font-medium">Sport</th>
@@ -104,9 +104,9 @@ export default function Coaches() {
               </thead>
               <tbody>
                 {coaches.map((c) => (
-                  <tr key={c.id} className="border-b border-[#1f1f1f] last:border-0 hover:bg-[#1f1f1f]/60">
+                  <tr key={c.id} className="border-b border-white/[0.06] last:border-0 hover:bg-matte2/60">
                     <td className="px-4 py-3">
-                      <Link to={`/app/coaches/${c.id}`} className="text-white font-medium hover:text-[#FF6666]">
+                      <Link to={`/app/coaches/${c.id}`} className="text-white font-medium hover:text-volt">
                         {c.first_name} {c.last_name}
                       </Link>
                     </td>
@@ -128,7 +128,7 @@ export default function Coaches() {
                 <button
                   disabled={page === 0}
                   onClick={() => updateParams({ page: String(page - 1) })}
-                  className="p-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg disabled:opacity-40 hover:border-[#FF0000]/50"
+                  className="p-2 bg-matte border border-white/[0.08] rounded-lg disabled:opacity-40 hover:border-volt/50"
                   aria-label="Previous page"
                 >
                   <ChevronLeft className="w-4 h-4" />
@@ -136,7 +136,7 @@ export default function Coaches() {
                 <button
                   disabled={page + 1 >= pages}
                   onClick={() => updateParams({ page: String(page + 1) })}
-                  className="p-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg disabled:opacity-40 hover:border-[#FF0000]/50"
+                  className="p-2 bg-matte border border-white/[0.08] rounded-lg disabled:opacity-40 hover:border-volt/50"
                   aria-label="Next page"
                 >
                   <ChevronRight className="w-4 h-4" />

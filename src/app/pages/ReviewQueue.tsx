@@ -80,7 +80,7 @@ export default function ReviewQueue() {
             key={s}
             onClick={() => setTab(s)}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${
-              tab === s ? 'bg-[#FF0000] text-white' : 'bg-[#1f1f1f] text-gray-400 hover:text-white border border-[#2a2a2a]'
+              tab === s ? 'bg-volt text-black' : 'bg-matte2 text-gray-400 hover:text-white border border-white/[0.08]'
             }`}
           >
             {s}
@@ -100,14 +100,14 @@ export default function ReviewQueue() {
             <button
               disabled={bulkBusy}
               onClick={() => resolveAll('mass_departure', false)}
-              className="flex items-center gap-1.5 bg-[#1f1f1f] hover:bg-[#2a2a2a] border border-[#2a2a2a] text-gray-200 rounded-lg px-3 py-1.5 text-sm disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 bg-matte2 hover:bg-[#1B1B22] border border-white/[0.08] text-gray-200 rounded-lg px-3 py-1.5 text-sm disabled:opacity-50 transition-colors"
             >
               <X className="w-3.5 h-3.5" /> Reject all (keep everyone active)
             </button>
             <button
               disabled={bulkBusy}
               onClick={() => resolveAll('mass_departure', true)}
-              className="flex items-center gap-1.5 bg-[#FF0000] hover:bg-[#CC0000] text-white rounded-lg px-3 py-1.5 text-sm disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 bg-volt hover:bg-volt/80 text-black rounded-lg px-3 py-1.5 text-sm disabled:opacity-50 transition-colors"
             >
               <CheckCheck className="w-3.5 h-3.5" /> Approve all departures
             </button>
@@ -129,7 +129,7 @@ export default function ReviewQueue() {
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-[#FF6666]">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-volt">
                       {TYPE_LABEL[item.item_type]}
                     </span>
                     <StatusPill status={item.status} />
@@ -148,14 +148,14 @@ export default function ReviewQueue() {
                     <button
                       disabled={busyIds.has(item.id)}
                       onClick={() => resolve(item, false)}
-                      className="flex items-center gap-1.5 bg-[#1f1f1f] hover:bg-[#2a2a2a] border border-[#2a2a2a] text-gray-200 rounded-lg px-3 py-1.5 text-sm disabled:opacity-50 transition-colors"
+                      className="flex items-center gap-1.5 bg-matte2 hover:bg-[#1B1B22] border border-white/[0.08] text-gray-200 rounded-lg px-3 py-1.5 text-sm disabled:opacity-50 transition-colors"
                     >
                       <X className="w-3.5 h-3.5" /> Reject
                     </button>
                     <button
                       disabled={busyIds.has(item.id)}
                       onClick={() => resolve(item, true)}
-                      className="flex items-center gap-1.5 bg-[#FF0000] hover:bg-[#CC0000] text-white rounded-lg px-3 py-1.5 text-sm disabled:opacity-50 transition-colors"
+                      className="flex items-center gap-1.5 bg-volt hover:bg-volt/80 text-black rounded-lg px-3 py-1.5 text-sm disabled:opacity-50 transition-colors"
                     >
                       <Check className="w-3.5 h-3.5" /> Approve
                     </button>

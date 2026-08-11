@@ -100,10 +100,10 @@ export default function SyncEngine() {
             if (f) handleFile(f);
           }}
           className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-2xl py-16 px-6 cursor-pointer transition-colors ${
-            dragOver ? 'border-[#FF0000] bg-[#FF0000]/5' : 'border-[#2a2a2a] hover:border-[#FF0000]/50 bg-[#161616]'
+            dragOver ? 'border-volt bg-volt/5' : 'border-white/[0.08] hover:border-volt/50 bg-matte'
           }`}
         >
-          <UploadCloud className="w-10 h-10 text-[#FF0000]" />
+          <UploadCloud className="w-10 h-10 text-volt" />
           {stage.kind === 'parsing' ? (
             <div className="text-gray-300">Reading {stage.fileName}…</div>
           ) : (
@@ -126,7 +126,7 @@ export default function SyncEngine() {
       {stage.kind === 'preview' && (
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-4">
-            <FileSpreadsheet className="w-6 h-6 text-[#FF0000]" />
+            <FileSpreadsheet className="w-6 h-6 text-volt" />
             <div>
               <div className="font-semibold">{stage.fileName}</div>
               <div className="text-sm text-gray-500">
@@ -137,7 +137,7 @@ export default function SyncEngine() {
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4 mb-4 text-sm">
-            <div className="bg-[#1f1f1f] rounded-lg p-4">
+            <div className="bg-matte2 rounded-lg p-4">
               <div className="text-gray-400 mb-2 font-medium">Recognized columns</div>
               <div className="flex flex-wrap gap-1.5">
                 {stage.parsed.mappedColumns.map((c) => (
@@ -147,14 +147,14 @@ export default function SyncEngine() {
                 ))}
               </div>
             </div>
-            <div className="bg-[#1f1f1f] rounded-lg p-4">
+            <div className="bg-matte2 rounded-lg p-4">
               <div className="text-gray-400 mb-2 font-medium">Ignored columns</div>
               {stage.parsed.unmappedColumns.length === 0 ? (
                 <div className="text-gray-600 text-xs">None — every column was recognized.</div>
               ) : (
                 <div className="flex flex-wrap gap-1.5">
                   {stage.parsed.unmappedColumns.map((h) => (
-                    <span key={h} className="bg-[#2a2a2a] text-gray-400 rounded px-2 py-0.5 text-xs">{h}</span>
+                    <span key={h} className="bg-[#1B1B22] text-gray-400 rounded px-2 py-0.5 text-xs">{h}</span>
                   ))}
                 </div>
               )}
@@ -171,13 +171,13 @@ export default function SyncEngine() {
           <div className="flex gap-3">
             <button
               onClick={() => runSync(stage.parsed, stage.fileName)}
-              className="bg-[#FF0000] hover:bg-[#CC0000] text-white font-medium rounded-lg px-5 py-2.5 text-sm transition-colors"
+              className="bg-volt hover:bg-volt/80 text-black font-medium rounded-lg px-5 py-2.5 text-sm transition-colors"
             >
               {baseline === false ? 'Load baseline' : 'Run monthly sync'}
             </button>
             <button
               onClick={() => setStage({ kind: 'idle' })}
-              className="bg-[#1f1f1f] hover:bg-[#2a2a2a] border border-[#2a2a2a] text-gray-300 rounded-lg px-5 py-2.5 text-sm transition-colors"
+              className="bg-matte2 hover:bg-[#1B1B22] border border-white/[0.08] text-gray-300 rounded-lg px-5 py-2.5 text-sm transition-colors"
             >
               Cancel
             </button>
@@ -192,9 +192,9 @@ export default function SyncEngine() {
           </div>
           {stage.kind === 'uploading' ? (
             <>
-              <div className="w-full bg-[#1f1f1f] rounded-full h-2.5 my-4 overflow-hidden">
+              <div className="w-full bg-matte2 rounded-full h-2.5 my-4 overflow-hidden">
                 <div
-                  className="bg-[#FF0000] h-2.5 rounded-full transition-all"
+                  className="bg-volt h-2.5 rounded-full transition-all"
                   style={{ width: `${Math.round((stage.uploaded / Math.max(stage.total, 1)) * 100)}%` }}
                 />
               </div>
@@ -216,7 +216,7 @@ export default function SyncEngine() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
             {statRow(stage.stats).map(([label, v]) => (
-              <div key={label} className="bg-[#1f1f1f] rounded-lg p-3 text-center">
+              <div key={label} className="bg-matte2 rounded-lg p-3 text-center">
                 <div className="text-xl font-bold">{(v ?? 0).toLocaleString()}</div>
                 <div className="text-xs text-gray-500">{label}</div>
               </div>
@@ -229,7 +229,7 @@ export default function SyncEngine() {
                 {stage.stats.queued_for_review} suspicious change{stage.stats.queued_for_review === 1 ? '' : 's'} paused for your approval
                 {stage.stats.mass_departure_flagged ? ' — including a mass disappearance that looks like a bad vendor file.' : '.'}
               </div>
-              <Link to="/app/review" className="text-[#FF6666] hover:text-white font-medium whitespace-nowrap ml-4">
+              <Link to="/app/review" className="text-volt hover:text-white font-medium whitespace-nowrap ml-4">
                 Review now →
               </Link>
             </div>
@@ -238,7 +238,7 @@ export default function SyncEngine() {
           )}
           <button
             onClick={() => setStage({ kind: 'idle' })}
-            className="mt-4 bg-[#1f1f1f] hover:bg-[#2a2a2a] border border-[#2a2a2a] text-gray-300 rounded-lg px-4 py-2 text-sm transition-colors"
+            className="mt-4 bg-matte2 hover:bg-[#1B1B22] border border-white/[0.08] text-gray-300 rounded-lg px-4 py-2 text-sm transition-colors"
           >
             Upload another file
           </button>
@@ -253,7 +253,7 @@ export default function SyncEngine() {
         <Card className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-500 border-b border-[#2a2a2a]">
+              <tr className="text-left text-gray-500 border-b border-white/[0.08]">
                 <th className="px-4 py-3 font-medium">File</th>
                 <th className="px-4 py-3 font-medium">Uploaded</th>
                 <th className="px-4 py-3 font-medium">Rows</th>
@@ -263,7 +263,7 @@ export default function SyncEngine() {
             </thead>
             <tbody>
               {batches.map((b) => (
-                <tr key={b.id} className="border-b border-[#1f1f1f] last:border-0">
+                <tr key={b.id} className="border-b border-white/[0.06] last:border-0">
                   <td className="px-4 py-3 text-gray-200">
                     {b.file_name}
                     {b.is_baseline && <span className="ml-2 text-xs text-gray-500">(baseline)</span>}

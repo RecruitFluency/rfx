@@ -3,7 +3,7 @@ import { Loader2, AlertTriangle, Inbox } from 'lucide-react';
 
 export function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl ${className}`}>
+    <div className={`bg-matte border border-white/[0.08] rounded-xl ${className}`}>
       {children}
     </div>
   );
@@ -24,7 +24,7 @@ export function PageHeader({ title, subtitle, actions }: { title: string; subtit
 export function Spinner({ label }: { label?: string }) {
   return (
     <div className="flex items-center justify-center gap-3 py-16 text-gray-400">
-      <Loader2 className="w-5 h-5 animate-spin text-[#FF0000]" />
+      <Loader2 className="w-5 h-5 animate-spin text-volt" />
       {label ?? 'Loading…'}
     </div>
   );

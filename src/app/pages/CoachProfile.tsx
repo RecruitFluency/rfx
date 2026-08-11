@@ -86,7 +86,7 @@ export default function CoachProfile() {
             { icon: Phone, label: 'Phone', value: coach.phone ?? '—' },
             { icon: School, label: 'Division / Conference', value: [coach.division, coach.conference].filter(Boolean).join(' · ') || '—' },
           ].map(({ icon: Icon, label, value }) => (
-            <div key={label} className="bg-[#1f1f1f] rounded-lg p-3">
+            <div key={label} className="bg-matte2 rounded-lg p-3">
               <div className="flex items-center gap-1.5 text-gray-500 text-xs mb-1">
                 <Icon className="w-3.5 h-3.5" /> {label}
               </div>
@@ -103,10 +103,10 @@ export default function CoachProfile() {
           {history.length === 0 ? (
             <div className="text-sm text-gray-500">History builds up as monthly syncs run.</div>
           ) : (
-            <ol className="relative border-l border-[#2a2a2a] ml-2 space-y-5">
+            <ol className="relative border-l border-white/[0.08] ml-2 space-y-5">
               {history.map((h) => (
                 <li key={h.id} className="ml-4">
-                  <span className="absolute -left-[5px] w-2.5 h-2.5 rounded-full bg-[#FF0000] mt-1.5" />
+                  <span className="absolute -left-[5px] w-2.5 h-2.5 rounded-full bg-volt mt-1.5" />
                   <div className="text-sm font-medium text-gray-200">{HISTORY_LABEL[h.change_type]}</div>
                   <div className="text-xs text-gray-500">
                     {h.change_type === 'moved' && h.previous_school
@@ -134,9 +134,9 @@ export default function CoachProfile() {
               value={noteDraft}
               onChange={(e) => setNoteDraft(e.target.value)}
               placeholder="Add a note…"
-              className="flex-1 bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#FF0000]/60"
+              className="flex-1 bg-matte2 border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-volt/60"
             />
-            <button type="submit" className="bg-[#FF0000] hover:bg-[#CC0000] rounded-lg px-3 transition-colors" aria-label="Add note">
+            <button type="submit" className="bg-volt hover:bg-volt/80 rounded-lg px-3 transition-colors" aria-label="Add note">
               <Plus className="w-4 h-4" />
             </button>
           </form>
@@ -145,7 +145,7 @@ export default function CoachProfile() {
           ) : (
             <ul className="space-y-3">
               {notes.map((n) => (
-                <li key={n.id} className="bg-[#1f1f1f] rounded-lg p-3 text-sm">
+                <li key={n.id} className="bg-matte2 rounded-lg p-3 text-sm">
                   <div className="text-gray-200 whitespace-pre-line">{n.body}</div>
                   <div className="text-xs text-gray-600 mt-1.5">{n.author} · {formatDateTime(n.created_at)}</div>
                 </li>
@@ -162,9 +162,9 @@ export default function CoachProfile() {
               value={emailDraft}
               onChange={(e) => setEmailDraft(e.target.value)}
               placeholder="Log an email subject…"
-              className="flex-1 bg-[#1f1f1f] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#FF0000]/60"
+              className="flex-1 bg-matte2 border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-volt/60"
             />
-            <button type="submit" className="bg-[#FF0000] hover:bg-[#CC0000] rounded-lg px-3 transition-colors" aria-label="Log email">
+            <button type="submit" className="bg-volt hover:bg-volt/80 rounded-lg px-3 transition-colors" aria-label="Log email">
               <Plus className="w-4 h-4" />
             </button>
           </form>
@@ -173,7 +173,7 @@ export default function CoachProfile() {
           ) : (
             <ul className="space-y-3">
               {emails.map((m) => (
-                <li key={m.id} className="bg-[#1f1f1f] rounded-lg p-3 text-sm">
+                <li key={m.id} className="bg-matte2 rounded-lg p-3 text-sm">
                   <div className="flex items-center gap-2 text-gray-200">
                     <Mail className="w-3.5 h-3.5 text-gray-500 shrink-0" />
                     <span className="truncate">{m.subject}</span>

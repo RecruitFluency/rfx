@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App.tsx';
 import AppShell from './app/AppShell.tsx';
 import CommandCenter from './app/pages/CommandCenter.tsx';
+import ProgramMatch from './app/pages/ProgramMatch.tsx';
 import SyncEngine from './app/pages/SyncEngine.tsx';
 import ReviewQueue from './app/pages/ReviewQueue.tsx';
 import Coaches from './app/pages/Coaches.tsx';
@@ -20,6 +21,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/" element={<App />} />
         <Route path="/app" element={<AppShell />}>
           <Route index element={<CommandCenter />} />
+          <Route path="match" element={<ProgramMatch />} />
           <Route path="sync" element={<SyncEngine />} />
           <Route path="review" element={<ReviewQueue />} />
           <Route path="coaches" element={<Coaches />} />

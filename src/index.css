@@ -3,10 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --rfx-black: #000000;
-  --rfx-matte-black: #121212;
-  --rfx-white: #ffffff;
-  --rfx-cta-red: #FF0000;
+  --sm-jet: #000000;
+  --sm-matte: #0b0b0e;
+  --sm-matte-2: #14141a;
+  --sm-silver: rgba(240, 242, 245, 0.96);
+  --sm-volt: #e8ff00;
 }
 
 html {
@@ -14,7 +15,7 @@ html {
 }
 
 body {
-  @apply bg-black text-white;
+  @apply bg-black text-white font-sans antialiased;
 }
 
 .transition-all {
