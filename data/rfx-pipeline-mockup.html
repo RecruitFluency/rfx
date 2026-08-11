@@ -1,0 +1,363 @@
+<title>RFX Pipeline — Unified Badges</title>
+<style>
+  :root{
+    --bg:#0C0C0D; --stage:#0C0C0D; --card:#161618; --card2:#1D1D20; --line:#2A2A2E;
+    --ink:#F3F2F1; --ink2:#9A989E; --ink3:#6E6C72;
+    --red:#EA3A31; --red-ink:#F06158; --red-tint:rgba(234,58,49,.14); --red-line:rgba(234,58,49,.55);
+    --ok:#3FB27F;
+    --frame:#000; --radius:30px;
+    --sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  :root:not([data-theme="dark"]){ } /* design is committed dark — RFX app is dark */
+  *{box-sizing:border-box}
+  body{margin:0;background:
+      radial-gradient(1200px 600px at 50% -8%, #17171a 0%, var(--bg) 60%);
+    color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  .page{max-width:1280px;margin:0 auto;padding:40px 22px 70px}
+  .head{max-width:760px}
+  .brandrow{display:flex;align-items:center;gap:10px}
+  .logo{width:26px;height:26px;border-radius:7px;background:var(--red);display:grid;place-items:center;
+    font-weight:900;color:#fff;font-size:14px;transform:skewX(-6deg)}
+  .kick{font-size:11.5px;text-transform:uppercase;letter-spacing:.22em;color:var(--red-ink);font-weight:700}
+  h1{font-size:clamp(24px,3.4vw,34px);font-weight:800;letter-spacing:-.02em;margin:.35em 0 .15em;text-wrap:balance}
+  .lead{color:var(--ink2);font-size:15px;line-height:1.55}
+  .rulecard{margin:22px 0 6px;background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;display:flex;flex-wrap:wrap;gap:22px}
+  .rulecard h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3)}
+  .swatchrow{display:flex;flex-direction:column;gap:9px;font-size:13px;color:var(--ink2)}
+  .swatchrow div{display:flex;align-items:center;gap:9px}
+
+  .board{display:flex;gap:26px;overflow-x:auto;padding:34px 4px 10px;scroll-snap-type:x proximity}
+  .col{scroll-snap-align:start;flex:0 0 auto;display:flex;flex-direction:column;gap:12px;align-items:center}
+  .col > .label{font-size:12px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.1em}
+
+  /* Phone */
+  .phone{width:288px;height:604px;background:var(--frame);border-radius:var(--radius);padding:9px;
+    box-shadow:0 24px 60px rgba(0,0,0,.5),0 2px 0 #1b1b1f inset;border:1px solid #232327}
+  .screen{width:100%;height:100%;background:var(--stage);border-radius:22px;overflow:hidden;
+    display:flex;flex-direction:column;position:relative}
+  .stat{height:26px;display:flex;justify-content:space-between;align-items:center;padding:0 16px;
+    font-size:11px;color:var(--ink3);flex:none}
+  .top{display:flex;align-items:center;justify-content:space-between;padding:6px 15px 10px;flex:none}
+  .top .l{display:flex;align-items:center;gap:8px}
+  .top .icns{display:flex;gap:12px;color:var(--ink3);font-size:14px}
+  .body{flex:1;overflow-y:auto;padding:2px 15px 12px}
+  .body::-webkit-scrollbar{width:0}
+  .nav{height:50px;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;
+    font-size:10px;color:var(--ink3);flex:none;background:#0a0a0b}
+  .nav .on{color:var(--red-ink)}
+  .nav i{display:block;width:17px;height:17px;margin:0 auto 3px;border:1.6px solid currentColor;border-radius:5px}
+
+  /* content atoms */
+  .eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--ink3);font-weight:700;margin:14px 0 8px}
+  h2.title{font-size:19px;font-weight:800;letter-spacing:-.01em;margin:2px 0}
+  .muted{color:var(--ink2);font-size:12.5px}
+  .tiny{color:var(--ink3);font-size:11px}
+  .metrics{display:flex;gap:8px;margin:12px 0 4px}
+  .metric{flex:1;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:9px 10px}
+  .metric .n{font-size:19px;font-weight:800;letter-spacing:-.02em}
+  .metric .k{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);font-weight:600;margin-top:1px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px 13px;margin:9px 0}
+  .card.hi{border-color:var(--red-line)}
+  .rowb{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .school{display:flex;align-items:center;gap:9px}
+  .mono{width:30px;height:30px;border-radius:8px;background:var(--card2);border:1px solid var(--line);
+    display:grid;place-items:center;font-size:10px;font-weight:800;color:var(--ink2);flex:none}
+  .school b{font-size:13px;font-weight:700;display:block;line-height:1.2}
+  .school span{font-size:10.5px;color:var(--ink3)}
+
+  /* THE UNIFIED BADGE — one style everywhere */
+  .chip{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--ink2);background:transparent;white-space:nowrap}
+  /* the ONLY colored variant: the current/active stage */
+  .chip.now{color:var(--red-ink);border-color:var(--red-line);background:var(--red-tint)}
+
+  .btn{display:block;width:100%;text-align:center;background:var(--red);color:#fff;font-weight:700;font-size:13px;
+    border:none;border-radius:11px;padding:12px;margin-top:12px;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btnrow{display:flex;gap:9px}
+  .btnrow .btn{margin-top:0}
+
+  .pill-actions{display:flex;gap:6px}
+  .linkbtn{font-size:11px;font-weight:700;color:#fff;background:var(--red);border-radius:8px;padding:5px 10px}
+  .linkbtn.ghost{background:transparent;color:var(--ink2);border:1px solid var(--line)}
+
+  /* pipeline steps */
+  .steps{margin:10px 0 2px;display:flex;flex-direction:column;gap:0}
+  .step{display:flex;gap:10px;padding:8px 0;position:relative}
+  .step .dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);flex:none;margin-top:1px;background:var(--stage)}
+  .step.done .dot{background:var(--ink3);border-color:var(--ink3)}
+  .step.now .dot{border-color:var(--red);background:var(--red)}
+  .step .line{position:absolute;left:7px;top:20px;bottom:-8px;width:2px;background:var(--line)}
+  .step:last-child .line{display:none}
+  .step .sname{font-size:12.5px;font-weight:700}
+  .step.now .sname{color:var(--red-ink)}
+  .step .sdesc{font-size:10.5px;color:var(--ink3);margin-top:1px}
+  .step .when{margin-left:auto;font-size:10px;color:var(--ink3);flex:none}
+
+  /* selector rows */
+  .opt{display:flex;align-items:flex-start;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;margin:7px 0;background:var(--card)}
+  .opt .rad{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink3);flex:none;margin-top:1px}
+  .opt.sel{border-color:var(--red-line);background:var(--red-tint)}
+  .opt.sel .rad{border-color:var(--red);box-shadow:inset 0 0 0 3px var(--red)}
+  .opt .on{font-size:12.5px;font-weight:700}
+  .opt.sel .on{color:var(--red-ink)}
+  .opt .od{font-size:10.5px;color:var(--ink3)}
+
+  .banner{display:flex;gap:8px;align-items:flex-start;background:var(--card);border:1px solid var(--line);
+    border-radius:11px;padding:10px 12px;margin:10px 0}
+  .banner .b-ic{width:18px;height:18px;border-radius:50%;background:var(--red-tint);color:var(--red-ink);
+    display:grid;place-items:center;font-size:11px;flex:none;font-weight:800}
+  .banner b{font-size:12px}.banner p{margin:2px 0 0;font-size:11px;color:var(--ink3)}
+
+  .coach{display:flex;align-items:center;gap:9px;margin:8px 0}
+  .coach .av{width:32px;height:32px;border-radius:50%;background:var(--card2);border:1px solid var(--line);flex:none}
+  .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:78%;text-align:center;gap:10px;color:var(--ink3)}
+  .empty .disc{width:44px;height:44px;border-radius:50%;border:2px dashed var(--line)}
+  footer{color:var(--ink3);font-size:12px;margin-top:26px;border-top:1px solid var(--line);padding-top:18px;max-width:760px}
+  @media (max-width:640px){.phone{width:264px;height:552px}}
+</style>
+
+<div class="page">
+  <header class="head">
+    <div class="brandrow"><div class="logo">R</div><span class="kick">RFX Recruiting · Pipeline</span></div>
+    <h1>Unified stage badges</h1>
+    <p class="lead">Every pipeline stage now uses <b>one badge style</b> — a neutral outline chip — instead of a different color per stage. RFX red is reserved for exactly two things: the coach's <b>current/active stage</b> and <b>primary actions</b>. Same treatment across the Pipeline and Committed flows.</p>
+    <div class="rulecard">
+      <div><h3>The one badge rule</h3>
+        <div class="swatchrow">
+          <div><span class="chip">Contacted</span> <span class="chip">Went Quiet</span> <span class="chip">Closed</span> — all stages, one neutral chip</div>
+          <div><span class="chip now">Engaged · now</span> — the only colored badge = current stage</div>
+        </div>
+      </div>
+      <div><h3>Red is only for</h3>
+        <div class="swatchrow">
+          <div><span style="width:11px;height:11px;border-radius:3px;background:var(--red);display:inline-block"></span> Current/active stage</div>
+          <div><span style="width:11px;height:11px;border-radius:3px;background:var(--red);display:inline-block"></span> Primary buttons (Update, Log an update, Message)</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- =================== PIPELINE FLOW =================== -->
+  <div class="board">
+
+    <!-- My Recruitment list -->
+    <div class="col"><div class="label">My Recruitment</div>
+      <div class="phone"><div class="screen">
+        <div class="stat"><span>9:41</span><span>●●● ▮</span></div>
+        <div class="top"><div class="l"><div class="logo" style="width:22px;height:22px;font-size:12px">R</div></div>
+          <div class="icns"><span>◔</span><span>⚙</span></div></div>
+        <div class="body">
+          <h2 class="title">My Recruitment</h2>
+          <div class="muted">6 programs · 2 offers · Updated today</div>
+          <div class="metrics">
+            <div class="metric"><div class="n">6</div><div class="k">Active</div></div>
+            <div class="metric"><div class="n">2</div><div class="k">Offers</div></div>
+            <div class="metric"><div class="n">3</div><div class="k">Needs reply</div></div>
+          </div>
+          <div class="eyebrow">Programs</div>
+          <div class="card hi">
+            <div class="rowb"><div class="school"><div class="mono">UAB</div>
+              <div><b>Univ. of Alabama–Birmingham</b><span>D1 · Birmingham, AL</span></div></div></div>
+            <div class="rowb" style="margin-top:9px"><div class="pill-actions"><span class="chip now">Engaged</span><span class="tiny">2 of 7</span></div>
+              <span class="linkbtn">Confirm today</span></div>
+          </div>
+          <div class="card">
+            <div class="rowb"><div class="school"><div class="mono">LMU</div>
+              <div><b>Loyola Marymount</b><span>D1 · Los Angeles, CA</span></div></div></div>
+            <div class="rowb" style="margin-top:9px"><div class="pill-actions"><span class="chip">Contacted</span><span class="tiny">2 of 7</span></div></div>
+          </div>
+          <div class="card">
+            <div class="rowb"><div class="school"><div class="mono">GCU</div>
+              <div><b>Grand Canyon</b><span>D1 · Phoenix, AZ</span></div></div></div>
+            <div class="rowb" style="margin-top:9px"><div class="pill-actions"><span class="chip">Went Quiet</span><span class="tiny">1 of 7</span></div></div>
+          </div>
+        </div>
+        <div class="nav"><span><i></i>Home</span><span class="on"><i></i>My Recruitment</span><span><i></i>Profile</span></div>
+      </div></div>
+    </div>
+
+    <!-- Program detail: Engaged active -->
+    <div class="col"><div class="label">Program · current stage</div>
+      <div class="phone"><div class="screen">
+        <div class="stat"><span>9:41</span><span>●●● ▮</span></div>
+        <div class="top"><div class="l"><span style="color:var(--ink2)">‹ Back</span></div><div class="icns"><span>◔</span></div></div>
+        <div class="body">
+          <h2 class="title" style="font-size:16px">Univ. of Alabama–Birmingham</h2>
+          <div class="tiny">D1 · Birmingham, AL</div>
+          <div class="coach"><div class="av"></div><div><b style="font-size:12.5px">Marcus Jennings</b><div class="tiny">Recruiting Coach</div></div>
+            <span class="linkbtn" style="margin-left:auto">Message</span></div>
+          <div class="eyebrow">Why you fit</div>
+          <p class="muted" style="margin:0">They play a direct, high-press front line and recruit strikers who defend from the front — that matches how you play. Their last three signings came in at your speed profile.</p>
+          <div class="metrics">
+            <div class="metric"><div class="n">3.83</div><div class="k">Avg RPM</div></div>
+            <div class="metric"><div class="n">79%</div><div class="k">Acceptance</div></div>
+          </div>
+          <div class="eyebrow">Pipeline</div>
+          <div class="steps">
+            <div class="step done"><div class="line"></div><div class="dot"></div><div><div class="sname">Identified</div><div class="sdesc">Added to their board</div></div><div class="when">Apr 3</div></div>
+            <div class="step done"><div class="line"></div><div class="dot"></div><div><div class="sname">Contacted</div><div class="sdesc">They reached out</div></div><div class="when">Apr 19</div></div>
+            <div class="step now"><div class="line"></div><div class="dot"></div><div><div class="sname">Engaged <span class="chip now" style="margin-left:4px">now</span></div><div class="sdesc">Offer received</div></div><div class="when">May 6</div></div>
+            <div class="step"><div class="dot"></div><div><div class="sname">Evaluating</div><div class="sdesc">Reviewing your footage</div></div></div>
+          </div>
+          <button class="btn">Log an update</button>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Stage selector -->
+    <div class="col"><div class="label">Update stage</div>
+      <div class="phone"><div class="screen">
+        <div class="stat"><span>9:41</span><span>●●● ▮</span></div>
+        <div class="top"><div class="l"><span style="color:var(--ink2)">Cancel</span></div><div class="icns"></div></div>
+        <div class="body">
+          <h2 class="title" style="font-size:17px">Where are you with this program?</h2>
+          <div class="tiny">You're at Engaged right now</div>
+          <div style="margin-top:10px">
+            <div class="opt"><div class="rad"></div><div><div class="on">Identified</div><div class="od">Added to their board</div></div></div>
+            <div class="opt"><div class="rad"></div><div><div class="on">Contacted</div><div class="od">You've made contact</div></div></div>
+            <div class="opt sel"><div class="rad"></div><div><div class="on">Engaged</div><div class="od">Offer received</div></div></div>
+            <div class="opt"><div class="rad"></div><div><div class="on">Evaluating</div><div class="od">They're reviewing your footage</div></div></div>
+            <div class="opt"><div class="rad"></div><div><div class="on">Offer Extended</div><div class="od">The program made an offer</div></div></div>
+            <div class="opt"><div class="rad"></div><div><div class="on">Committed</div><div class="od">You've verbally committed here</div></div></div>
+          </div>
+          <div class="eyebrow">When did this happen?</div>
+          <div class="card" style="margin-top:0"><div class="rowb"><span class="muted">Today</span><span class="tiny">tap to set ›</span></div></div>
+          <div class="btnrow"><button class="btn ghost">Cancel</button><button class="btn">Update</button></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Stage updated confirm -->
+    <div class="col"><div class="label">Confirmation</div>
+      <div class="phone"><div class="screen">
+        <div class="stat"><span>9:41</span><span>●●● ▮</span></div>
+        <div class="top"><div class="l"><span style="color:var(--ink2)">‹</span></div><div class="icns"><span>◔</span></div></div>
+        <div class="body">
+          <div class="banner"><div class="b-ic">✓</div><div><b>Stage moved forward</b><p>You logged your move to Engaged at UAB. If their staff hasn't reflected it yet, we'll reconcile automatically.</p></div></div>
+          <h2 class="title" style="font-size:16px">Univ. of Alabama–Birmingham</h2>
+          <div class="metrics">
+            <div class="metric"><div class="n">3.83</div><div class="k">Avg RPM</div></div>
+            <div class="metric"><div class="n">79%</div><div class="k">Acceptance</div></div>
+          </div>
+          <div class="eyebrow">Pipeline</div>
+          <div class="steps">
+            <div class="step done"><div class="line"></div><div class="dot"></div><div><div class="sname">Identified</div></div><div class="when">Apr 3</div></div>
+            <div class="step done"><div class="line"></div><div class="dot"></div><div><div class="sname">Contacted</div></div><div class="when">Apr 19</div></div>
+            <div class="step now"><div class="dot"></div><div><div class="sname">Engaged <span class="chip now" style="margin-left:4px">now</span></div><div class="sdesc">Updated just now</div></div><div class="when">May 6</div></div>
+          </div>
+          <div class="btnrow"><button class="btn ghost">Undo</button><button class="btn">Back to UAB</button></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="col"><div class="label">Notifications</div>
+      <div class="phone"><div class="screen">
+        <div class="stat"><span>9:41</span><span>●●● ▮</span></div>
+        <div class="top"><div class="l"><b style="font-size:15px">Notifications</b></div><div class="icns"><span>◔</span></div></div>
+        <div class="body">
+          <div class="eyebrow">Needs review</div>
+          <div class="card">
+            <div class="rowb"><b style="font-size:12.5px">Stage moved forward</b><span class="chip now">Engaged</span></div>
+            <div class="rowb" style="margin-top:4px"><div class="school"><div class="mono">LMU</div>
+              <div><b style="font-size:12px">Loyola Marymount</b><span>Their staff moved you · Aug 4</span></div></div></div>
+            <div class="btnrow" style="margin-top:10px"><button class="btn ghost">Not accurate</button><button class="btn">Looks right</button></div>
+          </div>
+          <div class="eyebrow">Earlier</div>
+          <div class="card"><div class="rowb"><b style="font-size:12.5px">Stage moved forward</b><span class="chip">Contacted</span></div>
+            <div class="tiny" style="margin-top:4px">Grand Canyon · logged May 5</div></div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <!-- =================== COMMITTED FLOW =================== -->
+  <h1 style="margin-top:44px;font-size:22px">Committed flow</h1>
+  <p class="lead">Same badge system: the <b>Committed</b> program shows the one red “current stage” chip; every closed pipeline uses the same neutral <b>Closed</b> chip.</p>
+  <div class="board">
+
+    <!-- Committed home -->
+    <div class="col"><div class="label">Committed · summary</div>
+      <div class="phone"><div class="screen">
+        <div class="stat"><span>9:41</span><span>●●● ▮</span></div>
+        <div class="top"><div class="l"><div class="logo" style="width:22px;height:22px;font-size:12px">R</div></div><div class="icns"><span>◔</span><span>⚙</span></div></div>
+        <div class="body">
+          <h2 class="title">My Recruitment</h2>
+          <div class="muted">BCDPL · Surrey FC · Striker (D1) · 2028</div>
+          <div class="metrics"><div class="metric"><div class="n">5</div><div class="k">Closed</div></div><div class="metric"><div class="n">14d</div><div class="k">Since commit</div></div></div>
+          <div class="card hi" style="margin-top:12px">
+            <span class="chip now">Committed</span>
+            <div class="school" style="margin-top:9px"><div class="mono">UAB</div><div><b>Univ. of Alabama–Birmingham</b><span>D1 · Birmingham, AL</span></div></div>
+            <p class="muted" style="margin:9px 0 0">You're committed to UAB. Congratulations — the hard part is done.</p>
+            <div class="rowb" style="margin-top:10px"><div class="tiny">Committed Aug 11, 2026 · by Marcus Jennings</div></div>
+          </div>
+          <div class="banner"><div class="b-ic">✓</div><div><b>All 5 other pipelines closed</b><p>Your club notified them of your commitment.</p></div></div>
+        </div>
+        <div class="nav"><span><i></i>Home</span><span class="on"><i></i>My Recruitment</span><span><i></i>Profile</span></div>
+      </div></div>
+    </div>
+
+    <!-- Committed list -->
+    <div class="col"><div class="label">Committed · list</div>
+      <div class="phone"><div class="screen">
+        <div class="stat"><span>9:41</span><span>●●● ▮</span></div>
+        <div class="top"><div class="l"><div class="logo" style="width:22px;height:22px;font-size:12px">R</div></div><div class="icns"><span>◔</span><span>⚙</span></div></div>
+        <div class="body">
+          <h2 class="title">My Recruitment</h2>
+          <div class="muted">6 programs · Updated today</div>
+          <div class="metrics"><div class="metric"><div class="n">6</div><div class="k">All</div></div><div class="metric"><div class="n">5</div><div class="k">Closed</div></div></div>
+          <div class="eyebrow">Programs</div>
+          <div class="card hi"><div class="rowb"><div class="school"><div class="mono">UAB</div><div><b>Univ. of Alabama–Birmingham</b><span>D1 · Birmingham</span></div></div><span class="chip now">Committed</span></div></div>
+          <div class="card"><div class="rowb"><div class="school"><div class="mono">LMU</div><div><b>Loyola Marymount</b><span>D1 · Los Angeles</span></div></div><span class="chip">Closed</span></div></div>
+          <div class="card"><div class="rowb"><div class="school"><div class="mono">GCU</div><div><b>Grand Canyon</b><span>D1 · Phoenix</span></div></div><span class="chip">Closed</span></div></div>
+        </div>
+        <div class="nav"><span><i></i>Home</span><span class="on"><i></i>My Recruitment</span><span><i></i>Profile</span></div>
+      </div></div>
+    </div>
+
+    <!-- Closed program detail -->
+    <div class="col"><div class="label">Closed pipeline</div>
+      <div class="phone"><div class="screen">
+        <div class="stat"><span>9:41</span><span>●●● ▮</span></div>
+        <div class="top"><div class="l"><span style="color:var(--ink2)">‹ Back</span></div><div class="icns"><span>◔</span></div></div>
+        <div class="body">
+          <h2 class="title" style="font-size:16px">Loyola Marymount</h2>
+          <div class="tiny">D1 · Los Angeles, CA</div>
+          <div class="banner" style="margin-top:10px"><div class="b-ic" style="background:var(--card2);color:var(--ink2)">✕</div>
+            <div><b>Pipeline closed</b><p>You committed to UAB, so this pipeline stopped at Contacted.</p></div></div>
+          <div class="tiny">Closed Aug 11, 2026</div>
+          <div class="coach"><div class="av"></div><div><b style="font-size:12.5px">Marcus Jennings</b><div class="tiny">Recruiting Coach</div></div>
+            <span class="linkbtn ghost" style="margin-left:auto">View</span></div>
+          <div class="metrics"><div class="metric"><div class="n">3.83</div><div class="k">Avg RPM</div></div><div class="metric"><div class="n">79%</div><div class="k">Acceptance</div></div></div>
+          <div class="eyebrow">Pipeline</div>
+          <div class="steps">
+            <div class="step done"><div class="line"></div><div class="dot"></div><div><div class="sname">Identified</div><div class="sdesc">Added to their board</div></div><div class="when">Apr 3</div></div>
+            <div class="step done"><div class="dot"></div><div><div class="sname">Contacted</div><div class="sdesc">Stopped here</div></div><div class="when">Apr 19</div></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="col"><div class="label">Empty state</div>
+      <div class="phone"><div class="screen">
+        <div class="stat"><span>9:41</span><span>●●● ▮</span></div>
+        <div class="top"><div class="l"><div class="logo" style="width:22px;height:22px;font-size:12px">R</div></div><div class="icns"><span>◔</span><span>⚙</span></div></div>
+        <div class="body">
+          <h2 class="title">My Recruitment</h2>
+          <div class="muted">0 programs · Updated today</div>
+          <div class="empty"><div class="disc"></div><b style="color:var(--ink2);font-size:13px">No recruiting activity yet</b>
+            <p class="tiny" style="max-width:200px">When a program adds you to their board or logs an outreach, it'll show up here with what to do next.</p></div>
+        </div>
+        <div class="nav"><span><i></i>Home</span><span class="on"><i></i>My Recruitment</span><span><i></i>Profile</span></div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <footer>Mockup reconstruction of the RFX pipeline flow with the corrected badge system — one neutral chip for all stages, RFX red reserved for the current stage and primary actions. Scroll each row horizontally to see every screen.</footer>
+</div>
