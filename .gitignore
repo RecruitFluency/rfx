@@ -25,3 +25,4 @@ dist-ssr
 *.sw?
 *.tsbuildinfo
 data/basketball-mens/
+data/export/
