@@ -1,8 +1,8 @@
 import React from 'react';
-import EnginePage from './components/Engine/EnginePage';
+import VerifiedPage from './components/Verified/VerifiedPage';
 
 function App() {
-  return <EnginePage />;
+  return <VerifiedPage />;
 }
 
 export default App;
