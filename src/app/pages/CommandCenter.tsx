@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import {
   Users, GraduationCap, ShieldAlert, UploadCloud, ArrowRight,
   UserPlus, ArrowRightLeft, UserMinus, Mail, RefreshCcw, Briefcase,
+  CheckCircle2, Circle, ListChecks,
 } from 'lucide-react';
 import { isConfigured } from '../../lib/supabase';
-import { DashboardStats, getDashboardStats } from '../../lib/api';
+import { DashboardStats, getDashboardStats, getDataHealth, DataHealth } from '../../lib/api';
 import { Card, Spinner, ErrorBox, StatusPill, formatDateTime } from '../components/ui';
 
 function greeting(): string {
@@ -27,11 +28,13 @@ const CHANGE_META: Record<string, { icon: React.ElementType; label: string; colo
 
 export default function CommandCenter() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [health, setHealth] = useState<DataHealth | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (!isConfigured) return;
     getDashboardStats().then(setStats).catch((e) => setError((e as Error).message));
+    getDataHealth().then(setHealth).catch(() => undefined);
   }, []);
 
   if (!isConfigured) {
@@ -60,6 +63,57 @@ export default function CommandCenter() {
   if (error) return <ErrorBox message={error} />;
   if (!stats) return <Spinner />;
 
+  // The guided monthly workflow: each step is computed from live data, so the
+  // checklist always reflects where Jen actually is this month.
+  const now = new Date();
+  const syncedThisMonth = stats.lastBatch != null &&
+    new Date(stats.lastBatch.created_at).getMonth() === now.getMonth() &&
+    new Date(stats.lastBatch.created_at).getFullYear() === now.getFullYear() &&
+    stats.lastBatch.status !== 'failed';
+  const queueClear = stats.pendingReviews === 0;
+  const healthIssues = health ? health.missingEmail + health.duplicateEmails.length : null;
+  const healthClean = healthIssues === 0;
+  const readyToExport = syncedThisMonth && queueClear;
+
+  const workflow = [
+    {
+      done: syncedThisMonth,
+      to: '/app/sync',
+      title: "Upload this month's vendor file(s)",
+      detail: syncedThisMonth
+        ? `Last sync: ${stats.lastBatch!.file_name} on ${formatDateTime(stats.lastBatch!.created_at)}`
+        : stats.lastBatch
+        ? `Nothing synced yet this month — the last file was ${formatDateTime(stats.lastBatch.created_at)}.`
+        : 'No files synced yet — your first upload becomes the baseline.',
+    },
+    {
+      done: queueClear,
+      to: '/app/review',
+      title: 'Clear the review queue',
+      detail: queueClear
+        ? 'No flagged changes waiting.'
+        : `${stats.pendingReviews} flagged change${stats.pendingReviews === 1 ? '' : 's'} need${stats.pendingReviews === 1 ? 's' : ''} your approve/reject call.`,
+    },
+    {
+      done: healthClean,
+      to: '/app/health',
+      title: 'Check data health',
+      detail: health === null
+        ? 'Checking…'
+        : healthClean
+        ? 'No missing emails or duplicate contacts.'
+        : `${health.missingEmail} coach${health.missingEmail === 1 ? '' : 'es'} missing an email · ${health.duplicateEmails.length} duplicate email${health.duplicateEmails.length === 1 ? '' : 's'}.`,
+    },
+    {
+      done: false,
+      to: '/app/export',
+      title: 'Push the clean list to the app',
+      detail: readyToExport
+        ? 'Synced and reviewed — pull the export (or let the app read Supabase live).'
+        : 'Unlocks meaningfully once the sync is in and the queue is clear.',
+    },
+  ];
+
   const tiles = [
     { label: 'Active Coaches', value: stats.activeCoaches, icon: Users, to: '/app/coaches' },
     { label: 'Programs', value: stats.programs, icon: GraduationCap, to: '/app/programs' },
@@ -77,6 +131,32 @@ export default function CommandCenter() {
           ? `${stats.pendingReviews} flagged change${stats.pendingReviews === 1 ? '' : 's'} need${stats.pendingReviews === 1 ? 's' : ''} your review.`
           : 'Your database is up to date — nothing needs your attention.'}
       </p>
+
+      {/* Guided monthly workflow */}
+      <Card className="p-6 mb-8">
+        <div className="flex items-center gap-2 font-semibold mb-4">
+          <ListChecks className="w-4 h-4 text-[#FF0000]" /> This month's checklist
+        </div>
+        <ol className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+          {workflow.map(({ done, to, title, detail }, i) => (
+            <li key={title}>
+              <Link to={to} className="block h-full">
+                <div className={`h-full rounded-lg border p-4 transition-colors hover:border-[#FF0000]/50 ${done ? 'border-green-900 bg-green-900/10' : 'border-[#2a2a2a] bg-[#1f1f1f]'}`}>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    {done ? (
+                      <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
+                    ) : (
+                      <Circle className="w-4 h-4 text-gray-600 shrink-0" />
+                    )}
+                    <span className="text-sm font-medium text-gray-200">{i + 1} · {title}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 leading-relaxed">{detail}</p>
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ol>
+      </Card>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {tiles.map(({ label, value, icon: Icon, to, alert }) => (

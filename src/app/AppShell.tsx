@@ -2,10 +2,14 @@ import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, UploadCloud, ShieldAlert, Users, GraduationCap,
-  Settings, Sparkles, Menu, X,
+  Radar, BarChart3, HeartPulse, MailPlus, Users2, Download, Settings, Sparkles, Menu, X, Bell, RefreshCcw, BookOpen,
 } from 'lucide-react';
 import { isConfigured } from '../lib/supabase';
-import { pendingReviewCount } from '../lib/api';
+import {
+  Alert, listAlerts, markAlertsRead, pendingProposalCount, pendingReviewCount,
+  pendingRosterCandidateCount, runWatchtower, unreadAlertCount,
+} from '../lib/api';
+import { formatDateTime } from './components/ui';
 import Assistant from './components/Assistant';
 
 const NAV = [
@@ -14,20 +18,59 @@ const NAV = [
   { to: '/app/review', label: 'Review Queue', icon: ShieldAlert },
   { to: '/app/coaches', label: 'Coaches', icon: Users },
   { to: '/app/programs', label: 'Programs', icon: GraduationCap },
+  { to: '/app/tracker', label: 'Coach Tracker', icon: Radar },
+  { to: '/app/insights', label: 'Insights', icon: BarChart3 },
+  { to: '/app/health', label: 'Data Health', icon: HeartPulse },
+  { to: '/app/proposals', label: 'Found Contacts', icon: MailPlus },
+  { to: '/app/roster-candidates', label: 'Roster Candidates', icon: Users2 },
+  { to: '/app/export', label: 'Export / App Feed', icon: Download },
+  { to: '/app/guide', label: 'Guide', icon: BookOpen },
   { to: '/app/setup', label: 'Settings', icon: Settings },
 ];
 
 export default function AppShell() {
   const [pending, setPending] = useState(0);
+  const [proposals, setProposals] = useState(0);
+  const [rosterCands, setRosterCands] = useState(0);
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
+  const [unread, setUnread] = useState(0);
+  const [alertsOpen, setAlertsOpen] = useState(false);
+  const [alerts, setAlerts] = useState<Alert[] | null | 'unavailable'>(null);
+  const [scanBusy, setScanBusy] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
     setMobileNav(false);
     if (!isConfigured) return;
     pendingReviewCount().then(setPending).catch(() => setPending(0));
+    pendingProposalCount().then(setProposals).catch(() => setProposals(0));
+    pendingRosterCandidateCount().then(setRosterCands).catch(() => setRosterCands(0));
+    unreadAlertCount().then(setUnread).catch(() => setUnread(0));
   }, [location]);
+
+  async function openAlerts() {
+    setAlertsOpen(true);
+    const list = await listAlerts();
+    setAlerts(list ?? 'unavailable');
+    if (list && list.some((a) => !a.read)) {
+      markAlertsRead().then(() => setUnread(0)).catch(() => undefined);
+    }
+  }
+
+  async function scanNow() {
+    setScanBusy(true);
+    try {
+      await runWatchtower();
+      const list = await listAlerts();
+      setAlerts(list ?? 'unavailable');
+      markAlertsRead().catch(() => undefined);
+    } catch {
+      setAlerts('unavailable');
+    } finally {
+      setScanBusy(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#121212] text-white flex">
@@ -60,6 +103,12 @@ export default function AppShell() {
               {label === 'Review Queue' && pending > 0 && (
                 <span className="bg-[#FF0000] text-white text-xs font-bold rounded-full px-2 py-0.5">{pending}</span>
               )}
+              {label === 'Found Contacts' && proposals > 0 && (
+                <span className="bg-[#FF0000] text-white text-xs font-bold rounded-full px-2 py-0.5">{proposals}</span>
+              )}
+              {label === 'Roster Candidates' && rosterCands > 0 && (
+                <span className="bg-[#FF0000] text-white text-xs font-bold rounded-full px-2 py-0.5">{rosterCands}</span>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -88,14 +137,72 @@ export default function AppShell() {
           <div className="hidden lg:block text-sm text-gray-500">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
           </div>
-          <button
-            onClick={() => setAssistantOpen(true)}
-            className="flex items-center gap-2 bg-[#1f1f1f] hover:bg-[#2a2a2a] border border-[#2a2a2a] rounded-lg px-3 py-1.5 text-sm text-gray-300 transition-colors"
-          >
-            <Sparkles className="w-4 h-4 text-[#FF0000]" />
-            Assistant
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => (alertsOpen ? setAlertsOpen(false) : openAlerts())}
+              className="relative p-2 bg-[#1f1f1f] hover:bg-[#2a2a2a] border border-[#2a2a2a] rounded-lg text-gray-300 transition-colors"
+              aria-label="Watchtower alerts"
+            >
+              <Bell className="w-4 h-4" />
+              {unread > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-[#FF0000] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center">
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setAssistantOpen(true)}
+              className="flex items-center gap-2 bg-[#1f1f1f] hover:bg-[#2a2a2a] border border-[#2a2a2a] rounded-lg px-3 py-1.5 text-sm text-gray-300 transition-colors"
+            >
+              <Sparkles className="w-4 h-4 text-[#FF0000]" />
+              Assistant
+            </button>
+          </div>
         </header>
+
+        {/* Watchtower alerts panel */}
+        {alertsOpen && (
+          <>
+            <div className="fixed inset-0 z-30" onClick={() => setAlertsOpen(false)} />
+            <div className="fixed right-4 lg:right-8 top-16 z-40 w-[min(420px,calc(100vw-2rem))] bg-[#161616] border border-[#2a2a2a] rounded-xl shadow-2xl">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-[#2a2a2a]">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <Bell className="w-4 h-4 text-[#FF0000]" /> Watchtower
+                </div>
+                <button
+                  onClick={scanNow}
+                  disabled={scanBusy}
+                  className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white disabled:opacity-50"
+                >
+                  <RefreshCcw className={`w-3 h-3 ${scanBusy ? 'animate-spin' : ''}`} /> Scan now
+                </button>
+              </div>
+              <div className="max-h-[60vh] overflow-y-auto">
+                {alerts === null && <div className="px-4 py-6 text-sm text-gray-500">Loading…</div>}
+                {alerts === 'unavailable' && (
+                  <div className="px-4 py-5 text-sm text-gray-400">
+                    The Watchtower agent isn't installed yet. Run{' '}
+                    <code className="bg-black px-1.5 py-0.5 rounded text-xs">supabase/migrations/0003_watchtower.sql</code>{' '}
+                    in the Supabase SQL editor — after that it scans the database daily and posts alerts here.
+                  </div>
+                )}
+                {Array.isArray(alerts) && alerts.length === 0 && (
+                  <div className="px-4 py-6 text-sm text-gray-500">
+                    No alerts yet. The agent scans daily — or hit "Scan now".
+                  </div>
+                )}
+                {Array.isArray(alerts) &&
+                  alerts.map((a) => (
+                    <div key={a.id} className="px-4 py-3 border-b border-[#1f1f1f] last:border-0">
+                      <div className="text-sm font-medium text-gray-200">{a.title}</div>
+                      <div className="text-xs text-gray-400 mt-0.5 leading-relaxed">{a.body}</div>
+                      <div className="text-[11px] text-gray-600 mt-1">{formatDateTime(a.created_at)}</div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </>
+        )}
         <main className="flex-1 px-4 lg:px-8 py-6 max-w-7xl w-full mx-auto">
           <Outlet />
         </main>

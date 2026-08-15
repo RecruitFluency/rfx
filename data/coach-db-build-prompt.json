@@ -1,0 +1,145 @@
+{
+  "prompt_name": "College Coach Contact Database — Monthly-Sync Build Spec",
+  "version": "1.0",
+  "role": "You are a senior software engineer. Build a production system that maintains a living master database of college sport coaches and their contact information, updated from a CSV file each month, with automatic change detection and a monthly movement report. Follow this specification exactly. Ask before inventing schema not described here.",
+
+  "objective": "Ingest a monthly CSV per sport/division, reconcile it against the existing master database, automatically apply contact-info updates and coaching-movement changes (hires, departures, program changes, promotions), and produce (a) the refreshed master data and (b) a separate monthly 'Movement' report summarizing every program that had a change that month.",
+
+  "scope": {
+    "sports_phase_1": ["Men's Soccer", "Women's Soccer", "Men's Basketball"],
+    "sports_future": "Architecture must be sport-agnostic; adding a sport must require only new CSV ingestion, no schema change.",
+    "divisions": ["NCAA DI", "NCAA DII", "NCAA DIII", "NAIA", "JuCo"],
+    "geography": "United States"
+  },
+
+  "inputs": {
+    "cadence": "One ingestion run per month.",
+    "file_format": "CSV, one file per (sport, division). Header row present. UTF-8.",
+    "expected_columns": [
+      "Conference", "State", "Division", "Sport", "School",
+      "First name", "Last name", "Position",
+      "Email address", "Phone number", "Landing pages (athletics website)",
+      "Individual's Twitter", "Team's Twitter", "Individual's Facebook", "Team's Facebook",
+      "Individual's Instagram", "Team's Instagram", "Questionnaire",
+      "institutional_context (optional, pass-through): City, Region, Size of city, Private/Public, Religious affiliation, HBCU/CommunityCollege/WomenOnly, Average GPA, SAT ranges, ACT range, Acceptance rate, Total yearly cost, Majors offered, No. of undergrads, U.S. News rankings, IPEDS/NCES ID"
+    ],
+    "optional_vendor_change_flags": {
+      "note": "Some source files include per-row change markers. Use them as HINTS, but the authoritative change detection is a diff against the prior master (see change_detection).",
+      "flags": {
+        "Added?": "x=new person | j=job change | e=email change | #=phone change",
+        "Removed? (y)": "coach no longer at this program"
+      }
+    },
+    "ingestion_robustness": [
+      "Auto-detect the real header row (files may have license/notice/metadata rows above it).",
+      "Treat '-' and empty cells as null.",
+      "Trim whitespace; lowercase and trim emails; normalize phones to (XXX) XXX-XXXX.",
+      "Skip rows with no first or last name.",
+      "Map incoming columns to the canonical schema by header name, tolerant of extra/missing/reordered columns."
+    ]
+  },
+
+  "data_model": {
+    "coach": {
+      "master_id": "Stable, permanent, system-generated identifier. NEVER key a coach on email or school (both change when they move). This ID follows the person across job changes.",
+      "fields": ["master_id", "first_name", "last_name", "email", "phone", "current_school", "sport", "position", "division", "conference", "state", "athletics_url", "twitter", "instagram", "facebook", "status (active|departed)", "first_seen_at", "last_seen_at", "last_updated_at"],
+      "institutional_context": "Store the institutional/academic columns joined by school (do not duplicate per coach in storage; join on program)."
+    },
+    "program": {
+      "fields": ["school", "sport", "division", "conference", "state", "athletics_url", "institutional_context_fields..."],
+      "key": ["school", "sport"]
+    },
+    "coach_history": {
+      "purpose": "Immutable append-only log of every change, powering the monthly Movement report and audit trail.",
+      "fields": ["id", "master_id", "change_type", "from_value", "to_value", "school", "sport", "position", "effective_month", "created_at"],
+      "change_types": ["hired", "departed", "program_change", "position_change", "email_change", "phone_change", "contact_update"]
+    }
+  },
+
+  "identity_resolution": {
+    "goal": "Correctly decide whether an incoming CSV row is an EXISTING coach (same person) or a NEW coach, so that a coach who changes schools is tracked as one continuous record, not deleted-and-recreated.",
+    "match_order": [
+      "1. Exact email match (case-insensitive) to an existing active coach -> same person.",
+      "2. Same first+last name AND same school+sport -> same person (contact update).",
+      "3. Same first+last name at a DIFFERENT school in the same sport, where the prior school no longer lists them -> same person who MOVED (program_change).",
+      "4. Strong fuzzy name match (nickname/spelling variants, e.g. 'Mike'/'Michael', 'Donte''/'Donte') + corroborating signal (same email domain, same twitter handle) -> same person.",
+      "5. Otherwise -> NEW coach (hired)."
+    ],
+    "ambiguity": "When two plausible matches exist (e.g., two coaches with the same common name), do NOT auto-merge. Flag to a human review queue with both candidates.",
+    "name_changes": "Support a coach whose displayed name changes (maiden->married). Prefer email/handle continuity to preserve master_id."
+  },
+
+  "change_detection": {
+    "method": "For each monthly run, diff the incoming file against the current master (authoritative), and reconcile vendor change-flags as hints.",
+    "rules": {
+      "hired": "A coach (by identity_resolution) present this month at a program where they were not present last month AND not matched to any departing coach elsewhere.",
+      "program_change": "An existing coach now appears at a different school (same sport). Record from_school -> to_school; update current_school; keep master_id.",
+      "departed": "A coach who was active last month is (a) marked Removed, or (b) absent from their program's roster this month and not found at any other program. Set status='departed'. (Note: the raw feed cannot distinguish 'fired' vs 'resigned' vs 'retired'—label as 'departed' unless a reason is provided.)",
+      "position_change": "Same coach, same school, title changed (e.g., Assistant -> Head Coach). Record from_title -> to_title.",
+      "email_change": "Same coach, email differs -> update + log.",
+      "phone_change": "Same coach, phone differs -> update + log.",
+      "contact_update": "Any social/athletics-url/other field change."
+    },
+    "newest_data_wins": "The incoming monthly file is treated as the newest truth for contact fields on matched coaches; overwrite stale values and log the change.",
+    "safety": "Provide a config flag to auto-apply high-confidence changes but route low-confidence/ambiguous ones (uncertain identity matches, suspicious mass-departures) to a human review queue before applying."
+  },
+
+  "monthly_movement_report": {
+    "requirement": "Produce a SEPARATE tab/sheet each month summarizing every program that had movement, so the user can see coaching changes at a glance.",
+    "grouping": "By program (school + sport), then by change.",
+    "columns": ["Month", "Division", "Conference", "School", "Sport", "Change type (Hired | Departed | Moved-In | Moved-Out | Promoted | Contact updated)", "Coach name", "Position", "From (prior school / prior title / old value)", "To (new school / new title / new value)", "New email", "New phone"],
+    "summary_metrics_at_top": ["# programs with movement", "# coaches hired", "# coaches departed", "# coaches who changed programs", "# promotions", "# contact-only updates"],
+    "example_rows": [
+      {"School": "State University", "Sport": "Men's Basketball", "Change type": "Departed", "Coach name": "Jane Doe", "Position": "Head Coach", "From": "State University", "To": ""},
+      {"School": "Tech College", "Sport": "Men's Basketball", "Change type": "Hired", "Coach name": "John Smith", "Position": "Head Coach", "From": "", "To": "Tech College"},
+      {"School": "Tech College", "Sport": "Women's Soccer", "Change type": "Moved-In", "Coach name": "Alex Ruiz", "Position": "Assistant Coach", "From": "Rival University", "To": "Tech College"}
+    ]
+  },
+
+  "outputs": {
+    "primary": "Updated master database (per sport/division), with each coach's newest contact info and current program.",
+    "movement_report": "Monthly Movement summary tab (see monthly_movement_report).",
+    "export_formats": ["CSV per sport/division for contact-DB upload", "combined workbook (xlsx) with one data tab per division + one Movement tab per month", "optional: API/DB for a live app feed"],
+    "history": "Full coach_history retained so any past month's movement can be regenerated."
+  },
+
+  "data_quality_rules": [
+    "De-duplicate within a monthly file on email, else name+school.",
+    "Validate email syntax; blank malformed addresses (do not fabricate).",
+    "Never invent emails/phones/socials; missing stays blank.",
+    "Standardize division labels and phone formatting.",
+    "Preserve institutional/academic context columns as pass-through, joined by program.",
+    "Flag suspicious bulk changes (e.g., an entire conference 'departing' in one month = likely a feed error) for human review rather than auto-applying."
+  ],
+
+  "optional_live_verification": {
+    "purpose": "Purchased/monthly feeds lag real-world coaching turnover. Optionally cross-check a coach's email/program against the school's current athletics staff directory to catch changes newer than the feed.",
+    "behavior": "Where a live check contradicts the feed, flag for review; where it fills a blank, propose the value labeled 'verified from athletics site'.",
+    "scope": "Configurable: off | sample | full."
+  },
+
+  "edge_cases": [
+    "Same person listed at two schools in one month (transition period) -> keep most recent/primary, log the move.",
+    "Two different real people with the same name -> do not merge; disambiguate by email/handle/school.",
+    "Interim/acting titles -> capture as position; treat interim->permanent as position_change.",
+    "Coach returns to a former school after time away -> reuse original master_id if identity matches.",
+    "Reordered or added columns in a future monthly file -> map by header name, not position."
+  ],
+
+  "acceptance_criteria": [
+    "Ingest a monthly CSV per sport/division and update the master with zero manual data entry for high-confidence changes.",
+    "A coach who moves schools keeps ONE master_id and shows as 'program_change', not delete+create.",
+    "Departures, hires, program changes, promotions, and contact updates are each detected and logged.",
+    "A monthly Movement tab lists every program with movement and the before/after for each change.",
+    "Re-running the same month is idempotent (no duplicate history, no double-applied changes).",
+    "Adding a new sport requires only providing its CSV, no code/schema change.",
+    "Nothing is fabricated; ambiguous changes are queued for human review, not silently applied."
+  ],
+
+  "tech_notes": {
+    "storage": "Relational DB (e.g., Postgres) with tables: coaches, programs, coach_history, ingestion_batches. Or a spreadsheet-based store if kept small.",
+    "ingestion": "Deterministic pipeline: parse -> normalize -> resolve identity -> diff -> classify changes -> apply(high-confidence)/queue(low-confidence) -> write outputs -> append history.",
+    "reproducibility": "Every monthly run recorded as a batch with a timestamp so reports and rollbacks are possible.",
+    "human_in_the_loop": "A lightweight review queue UI for ambiguous identity matches and suspicious bulk changes."
+  }
+}

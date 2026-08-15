@@ -11,6 +11,7 @@ export interface Coach {
   division: string | null;
   conference: string | null;
   state: string | null;
+  landing_page: string | null;
   status: 'active' | 'inactive';
   last_seen_at: string;
   created_at: string;
@@ -70,6 +71,8 @@ export interface SyncBatch {
   id: string;
   file_name: string;
   is_baseline: boolean;
+  /** Sport this file covers; null/undefined = all sports (pre-0002 batches too). */
+  sport?: string | null;
   row_count: number;
   status: 'uploading' | 'processing' | 'needs_review' | 'completed' | 'failed';
   stats: SyncStats;
@@ -114,4 +117,5 @@ export interface StagedRow {
   division: string | null;
   conference: string | null;
   state: string | null;
+  landing_page: string | null;
 }
