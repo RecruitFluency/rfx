@@ -1,8 +1,8 @@
 import React from 'react';
-import SalesPage from './components/Sales/SalesPage';
+import EnginePage from './components/Engine/EnginePage';
 
 function App() {
-  return <SalesPage />;
+  return <EnginePage />;
 }
 
 export default App;
