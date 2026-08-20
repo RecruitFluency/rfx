@@ -1,24 +1,45 @@
-import { StrictMode } from 'react';
+import { StrictMode, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App.tsx';
-import AppShell from './app/AppShell.tsx';
-import CommandCenter from './app/pages/CommandCenter.tsx';
-import SyncEngine from './app/pages/SyncEngine.tsx';
-import ReviewQueue from './app/pages/ReviewQueue.tsx';
-import Coaches from './app/pages/Coaches.tsx';
-import CoachProfile from './app/pages/CoachProfile.tsx';
-import Programs from './app/pages/Programs.tsx';
-import ProgramProfile from './app/pages/ProgramProfile.tsx';
-import Setup from './app/pages/Setup.tsx';
 import './index.css';
+
+/*
+ * The marketing page is the common entry point, so the authenticated app —
+ * along with its heavy dependencies (supabase-js, xlsx) — is code-split out.
+ * Without this every visitor downloads the whole dashboard to read a landing page.
+ */
+const AppShell = lazy(() => import('./app/AppShell.tsx'));
+const CommandCenter = lazy(() => import('./app/pages/CommandCenter.tsx'));
+const SyncEngine = lazy(() => import('./app/pages/SyncEngine.tsx'));
+const ReviewQueue = lazy(() => import('./app/pages/ReviewQueue.tsx'));
+const Coaches = lazy(() => import('./app/pages/Coaches.tsx'));
+const CoachProfile = lazy(() => import('./app/pages/CoachProfile.tsx'));
+const Programs = lazy(() => import('./app/pages/Programs.tsx'));
+const ProgramProfile = lazy(() => import('./app/pages/ProgramProfile.tsx'));
+const Setup = lazy(() => import('./app/pages/Setup.tsx'));
+
+function AppFallback() {
+  return (
+    <div className="grid min-h-screen place-items-center bg-ink-0">
+      <span className="font-mono text-xs uppercase tracking-[0.14em] text-paper-3">Loading…</span>
+    </div>
+  );
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path="/app" element={<AppShell />}>
+        <Route
+          path="/app"
+          element={
+            <Suspense fallback={<AppFallback />}>
+              <AppShell />
+            </Suspense>
+          }
+        >
           <Route index element={<CommandCenter />} />
           <Route path="sync" element={<SyncEngine />} />
           <Route path="review" element={<ReviewQueue />} />
@@ -30,5 +51,5 @@ createRoot(document.getElementById('root')!).render(
         </Route>
       </Routes>
     </BrowserRouter>
-  </StrictMode>
+  </StrictMode>,
 );

@@ -3,10 +3,27 @@
 @tailwind utilities;
 
 :root {
+  /* Floodlight tokens — see docs/design/DESIGN_SPEC.md */
+  --ink-0: #050505;
+  --ink-1: #0a0a0b;
+  --ink-2: #101012;
+  --ink-3: #16161a;
+  --paper-0: #f5f5f3;
+  --paper-1: #c9c9ce;
+  --paper-2: #8a8a93;
+  --paper-3: #5a5a63;
+  --red-500: #e5192c;
+  --red-400: #ff2e3f;
+  --red-700: #8f0e1b;
+  --cobalt-500: #3d5afe;
+  --line-1: rgba(245, 245, 243, 0.08);
+  --line-2: rgba(245, 245, 243, 0.16);
+
+  /* legacy aliases kept for /app pages */
   --rfx-black: #000000;
   --rfx-matte-black: #121212;
   --rfx-white: #ffffff;
-  --rfx-cta-red: #FF0000;
+  --rfx-cta-red: #ff0000;
 }
 
 html {
@@ -14,10 +31,53 @@ html {
 }
 
 body {
-  @apply bg-black text-white;
+  @apply bg-ink-0 text-paper-1 font-body antialiased;
 }
 
-.transition-all {
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms;
+@layer base {
+  /*
+   * Anybody carries a width axis (75–125). Headlines run expanded so they read
+   * like stadium nameplates; the mono telemetry labels stay narrow by contrast.
+   */
+  .font-display {
+    font-variation-settings: 'wdth' 112;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  /* Tighter width for long headlines that would otherwise wrap badly. */
+  .wdth-normal {
+    font-variation-settings: 'wdth' 100;
+  }
+  .wdth-wide {
+    font-variation-settings: 'wdth' 125;
+  }
+  /* flat background grid — 80px squares */
+  .bg-grid {
+    background-image: linear-gradient(rgba(245, 245, 243, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245, 245, 243, 0.05) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  /* club skin crossfade is decorative — land on the final state immediately */
+  .animate-\[fadeIn_450ms_ease-out\] {
+    animation: none;
+  }
 }
