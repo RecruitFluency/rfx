@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart3, Home, MessageSquare, Play, Search, Settings, Users } from 'lucide-react';
+import { BarChart3, Home, MessageSquare, Play, Settings, Users } from 'lucide-react';
 
 /** Phone shell with a heavy colored drop-shadow. glow: 'red' | 'blue'. */
 export function PhoneFrame({
@@ -141,81 +141,136 @@ export function DashboardScreen() {
   );
 }
 
-/** Phone screen: athlete profile builder. */
-export function ProfilePhoneScreen() {
+
+
+/** Real app screenshot (already framed in iPhone hardware) with a colored drop-shadow. */
+export function AppShot({
+  src,
+  alt,
+  glow = 'red',
+  className = '',
+  width = 280,
+}: {
+  src: string;
+  alt: string;
+  glow?: 'red' | 'blue';
+  className?: string;
+  width?: number;
+}) {
   return (
-    <div className="space-y-3 p-4 pb-6">
-      <div className="flex items-center justify-between">
-        <span className="font-display text-xs font-bold text-paper-0">
-          RF<span className="text-crimson-400">X</span>
-        </span>
-        <Search className="h-3.5 w-3.5 text-paper-3" aria-hidden="true" />
+    <img
+      src={src}
+      alt={alt}
+      style={{ width }}
+      className={`rounded-[2.4rem] ${glow === 'red' ? 'shadow-drop-red' : 'shadow-drop-blue'} ${className}`}
+      loading="lazy"
+    />
+  );
+}
+
+/** CSS MacBook shell for B2B desktop dashboards. */
+export function MacBookFrame({
+  children,
+  glow = 'red',
+  className = '',
+}: {
+  children: React.ReactNode;
+  glow?: 'red' | 'blue';
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <div
+        className={`overflow-hidden rounded-t-[1.1rem] border-[6px] border-b-0 border-[#26262c] bg-ink-0 ${
+          glow === 'red' ? 'shadow-drop-red' : 'shadow-drop-blue'
+        }`}
+      >
+        {children}
       </div>
-      <div className="rounded-xl border border-line bg-ink-2 p-3.5">
-        <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-paper-3">
-          Assistance &amp; Experts
-        </p>
-        <p className="mt-1 text-xs text-paper-1">Your profile is 84% complete</p>
-        <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-ink-3">
-          <span className="block h-full w-[84%] rounded-full bg-gradient-to-r from-crimson-700 to-crimson-400" />
-        </div>
-      </div>
-      <div className="rounded-xl border border-line-red bg-gradient-to-br from-crimson-500/15 to-transparent p-3.5">
-        <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-paper-3">Highlight Reel</p>
-        <div className="mt-2.5 flex aspect-video items-center justify-center rounded-lg bg-ink-3">
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-crimson-500 shadow-glow-red">
-            <Play className="ml-0.5 h-3.5 w-3.5 fill-white text-white" aria-hidden="true" />
-          </span>
-        </div>
-        <span className="mt-3 block rounded-full bg-crimson-500 py-2 text-center text-[11px] font-semibold text-white shadow-glow-red">
-          Upload new clip
-        </span>
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        {['Speed', 'Vision', 'Shooting', 'Defense'].map((t) => (
-          <span key={t} className="rounded-full border border-line-2 px-2.5 py-1 text-[9px] text-paper-2">
-            {t}
-          </span>
-        ))}
+      <div className="relative mx-[-4%] h-4 rounded-b-xl bg-gradient-to-b from-[#3a3a42] to-[#1c1c22]">
+        <span className="absolute left-1/2 top-0 h-1.5 w-24 -translate-x-1/2 rounded-b-md bg-[#111114]" aria-hidden="true" />
       </div>
     </div>
   );
 }
 
-/** Phone screen: coach messaging thread. */
-export function MessagesPhoneScreen() {
+const roster = [
+  ['Liam Carter', 'Guard · 2027', 12, 'D1 interest'],
+  ['Maya Johnson', 'Point Guard · 2026', 9, 'Committed'],
+  ['Darius Cole', 'Wing · 2027', 7, 'D1 interest'],
+  ['Sofia Reyes', 'Guard · 2026', 5, 'D3 interest'],
+  ['Jaxsen Wirth', 'Center · 2028', 3, 'Building'],
+] as const;
+
+/** Club-director B2B view: roster-wide recruitment pipeline. */
+export function ClubDashboardScreen() {
   return (
-    <div className="space-y-3 p-4 pb-6">
-      <div className="flex items-center gap-2.5">
-        <span className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-cobalt-500 to-cobalt-700 font-display text-[10px] font-bold text-white">
-          DM
+    <div className="grid grid-cols-[168px_1fr] bg-ink-0 max-md:grid-cols-1">
+      <aside className="border-r border-line p-4 max-md:hidden">
+        <span className="font-display text-sm font-bold text-paper-0">
+          RF<span className="text-crimson-400">X</span>{' '}
+          <span className="font-mono text-[8px] font-medium uppercase tracking-[0.14em] text-paper-3">Club OS</span>
         </span>
-        <div className="leading-tight">
-          <p className="text-xs font-semibold text-paper-0">Coach D. Moreno</p>
-          <p className="font-mono text-[9px] uppercase tracking-[0.1em] text-paper-3">
-            Westlake University · D1
-          </p>
+        <nav className="mt-6 space-y-1 text-xs text-paper-2">
+          {['Roster', 'Recruitment', 'Revenue', 'Branding'].map((label, i) => (
+            <span
+              key={label}
+              className={`block rounded-lg px-3 py-2 ${
+                i === 0 ? 'border-l-2 border-cobalt-400 bg-ink-2 text-paper-0' : ''
+              }`}
+            >
+              {label}
+            </span>
+          ))}
+        </nav>
+      </aside>
+      <div className="p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="font-display text-base font-semibold text-paper-0">Northside Academy</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-paper-3">
+              Director view · 42 athletes on pathway
+            </p>
+          </div>
+          <span className="rounded-full border border-line-blue bg-cobalt-500/10 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.1em] text-cobalt-400">
+            Season report
+          </span>
         </div>
-      </div>
-      {[
-        ['Saw your reel — that fourth-quarter stepback is exactly what we need.', false],
-        ['Thank you coach! Happy to share my full match footage.', true],
-        ['Do that. And let’s set up a call this week with our staff.', false],
-      ].map(([text, mine], i) => (
-        <p
-          key={i}
-          className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[11px] leading-relaxed ${
-            mine
-              ? 'ml-auto rounded-br-md bg-crimson-500 text-white'
-              : 'rounded-bl-md border border-line bg-ink-2 text-paper-1'
-          }`}
-        >
-          {text as string}
-        </p>
-      ))}
-      <div className="flex items-center gap-2 rounded-full border border-line-2 bg-ink-2 px-3.5 py-2">
-        <span className="flex-1 text-[10px] text-paper-3">Message…</span>
-        <span className="h-6 w-6 rounded-full bg-crimson-500 shadow-glow-red" aria-hidden="true" />
+        <div className="mt-5 grid grid-cols-3 gap-3 max-md:grid-cols-2">
+          {[
+            ['Coach interest', '214', '+18%'],
+            ['Offers this season', '11', '+4'],
+            ['Club revenue', '$8.2k', 'MRR'],
+          ].map(([label, value, delta]) => (
+            <div key={label} className="rounded-xl border border-line bg-ink-2 p-3">
+              <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-paper-3">{label}</p>
+              <p className="mt-1 font-display text-lg font-semibold text-paper-0 tabular-nums">
+                {value} <span className="text-[10px] font-medium text-cobalt-400">{delta}</span>
+              </p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-5 space-y-2">
+          {roster.map(([name, pos, interest, status]) => (
+            <div
+              key={name}
+              className="grid grid-cols-[1.2fr_1fr_0.9fr_0.9fr] items-center gap-3 rounded-lg border border-line bg-ink-2/60 px-3.5 py-2.5 text-xs max-md:grid-cols-2"
+            >
+              <span className="font-semibold text-paper-0">{name}</span>
+              <span className="text-paper-2">{pos}</span>
+              <span className="font-mono tabular-nums text-paper-1">{interest} coaches</span>
+              <span
+                className={`justify-self-start rounded-full px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.08em] ${
+                  status === 'Committed'
+                    ? 'bg-crimson-500/15 text-crimson-400'
+                    : 'bg-ink-3 text-paper-2'
+                }`}
+              >
+                {status}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

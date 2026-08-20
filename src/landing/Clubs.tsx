@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown, Building2, CircleDollarSign, Sparkles } from 'lucide-react';
 import { Eyebrow, PrimaryButton, StoreBadges } from './ui';
 import { Reveal } from './motion';
-import { PhoneFrame } from './mockups';
+import { PhoneFrame, AppShot } from './mockups';
 
 /* -- app download banner ------------------------------------------------- */
 
@@ -24,28 +24,12 @@ export function AppBanner() {
               <StoreBadges className="mt-7 [&_a]:border-white/20 [&_a]:bg-black/30 [&_a:hover]:border-white/50" />
             </div>
             <div className="mx-auto hidden -rotate-6 md:block">
-              <div className="w-[220px] rounded-[2rem] border border-white/20 bg-ink-0/90 p-2 shadow-card">
-                <div className="rounded-[1.6rem] bg-ink-1 p-4">
-                  <p className="font-display text-xs font-bold text-paper-0">
-                    RF<span className="text-crimson-400">X</span>
-                  </p>
-                  <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.12em] text-paper-3">
-                    This week
-                  </p>
-                  <p className="font-display text-2xl font-semibold text-paper-0 tabular-nums">
-                    +34% <span className="text-[10px] text-crimson-400">coach views</span>
-                  </p>
-                  <div className="mt-3 flex h-10 items-end gap-1">
-                    {[35, 50, 42, 66, 80, 100, 90].map((h, i) => (
-                      <span
-                        key={i}
-                        style={{ height: `${h}%` }}
-                        className="w-2 rounded-t-sm bg-gradient-to-b from-crimson-400 to-crimson-700"
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <AppShot
+                src="/screens/commit-school.webp"
+                alt="RFX app — committing to a school"
+                width={240}
+                className="!shadow-[0_40px_100px_-10px_rgba(0,0,0,0.6)]"
+              />
             </div>
           </div>
         </Reveal>

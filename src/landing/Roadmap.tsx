@@ -1,7 +1,7 @@
 import React from 'react';
 import { Eyebrow } from './ui';
 import { Reveal, ParallaxPlane } from './motion';
-import { BrowserFrame, DashboardScreen } from './mockups';
+import { MacBookFrame, DashboardScreen } from './mockups';
 
 export default function Roadmap() {
   return (
@@ -21,9 +21,9 @@ export default function Roadmap() {
 
         <div className="relative mt-16">
           <Reveal>
-            <BrowserFrame glow="red">
+            <MacBookFrame glow="red" className="mx-auto max-w-4xl">
               <DashboardScreen />
-            </BrowserFrame>
+            </MacBookFrame>
           </Reveal>
 
           {/* overlapping foreground widgets — faster plane */}

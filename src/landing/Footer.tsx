@@ -1,7 +1,7 @@
 import React from 'react';
 import { Eyebrow, PrimaryButton, RFXLogo } from './ui';
 import { Reveal } from './motion';
-import { BrowserFrame, DashboardScreen } from './mockups';
+import { MacBookFrame, ClubDashboardScreen } from './mockups';
 
 export function FinalCTA() {
   return (
@@ -24,9 +24,9 @@ export function FinalCTA() {
             </div>
             <div className="relative hidden md:block">
               <div className="translate-x-10">
-                <BrowserFrame glow="blue" className="origin-left scale-[0.92]">
-                  <DashboardScreen />
-                </BrowserFrame>
+                <MacBookFrame glow="blue" className="origin-left scale-[0.92]">
+                  <ClubDashboardScreen />
+                </MacBookFrame>
               </div>
             </div>
           </div>

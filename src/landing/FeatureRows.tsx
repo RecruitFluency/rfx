@@ -2,7 +2,7 @@ import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { Eyebrow } from './ui';
 import { Reveal, ParallaxPlane } from './motion';
-import { PhoneFrame, ProfilePhoneScreen, MessagesPhoneScreen } from './mockups';
+import { AppShot } from './mockups';
 
 function Row({
   eyebrow,
@@ -73,9 +73,23 @@ export default function FeatureRows() {
               'Academic transcripts & eligibility status',
             ]}
             media={
-              <PhoneFrame glow="red">
-                <ProfilePhoneScreen />
-              </PhoneFrame>
+              <div className="relative">
+                <AppShot
+                  src="/screens/highlight-reel.webp"
+                  alt="RFX app — uploading a highlight reel"
+                  glow="red"
+                  width={280}
+                />
+                <ParallaxPlane speed={1.12} range={100} className="absolute -right-24 top-16 hidden xl:block">
+                  <AppShot
+                    src="/screens/onboarding-divisions.webp"
+                    alt="RFX app — choosing target divisions"
+                    glow="red"
+                    width={200}
+                    className="opacity-90"
+                  />
+                </ParallaxPlane>
+              </div>
             }
             widget={
               <ParallaxPlane
@@ -109,9 +123,23 @@ export default function FeatureRows() {
               'Program shortlists that update as you improve',
             ]}
             media={
-              <PhoneFrame glow="blue">
-                <MessagesPhoneScreen />
-              </PhoneFrame>
+              <div className="relative">
+                <AppShot
+                  src="/screens/coach-interest.webp"
+                  alt="RFX app — coach interest by division with 1,752 profile views"
+                  glow="blue"
+                  width={280}
+                />
+                <ParallaxPlane speed={1.12} range={100} className="absolute -left-24 top-20 hidden xl:block">
+                  <AppShot
+                    src="/screens/coach-interest-list.webp"
+                    alt="RFX app — interested coaches list"
+                    glow="blue"
+                    width={200}
+                    className="opacity-90"
+                  />
+                </ParallaxPlane>
+              </div>
             }
             widget={
               <ParallaxPlane
