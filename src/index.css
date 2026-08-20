@@ -51,8 +51,21 @@ body {
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+  /* club skin crossfade is decorative — land on the final state immediately */
+  .animate-\[fadeIn_450ms_ease-out\] {
+    animation: none;
   }
 }

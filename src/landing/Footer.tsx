@@ -1,7 +1,8 @@
 import React from 'react';
 import { Eyebrow, PrimaryButton, RFXLogo } from './ui';
 import { Reveal } from './motion';
-import { MacBookFrame, ClubDashboardScreen } from './mockups';
+import { MacBookFrame } from './devices';
+import ClubHealth, { CLUB_SKINS } from './screens/ClubHealth';
 
 export function FinalCTA() {
   return (
@@ -25,7 +26,7 @@ export function FinalCTA() {
             <div className="relative hidden md:block">
               <div className="translate-x-10">
                 <MacBookFrame glow="blue" className="origin-left scale-[0.92]">
-                  <ClubDashboardScreen />
+                  <ClubHealth skin={CLUB_SKINS[0]} />
                 </MacBookFrame>
               </div>
             </div>

@@ -13,6 +13,19 @@ import {
 export const ARRIVE = [0.22, 1, 0.36, 1] as const;
 
 /**
+ * Resolved once at module scope. Resolving `motion[tag]` during render would
+ * hand React a new component identity on some renders, remounting the subtree
+ * and re-arming the reveal observer.
+ */
+const MOTION_TAGS = {
+  div: motion.div,
+  section: motion.section,
+  article: motion.article,
+  li: motion.li,
+  span: motion.span,
+} as const;
+
+/**
  * Scroll-linked parallax plane. `speed` is the scroll multiplier from the
  * spec's camera rig: <1 recedes (background), >1 approaches (foreground).
  * The offset is computed relative to the element's own journey through the
@@ -46,26 +59,93 @@ export function ParallaxPlane({
   );
 }
 
-/** Scroll reveal: opacity 0→1, y 28→0, 650ms, staggered by `order`. */
+/**
+ * Scroll reveal: opacity 0→1, y 28→0, 650ms, staggered by `order`.
+ *
+ * Deliberately NOT framer-motion's `whileInView`. That relies solely on an
+ * IntersectionObserver, which samples at frame boundaries — when async media or
+ * a webfont swap shifts layout mid-scroll, an element can jump from below the
+ * viewport to above it between two samples. The observer then never reports
+ * `isIntersecting`, and with `once: true` there is no second chance, so the
+ * content stays at opacity 0 permanently. This was reproducible: identical
+ * builds stranded different headings depending on scroll cadence.
+ *
+ * Instead we pair the observer with a fallback sweep that can only ever reveal,
+ * never hide. Anything at or above the fold is shown regardless of whether the
+ * observer fired, so content can never be stranded.
+ */
 export function Reveal({
   children,
   className = '',
   order = 0,
-  as: Tag = 'div',
+  as = 'div',
 }: {
   children: React.ReactNode;
   className?: string;
   order?: number;
-  as?: 'div' | 'section' | 'article' | 'li' | 'span';
+  as?: keyof typeof MOTION_TAGS;
 }) {
-  const MotionTag = motion[Tag];
+  const MotionTag = MOTION_TAGS[as];
   const reduce = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || shown) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) reveal();
+      },
+      { threshold: 0 },
+    );
+    let frame = 0;
+    const reveal = () => {
+      setShown(true);
+      cleanup();
+    };
+    // Safety net: reveal anything whose top has reached the viewport, even if
+    // the observer missed its crossing entirely.
+    const sweep = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        const r = el.getBoundingClientRect();
+        if (r.top < window.innerHeight && r.bottom > 0) reveal();
+        else if (r.bottom <= 0) reveal(); // already scrolled past
+      });
+    };
+    function cleanup() {
+      io.disconnect();
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      window.removeEventListener('scroll', sweep);
+      window.removeEventListener('resize', sweep);
+      window.removeEventListener('load', sweep);
+    }
+
+    io.observe(el);
+    window.addEventListener('scroll', sweep, { passive: true });
+    window.addEventListener('resize', sweep, { passive: true });
+    window.addEventListener('load', sweep);
+    sweep();
+
+    return cleanup;
+  }, [shown]);
+
   return (
     <MotionTag
+      ref={ref}
       className={className}
-      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 28 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-60px' }}
+      initial={false}
+      animate={
+        shown
+          ? { opacity: 1, y: 0 }
+          : reduce
+            ? { opacity: 0 }
+            : { opacity: 0, y: 28 }
+      }
       transition={
         reduce
           ? { duration: 0.2, delay: order * 0.08 }

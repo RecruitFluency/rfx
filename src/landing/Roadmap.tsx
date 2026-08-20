@@ -1,7 +1,8 @@
 import React from 'react';
 import { Eyebrow } from './ui';
 import { Reveal, ParallaxPlane } from './motion';
-import { MacBookFrame, DashboardScreen } from './mockups';
+import { MacBookFrame } from './devices';
+import PlayerPipeline from './screens/PlayerPipeline';
 
 export default function Roadmap() {
   return (
@@ -22,7 +23,7 @@ export default function Roadmap() {
         <div className="relative mt-16">
           <Reveal>
             <MacBookFrame glow="red" className="mx-auto max-w-4xl">
-              <DashboardScreen />
+              <PlayerPipeline />
             </MacBookFrame>
           </Reveal>
 

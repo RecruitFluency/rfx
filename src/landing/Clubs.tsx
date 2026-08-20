@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronDown, Building2, CircleDollarSign, Sparkles } from 'lucide-react';
 import { Eyebrow, PrimaryButton, StoreBadges } from './ui';
 import { Reveal } from './motion';
-import { PhoneFrame, AppShot } from './mockups';
+import { MacBookFrame, PhoneShot } from './devices';
+import ClubHealth, { CLUB_SKINS } from './screens/ClubHealth';
 
 /* -- app download banner ------------------------------------------------- */
 
@@ -24,11 +25,11 @@ export function AppBanner() {
               <StoreBadges className="mt-7 [&_a]:border-white/20 [&_a]:bg-black/30 [&_a:hover]:border-white/50" />
             </div>
             <div className="mx-auto hidden -rotate-6 md:block">
-              <AppShot
+              <PhoneShot
                 src="/screens/commit-school.webp"
                 alt="RFX app — committing to a school"
-                width={240}
-                className="!shadow-[0_40px_100px_-10px_rgba(0,0,0,0.6)]"
+                width={228}
+                glow="none"
               />
             </div>
           </div>
@@ -76,6 +77,64 @@ const clubCards = [
   },
 ];
 
+/**
+ * The white-label proof: one dashboard component, re-skinned live through the
+ * club palettes. Auto-advances, and any crest chip pins a skin on click.
+ */
+function SkinSwitcher() {
+  const [i, setI] = useState(0);
+  const [pinned, setPinned] = useState(false);
+
+  useEffect(() => {
+    if (pinned) return;
+    const t = setInterval(() => setI((n) => (n + 1) % CLUB_SKINS.length), 3200);
+    return () => clearInterval(t);
+  }, [pinned]);
+
+  const skin = CLUB_SKINS[i];
+
+  return (
+    <div>
+      <MacBookFrame glow="blue">
+        {/* keyed so each skin swap crossfades rather than snapping */}
+        <div key={skin.id} className="animate-[fadeIn_450ms_ease-out]">
+          <ClubHealth skin={skin} />
+        </div>
+      </MacBookFrame>
+
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+        {CLUB_SKINS.map((s, n) => (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => {
+              setI(n);
+              setPinned(true);
+            }}
+            aria-label={`Preview ${s.name} branding`}
+            aria-pressed={n === i}
+            className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-all duration-200 ${
+              n === i
+                ? 'border-line-2 bg-ink-2 text-paper-0'
+                : 'border-line text-paper-3 hover:border-line-2 hover:text-paper-1'
+            }`}
+          >
+            <span
+              className="h-3 w-3 rounded-full ring-1 ring-inset ring-white/20"
+              style={{ background: s.accent }}
+              aria-hidden="true"
+            />
+            {s.name}
+          </button>
+        ))}
+      </div>
+      <p className="mt-3 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-paper-3">
+        One platform · every club&apos;s badge
+      </p>
+    </div>
+  );
+}
+
 export default function Clubs() {
   const [open, setOpen] = useState(0);
 
@@ -86,7 +145,7 @@ export default function Clubs() {
       <div className="pointer-events-none absolute right-1/4 top-1/3 h-[420px] w-[420px] translate-x-1/2 rounded-full bg-crimson-500/12 blur-[140px]" />
 
       <div className="relative mx-auto max-w-page px-6">
-        <div className="grid items-center gap-14 lg:grid-cols-2">
+        <div className="grid items-center gap-14 lg:grid-cols-[0.9fr_1.1fr]">
           <Reveal>
             <Eyebrow>For clubs &amp; academies</Eyebrow>
             <h2 className="mt-6 max-w-md font-display text-4xl font-semibold leading-[1.05] tracking-[-0.025em] text-paper-0 text-balance md:text-5xl">
@@ -129,40 +188,8 @@ export default function Clubs() {
             </div>
           </Reveal>
 
-          <Reveal order={1} className="flex justify-center">
-            <PhoneFrame glow="blue">
-              <div className="space-y-3.5 p-4 pb-6">
-                <p className="font-display text-xs font-bold text-paper-0">
-                  Your <span className="text-cobalt-400">Club</span>
-                </p>
-                <div className="rounded-xl border border-line bg-ink-2 p-3.5">
-                  <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-paper-3">
-                    Brand theme
-                  </p>
-                  <div className="mt-3 flex gap-2.5">
-                    {['bg-crimson-500', 'bg-cobalt-500', 'bg-emerald-500', 'bg-amber-500', 'bg-fuchsia-500'].map(
-                      (c, i) => (
-                        <span
-                          key={c}
-                          className={`h-7 w-7 rounded-full ${c} ${
-                            i === 1 ? 'ring-2 ring-white ring-offset-2 ring-offset-ink-2' : ''
-                          }`}
-                        />
-                      ),
-                    )}
-                  </div>
-                </div>
-                <div className="rounded-xl border border-line-blue bg-gradient-to-br from-cobalt-500/20 to-transparent p-3.5">
-                  <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-paper-3">Preview</p>
-                  <p className="mt-1.5 text-xs text-paper-1">
-                    Your athletes, your crest, your colors — powered by RFX.
-                  </p>
-                  <span className="mt-3 block rounded-full bg-cobalt-500 py-2 text-center text-[11px] font-semibold text-white shadow-glow-blue">
-                    Publish club app
-                  </span>
-                </div>
-              </div>
-            </PhoneFrame>
+          <Reveal order={1}>
+            <SkinSwitcher />
           </Reveal>
         </div>
 

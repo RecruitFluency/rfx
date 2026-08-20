@@ -2,7 +2,8 @@ import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
 import { Eyebrow } from './ui';
 import { Reveal, ParallaxPlane } from './motion';
-import { AppShot } from './mockups';
+import { PhoneShot, IPhoneFrame } from './devices';
+import { RecruitmentScreen, PipelineScreen, NotificationsScreen } from './screens/phone';
 
 function Row({
   eyebrow,
@@ -74,14 +75,14 @@ export default function FeatureRows() {
             ]}
             media={
               <div className="relative">
-                <AppShot
+                <PhoneShot
                   src="/screens/highlight-reel.webp"
                   alt="RFX app — uploading a highlight reel"
                   glow="red"
                   width={280}
                 />
                 <ParallaxPlane speed={1.12} range={100} className="absolute -right-24 top-16 hidden xl:block">
-                  <AppShot
+                  <PhoneShot
                     src="/screens/onboarding-divisions.webp"
                     alt="RFX app — choosing target divisions"
                     glow="red"
@@ -124,14 +125,14 @@ export default function FeatureRows() {
             ]}
             media={
               <div className="relative">
-                <AppShot
+                <PhoneShot
                   src="/screens/coach-interest.webp"
                   alt="RFX app — coach interest by division with 1,752 profile views"
                   glow="blue"
                   width={280}
                 />
                 <ParallaxPlane speed={1.12} range={100} className="absolute -left-24 top-20 hidden xl:block">
-                  <AppShot
+                  <PhoneShot
                     src="/screens/coach-interest-list.webp"
                     alt="RFX app — interested coaches list"
                     glow="blue"
@@ -154,6 +155,37 @@ export default function FeatureRows() {
                   <p className="text-sm font-semibold text-paper-0">Westlake University · D1</p>
                 </div>
               </ParallaxPlane>
+            }
+          />
+          <Row
+            eyebrow="Your pipeline"
+            title={
+              <>
+                Turn conversations into <span className="text-crimson-400">real opportunities</span>
+              </>
+            }
+            copy="Every program you talk to moves through seven clear stages — from first contact to signing day — so you always know exactly where you stand and what to do next."
+            bullets={[
+              'Seven-stage pipeline for every program',
+              'Coaches and your club update stages with you',
+              'Offer deadlines and next steps, never missed',
+            ]}
+            media={
+              <div className="relative flex items-end justify-center">
+                <ParallaxPlane speed={1.08} range={90} className="hidden xl:block">
+                  <IPhoneFrame glow="none" width={196} className="translate-y-8 opacity-70">
+                    <RecruitmentScreen />
+                  </IPhoneFrame>
+                </ParallaxPlane>
+                <IPhoneFrame glow="red" width={272} className="z-10 xl:-mx-8">
+                  <PipelineScreen />
+                </IPhoneFrame>
+                <ParallaxPlane speed={1.18} range={90} className="hidden xl:block">
+                  <IPhoneFrame glow="none" width={196} className="translate-y-8 opacity-70">
+                    <NotificationsScreen />
+                  </IPhoneFrame>
+                </ParallaxPlane>
+              </div>
             }
           />
         </div>

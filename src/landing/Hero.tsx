@@ -3,6 +3,7 @@ import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion
 import { Play } from 'lucide-react';
 import { Eyebrow, StoreBadges, PrimaryButton } from './ui';
 import { PointerField, FloatCard, ParallaxPlane, ARRIVE } from './motion';
+import VideoPlane from './VideoPlane';
 
 const ATHLETE_SRC = '/parallax/hero-athlete-cutout.webp';
 
@@ -77,6 +78,13 @@ export default function Hero() {
         <ParallaxPlane
           speed={0.15}
           className="pointer-events-none absolute inset-[-10%] bg-grid [mask-image:radial-gradient(ellipse_90%_80%_at_50%_0%,black_20%,transparent_78%)]"
+        />
+        {/* L0.5 — ambient stadium footage, barely there, behind everything */}
+        <VideoPlane
+          src="/video/ambient-stadium.mp4"
+          opacity={0.1}
+          defer
+          className="pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_bottom,black,transparent_85%)]"
         />
         {/* L2 — stadium light wash, 0.3× */}
         <ParallaxPlane speed={0.3} className="pointer-events-none absolute inset-[-10%]">

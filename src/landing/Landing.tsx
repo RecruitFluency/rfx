@@ -4,6 +4,7 @@ import Hero from './Hero';
 import FeatureRows from './FeatureRows';
 import FeatureGrid from './FeatureGrid';
 import Roadmap from './Roadmap';
+import FilmRoom from './FilmRoom';
 import Testimonials from './Testimonials';
 import Clubs, { AppBanner } from './Clubs';
 import Pricing from './Pricing';
@@ -19,6 +20,7 @@ export default function Landing() {
         <FeatureRows />
         <FeatureGrid />
         <Roadmap />
+        <FilmRoom />
         <Testimonials />
         <AppBanner />
         <Clubs />
