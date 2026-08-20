@@ -54,7 +54,7 @@ export default function FeatureRows() {
         <Reveal className="mx-auto max-w-2xl text-center">
           <Eyebrow>Built for the journey</Eyebrow>
           <h2 className="mt-6 font-display text-4xl font-semibold leading-[1.05] tracking-[-0.025em] text-paper-0 text-balance md:text-5xl">
-            Getting recruited has never been <span className="text-outline">easier.</span>
+            Getting recruited has never been <span className="text-crimson-400">easier.</span>
           </h2>
         </Reveal>
 

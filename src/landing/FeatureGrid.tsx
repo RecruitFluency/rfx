@@ -55,7 +55,7 @@ export default function FeatureGrid() {
         <Reveal className="mx-auto max-w-2xl text-center">
           <Eyebrow>Explore your possibilities</Eyebrow>
           <h2 className="mt-6 font-display text-4xl font-semibold leading-[1.05] tracking-[-0.025em] text-paper-0 text-balance md:text-5xl">
-            Unlock your full <span className="text-outline">potential!</span>
+            Unlock your full <span className="text-crimson-400">potential!</span>
           </h2>
           <p className="mx-auto mt-5 max-w-lg text-[15px] leading-relaxed text-paper-1">
             One platform to prove your ability, get discovered, and manage every step of your

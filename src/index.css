@@ -34,14 +34,26 @@ body {
   @apply bg-ink-0 text-paper-1 font-body antialiased;
 }
 
+@layer base {
+  /*
+   * Anybody carries a width axis (75–125). Headlines run expanded so they read
+   * like stadium nameplates; the mono telemetry labels stay narrow by contrast.
+   */
+  .font-display {
+    font-variation-settings: 'wdth' 112;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-  /* stroke-only headline emphasis */
-  .text-outline {
-    color: transparent;
-    -webkit-text-stroke: 1px rgba(245, 245, 243, 0.55);
+  /* Tighter width for long headlines that would otherwise wrap badly. */
+  .wdth-normal {
+    font-variation-settings: 'wdth' 100;
+  }
+  .wdth-wide {
+    font-variation-settings: 'wdth' 125;
   }
   /* flat background grid — 80px squares */
   .bg-grid {

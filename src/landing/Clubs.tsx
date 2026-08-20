@@ -195,7 +195,7 @@ export default function Clubs() {
 
         <Reveal className="mx-auto mt-28 max-w-2xl text-center">
           <h2 className="font-display text-4xl font-semibold leading-[1.05] tracking-[-0.025em] text-paper-0 text-balance md:text-5xl">
-            Your club, your platform, <span className="text-outline">your success</span>
+            Your club, your platform, <span className="text-crimson-400">your success</span>
           </h2>
           <p className="mx-auto mt-5 max-w-lg text-[15px] leading-relaxed text-paper-1">
             Give your athletes a professional pathway and your club a platform worthy of its badge.

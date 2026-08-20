@@ -78,10 +78,23 @@ export function StoreBadges({ className = '' }: { className?: string }) {
   );
 }
 
-export function RFXLogo({ className = '' }: { className?: string }) {
+export function RFXLogo({
+  className = '',
+  showByline = true,
+}: {
+  className?: string;
+  showByline?: boolean;
+}) {
   return (
-    <span className={`font-display text-xl font-bold tracking-tight text-paper-0 ${className}`}>
-      RF<span className="text-crimson-400">X</span>
+    <span className={`inline-flex flex-col leading-none ${className}`}>
+      <span className="font-display text-xl font-bold tracking-tight text-paper-0">
+        RF<span className="text-crimson-400">X</span>
+      </span>
+      {showByline && (
+        <span className="mt-0.5 font-mono text-[8px] font-medium uppercase tracking-[0.16em] text-paper-3">
+          powered by recruitfluency
+        </span>
+      )}
     </span>
   );
 }

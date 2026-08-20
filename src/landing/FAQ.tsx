@@ -35,7 +35,7 @@ export default function FAQ() {
         <Reveal>
           <Eyebrow>FAQ</Eyebrow>
           <h2 className="mt-6 max-w-sm font-display text-4xl font-semibold leading-[1.05] tracking-[-0.025em] text-paper-0 text-balance md:text-5xl">
-            Find the answers to common <span className="text-outline">questions.</span>
+            Find the answers to common <span className="text-crimson-400">questions.</span>
           </h2>
           <p className="mt-5 max-w-sm text-[15px] leading-relaxed text-paper-1">
             Can&apos;t find what you&apos;re looking for? Our team answers every message within a
