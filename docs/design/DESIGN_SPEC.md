@@ -67,7 +67,7 @@ This page is built on **movement**. Everything in the reference communicates vel
 
 | Role | Family | Fallback stack | Why |
 |---|---|---|---|
-| Display / headlines | **Space Grotesk** (600, 500) | `'Space Grotesk', 'Inter Tight', system-ui, sans-serif` | Squared terminals + slightly condensed width = engineered, athletic voice matching the reference's grotesque headline face |
+| Display / headlines | **Archivo** (500–800, variable `wdth`) | `'Archivo', system-ui, sans-serif` | Broad broadcast-style grotesque built for large headlines. Its width axis is the athletic lever: display text sits at `wdth 112` so headlines read like stadium nameplates rather than another geometric grotesque |
 | Body / UI | **Inter** (400, 500, 600) | `'Inter', system-ui, sans-serif` | Neutral matte body face; matches the mockup's UI copy |
 | Data / eyebrow labels | **IBM Plex Mono** (500) | `'IBM Plex Mono', ui-monospace, monospace` | Stat overlays and section eyebrows read as telemetry |
 
@@ -84,12 +84,13 @@ Both display and body load from Google Fonts; subset `latin`; `font-display: swa
 | `body-lg` (hero sub, section intro) | 18 / 1.6 | 400 | 0 | Sentence |
 | `body-md` (card copy, FAQ) | 15 / 1.6 | 400 | 0 | Sentence |
 | `eyebrow` (section tags) | 12 / 1 | 500 (Mono) | +0.14em | UPPERCASE |
-| `stat-value` (metric cards) | 28 / 1 | 600 (Space Grotesk) | −0.02em | — |
+| `stat-value` (metric cards) | 28 / 1 | 600 (Archivo) | −0.02em | — |
 | `caption` | 12 / 1.5 | 400 | +0.01em | Sentence |
 
 ### 3.3 Headline treatment rules
 
-- Headlines are matte white with **one emphasized phrase** per headline — emphasized either in `--red-400` or as a stroke-only outline (`-webkit-text-stroke: 1px rgba(245,245,243,0.55); color: transparent`). Never both treatments in one headline.
+- Headlines are matte white with **one emphasized phrase** per headline, set in `--red-400`. A stroke-only outline variant was tried and removed — at the sizes used it read as unfinished rather than editorial, and it failed badly against the lighter club skins.
+- Display text carries `font-variation-settings: 'wdth' 112`; `.wdth-normal` (100) and `.wdth-wide` (125) are available for headlines that need tightening or extra presence.
 - Max headline width: 14 words / ~640px. The reference keeps every H2 at 2 lines max.
 - Eyebrow chips: mono uppercase inside a `--line-2` bordered pill, 6px dot in `--red-500` at left. Every section opens with one — it is the page's wayfinding system.
 
@@ -162,6 +163,16 @@ Every parallax layer that isn't pure CSS is a transparent PNG (export twin WebP;
 
 Easing voice: **fast attack, long decay** — the timing signature of athletic movement (explosive start, controlled finish). Never use ease-in-out symmetric easing on reveals.
 
+### 6.1 Reveal implementation constraint
+
+**Do not implement scroll reveals with framer-motion's `whileInView` + `once: true`.** It was tried and reverted after it shipped a bug that hid whole sections from real visitors.
+
+`whileInView` depends solely on an IntersectionObserver, which samples at frame boundaries. Async media and webfont swaps shift layout mid-scroll, so an element can move from below the viewport to above it between two samples. The observer never reports the crossing, `once: true` gives it no second chance, and the element stays at `opacity: 0` forever. It is timing-dependent, so it survives casual testing: identical builds stranded different headings depending on scroll cadence.
+
+`Reveal` in `src/landing/motion.tsx` therefore drives visibility from state and pairs the observer with a **fallback sweep that can only reveal, never hide** — on mount, on `window.load`, and on an rAF-throttled `scroll`/`resize`, anything at or above the fold is shown regardless of what the observer did.
+
+Any change here must be verified across several scroll cadences *and* both lazy and eager image loading, asserting zero elements below `opacity: 1` after a full scroll. A single passing run proves nothing about a race.
+
 ---
 
 ## 7. Page anatomy (section-by-section, from the reference)
@@ -189,7 +200,7 @@ Layout constants: content max-width **1200px**; section padding **120px** top/bo
 ## 8. Build order (when we re-create)
 
 1. Tokens → extend `tailwind.config.js` + `src/index.css` with §2/§3 (replace the current 4-variable set).
-2. Fonts → Space Grotesk / Inter / IBM Plex Mono via Google Fonts in `index.html`.
+2. Fonts → Archivo / Inter / IBM Plex Mono via Google Fonts in `index.html`.
 3. Parallax primitives → `<ParallaxPlane speed={n}>` and `<Reveal>` wrappers on framer-motion.
 4. Background assets → generate L1/L2 PNGs (§5.1) before any section work; hero is blocked without the light wash + grid.
 5. Hero (full 5-plane stack proves the rig) → then sections in page order.
