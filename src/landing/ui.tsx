@@ -78,6 +78,27 @@ export function StoreBadges({ className = '' }: { className?: string }) {
   );
 }
 
+/**
+ * The RFX mark: a circle split by a wedge that tapers to a point at the right
+ * edge, forming the stem, the two sweeps and the play triangle. Inline (not an
+ * <img>) so it inherits `currentColor` wherever it sits.
+ */
+export function RFXMark({ className = '' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 256 256" className={className} role="img" aria-label="RFX">
+      <mask id="rfx-cuts">
+        <rect width="256" height="256" fill="#000" />
+        <circle cx="128" cy="128" r="126" fill="#fff" />
+        <path d="M 62 28 L 255 113 L 62 258 Z" fill="#000" />
+      </mask>
+      <g mask="url(#rfx-cuts)">
+        <circle cx="128" cy="128" r="126" fill="currentColor" />
+      </g>
+      <path d="M111 96 L163 128 L111 160 Z" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function RFXLogo({
   className = '',
   showByline = true,
@@ -86,15 +107,16 @@ export function RFXLogo({
   showByline?: boolean;
 }) {
   return (
-    <span className={`inline-flex flex-col leading-none ${className}`}>
-      <span className="font-display text-xl font-bold tracking-tight text-paper-0">
-        RF<span className="text-crimson-400">X</span>
+    <span className={`inline-flex items-center gap-2.5 ${className}`}>
+      <RFXMark className="h-7 w-7 shrink-0 text-crimson-500" />
+      <span className="flex flex-col leading-none">
+        <span className="font-display text-xl font-bold tracking-tight text-paper-0">RFX</span>
+        {showByline && (
+          <span className="mt-1 font-mono text-[8px] font-medium uppercase tracking-[0.16em] text-paper-3">
+            powered by recruitfluency
+          </span>
+        )}
       </span>
-      {showByline && (
-        <span className="mt-0.5 font-mono text-[8px] font-medium uppercase tracking-[0.16em] text-paper-3">
-          powered by recruitfluency
-        </span>
-      )}
     </span>
   );
 }

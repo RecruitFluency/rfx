@@ -1,0 +1,20 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RFX">
+  <mask id="rfx-cuts">
+    <rect width="256" height="256" fill="#000"/>
+    <circle cx="128" cy="128" r="126" fill="#fff"/>
+    <!--
+      One wedge does all the work: it opens at the left (between the stem and
+      the play triangle) and tapers to a point at the circle's right edge,
+      which is what splits the mark into the top sweep, the stem and the
+      bottom sweep.
+    -->
+    <path d="M 62 28 L 255 113 L 62 258 Z" fill="#000"/>
+  </mask>
+
+  <g mask="url(#rfx-cuts)">
+    <circle cx="128" cy="128" r="126" fill="currentColor"/>
+  </g>
+
+  <!-- play triangle, sitting inside the wedge -->
+  <path d="M111 96 L163 128 L111 160 Z" fill="currentColor"/>
+</svg>
