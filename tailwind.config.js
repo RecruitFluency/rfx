@@ -29,7 +29,7 @@ export default {
         },
       },
       fontFamily: {
-        display: ['Anybody', '"Archivo Expanded"', 'system-ui', 'sans-serif'],
+        display: ['Archivo', 'system-ui', 'sans-serif'],
         body: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
       },
