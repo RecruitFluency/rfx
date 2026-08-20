@@ -133,7 +133,7 @@ Every parallax layer that isn't pure CSS is a transparent PNG (export twin WebP;
 
 | Asset | Size (@2x) | Format | Notes |
 |---|---|---|---|
-| `hero-athlete-cutout` | ~1600×2000 | PNG-24 alpha | Background-removed athlete (red kit, mid-sprint or ball-carry pose, cropped at waist by hero edge). Rim-lit from top-right so the red light wash reads as the light source. Slight motion blur on trailing limb sells velocity |
+| `hero-athlete-cutout` | 903×1600 (shipped) | WebP alpha | **Shipped:** client-supplied basketball athlete cutout at `public/parallax/hero-athlete-cutout.webp`, background removed, 217KB |
 | `l4-card-speed-graph` | 720×480 | Live DOM preferred; PNG only if static | Sprint-speed line chart, red line on `--ink-2`, mono axis labels |
 | `l4-card-metrics` | 640×400 | Live DOM preferred | Athlete data metrics: top speed, distance, sprint count as stat tiles |
 | `l4-card-video` | 760×460 | Live DOM preferred | Video player module: 16:9 thumb, red play button, scrub bar at 30% |
@@ -194,3 +194,17 @@ Layout constants: content max-width **1200px**; section padding **120px** top/bo
 4. Background assets → generate L1/L2 PNGs (§5.1) before any section work; hero is blocked without the light wash + grid.
 5. Hero (full 5-plane stack proves the rig) → then sections in page order.
 6. Reduced-motion + mobile pass (planes L1/L2 persist static on mobile; L4 cards dock into the flow below 768px).
+
+---
+
+## 9. Shipped asset ledger (implementation status)
+
+| Asset | Path | Status |
+|---|---|---|
+| Hero athlete cutout | `public/parallax/hero-athlete-cutout.webp` | Client-supplied capture, bg-removed, 217KB WebP |
+| App screenshots ×5 | `public/screens/*.webp` | Real iPhone captures: highlight reel, divisions onboarding, commit-to-school, coach interest ×2 |
+| L1 grid / L2 light washes / glow orbs | CSS gradients + `.bg-grid` utility | Built in CSS instead of raster — no PNG needed |
+| Dashboard + phone mockups | live DOM (`src/landing/mockups.tsx`) | Athlete dashboard, club-director "Club OS" view, MacBook + phone shells |
+
+Note: `public/screens/onboarding-divisions.webp` shows a "Bad Request Exception"
+label captured from the live app — re-capture when the app screen is clean.
