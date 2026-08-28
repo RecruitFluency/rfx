@@ -95,6 +95,52 @@
     section[data-deck-active] .a6 { animation-delay: .46s; }
   }
   @keyframes fu { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+  /* ── Device frame — one geometry, every screenshot identical ── */
+  .iph {
+    --iw: 300px;
+    width: var(--iw); aspect-ratio: 1179 / 2556; flex: none; position: relative;
+    border-radius: calc(var(--iw) * 0.138);
+    padding: calc(var(--iw) * 0.020);
+    background: linear-gradient(158deg,#7A7A84 0%,#2B2B30 20%,#9A9AA4 48%,#26262B 74%,#63636C 100%);
+    box-shadow: 0 26px 64px rgba(0,0,0,0.62), 0 0 0 1px rgba(255,255,255,0.07);
+  }
+  .iph::before, .iph::after {
+    content: ''; position: absolute; width: calc(var(--iw) * 0.010); border-radius: 3px;
+  }
+  .iph::before { left: calc(var(--iw) * -0.006); top: calc(var(--iw) * 0.30); height: calc(var(--iw) * 0.21);
+    background: linear-gradient(90deg,#33333A,#85858F); }
+  .iph::after  { right: calc(var(--iw) * -0.006); top: calc(var(--iw) * 0.25); height: calc(var(--iw) * 0.13);
+    background: linear-gradient(270deg,#33333A,#85858F); }
+  .iph-scr {
+    position: relative; width: 100%; height: 100%; overflow: hidden; background: #000;
+    border-radius: calc(var(--iw) * 0.120);
+  }
+  .iph-scr > img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+  .iph-island {
+    position: absolute; z-index: 5; top: calc(var(--iw) * 0.034); left: 50%; transform: translateX(-50%);
+    width: calc(var(--iw) * 0.30); height: calc(var(--iw) * 0.085); border-radius: 999px; background: #000;
+  }
+  .iph-cap { width: var(--iw); margin-top: 18px; }
+
+  /* ── Message thread, rendered live so every frame matches ── */
+  .im { position: absolute; inset: 0; display: flex; flex-direction: column;
+        background: #000; color: #fff; font-family: -apple-system, 'Roboto', sans-serif; }
+  .im-nav { flex: none; padding: calc(var(--iw)*0.105) 0 calc(var(--iw)*0.030); text-align: center;
+            background: #0A0A0C; border-bottom: 1px solid rgba(255,255,255,0.09); }
+  .im-av { width: calc(var(--iw)*0.135); height: calc(var(--iw)*0.135); border-radius: 50%; background: #55555E;
+           margin: 0 auto calc(var(--iw)*0.014); display: flex; align-items: center; justify-content: center;
+           font-size: calc(var(--iw)*0.058); font-weight: 500; color: #fff; }
+  .im-who { font-size: calc(var(--iw)*0.042); color: #E8E8EC; }
+  .im-body { flex: 1; display: flex; flex-direction: column; gap: calc(var(--iw)*0.024);
+             padding: calc(var(--iw)*0.040) calc(var(--iw)*0.045) calc(var(--iw)*0.055); overflow: hidden;
+             font-size: calc(var(--iw)*0.056); line-height: 1.30; }
+  .im-ts { align-self: center; font-size: calc(var(--iw)*0.037); color: #86868C; margin: calc(var(--iw)*0.014) 0; }
+  .im-in, .im-out { max-width: 84%; padding: calc(var(--iw)*0.032) calc(var(--iw)*0.042);
+                    border-radius: calc(var(--iw)*0.062); white-space: pre-line; }
+  .im-in  { align-self: flex-start; background: #26262B; color: #fff; border-bottom-left-radius: calc(var(--iw)*0.018); }
+  .im-out { align-self: flex-end;   background: #0A84FF; color: #fff; border-bottom-right-radius: calc(var(--iw)*0.018); }
+  .im-list { margin-top: calc(var(--iw)*0.018); color: #fff; }
+
   /* ── Texture layer ── */
   section { position: relative; }
   section::after {
@@ -802,33 +848,125 @@
 
 </body></html>
 
-<section data-tex="lines" data-label="What Other Families Found" data-screen-label="20 App Store Proof" data-speaker-notes="Proof before the ask, and from strangers rather than from you. Say the twenty-one out loud — owning a small number costs nothing and buys the same credibility as naming a weakness. The first quote is the one that matters: slide 04 claims six, twenty-four and forty-eight hours, and until this review that claim was ours. A father describing the same thing unprompted turns a promise into a corroborated one." style="background:var(--bg);overflow:hidden;display:flex;flex-direction:column;padding:var(--py) var(--px);">
+<section data-tex="lines" data-label="What Other Families Found" data-screen-label="20 App Store Proof" data-speaker-notes="Proof before the ask, and from strangers rather than from you. Say the twenty-one out loud — owning a small number costs nothing and buys the same credibility as naming a weakness. Land the first quote hard: slide 04 claims six, twenty-four and forty-eight hours, and until this review that claim was ours alone. A father counting nineteen emails in six hours, unprompted, and offering to show receipts, turns our promise into a corroborated one. Then the club director, because this room is a club — he is the peer voice. Then the athlete, because the athlete is who uses it." style="background:var(--bg);overflow:hidden;display:flex;flex-direction:column;padding:var(--py) var(--px);">
   <div class="fade a1"><span class="lbl">What other families found</span></div>
   <h2 class="h1 fade a1" style="margin-top:18px;max-width:1400px;">Don&#39;t take the timeline from us</h2>
-  <div style="flex:1;display:grid;grid-template-columns:420px 1fr;gap:64px;align-items:center;margin-top:36px;">
+  <div style="flex:1;display:grid;grid-template-columns:400px 1fr;gap:60px;align-items:center;margin-top:32px;">
 
-    <div class="fade a2" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:48px 44px;display:flex;flex-direction:column;align-items:flex-start;">
-      <div style="font-size:132px;font-weight:900;font-stretch:var(--semi);color:var(--accent);line-height:0.85;">4.9</div>
-      <div style="margin-top:18px;font-size:30px;letter-spacing:0.12em;color:var(--accent);">★★★★★</div>
-      <div class="kick" style="margin-top:20px;color:var(--text-2);">21 ratings on the App Store</div>
-      <p class="body" style="margin-top:22px;font-size:20px;">Twenty-one is a small number, and we&#39;ll say so. Every one of them is a family like yours.</p>
+    <div class="fade a2" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:44px 40px;display:flex;flex-direction:column;align-items:flex-start;">
+      <div style="font-size:124px;font-weight:900;font-stretch:var(--semi);color:var(--accent);line-height:0.85;">4.9</div>
+      <div style="margin-top:16px;font-size:28px;letter-spacing:0.12em;color:var(--accent);">★★★★★</div>
+      <div class="kick" style="margin-top:18px;color:var(--text-2);">21 ratings on the App Store</div>
+      <p class="body" style="margin-top:20px;font-size:20px;">Twenty-one is a small number, and we&#39;ll say so. Every one of them is a family like yours.</p>
     </div>
 
-    <div style="display:flex;flex-direction:column;gap:26px;">
-      <div class="fade a3" style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:34px 38px;">
-        <p style="font-size:28px;line-height:1.42;color:var(--text);">&ldquo;The first day my son went online with this app was absolutely crazy — emails pouring in one after the next.&rdquo;</p>
-        <div class="kick" style="margin-top:18px;color:var(--text-3);">Dog90 · ★★★★★ · App Store review, excerpt</div>
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div class="fade a3" style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:26px 34px;">
+        <p style="font-size:25px;line-height:1.40;color:var(--text);font-weight:600;">&ldquo;My son got <span style="color:var(--accent);">19 emails from coaches in the first 6 hours</span> of going live on the app. Don&rsquo;t believe it message me. I&rsquo;ll show receipts!&rdquo;</p>
+        <div class="kick" style="margin-top:14px;color:var(--text-3);font-size:15px;">Joel Willard Recruiting · ★★★★★ · &ldquo;Recruiting for soccer&rdquo; · Oct 8, 2025</div>
       </div>
-      <div class="fade a4" style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:34px 38px;">
-        <p style="font-size:28px;line-height:1.42;color:var(--text);">&ldquo;As a parent it&#39;s been hard to figure out how to not get taken advantage of. This app does what it says.&rdquo;</p>
-        <div class="kick" style="margin-top:18px;color:var(--text-3);">Jdouglas13 · ★★★★★ · App Store review, excerpt</div>
+      <div class="fade a4" style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:26px 34px;">
+        <p style="font-size:25px;line-height:1.40;color:var(--text);">&ldquo;We use it club-wide to promote our athletes, and the response from college coaches has been immediate and measurable. I can track interest, view engagement from schools, and ensure every deserving player gets seen.&rdquo;</p>
+        <div class="kick" style="margin-top:14px;color:var(--text-3);font-size:15px;">EHORT1986, Director of Coaching · ★★★★★ · Jul 12, 2025</div>
+      </div>
+      <div class="fade a5" style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:26px 34px;">
+        <p style="font-size:25px;line-height:1.40;color:var(--text);">&ldquo;RFX has simplified my college recruitment process like crazy. It automates my messaging, sending out my highlight tape, and gives me the exposure I need.&rdquo;</p>
+        <div class="kick" style="margin-top:14px;color:var(--text-3);font-size:15px;">CJ_357 · ★★★★★ · &ldquo;Finally something that works&rdquo; · Apr 15, 2025</div>
       </div>
     </div>
 
   </div>
 </section>
 
-<section data-tex="lines" data-label="Get on RFX" data-screen-label="21 Closing CTA" data-speaker-notes="Close with the action. Download RFX Soccer Recruit on the App Store and Google Play to put your athlete on the same pipeline." style="background:var(--bg);overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:var(--py) var(--px);">
+<section data-tex="lines" data-label="Nobody Asked Them To Send These" data-screen-label="21 Unprompted" data-speaker-notes="Do not read these out. Let the room read them. The only line you say is the eyebrow: nobody asked for any of these. Then point at Demi&#39;s — a 12:01am text and a call at 10am, and five programs she never contacted, which is the whole product in one message. Then Brian&#39;s, because the complaint inside it is the tell: he is annoyed a school that liked him had not emailed yet. That is a problem no family in this room currently has. Note the frames are the same on purpose — one device, four different people, four different weeks." style="background:var(--bg);overflow:hidden;display:flex;flex-direction:column;padding:var(--py) var(--px);">
+  <div class="fade a1"><span class="lbl">Unprompted</span></div>
+  <h2 class="h1 fade a1" style="margin-top:18px;max-width:1400px;">Nobody asked them to send these</h2>
+  <div style="flex:1;display:flex;justify-content:center;align-items:flex-start;gap:46px;margin-top:34px;">
+    <div class="fade a2" style="display:flex;flex-direction:column;align-items:center;">
+      <div class="iph">
+        <div class="iph-scr">
+          <div class="im">
+            <div class="im-nav"><div class="im-av">D</div><div class="im-who">Demi</div></div>
+            <div class="im-body">
+              <div class="im-ts">Mon, Jun 16 at 10:05 AM</div>
+              <div class="im-in">Big Sunday here!
+
+12:01am she got a text and had a call set up for 10am!
+
+She&rsquo;s got 2-3 calls set up for every day this week.
+
+Several of those schools we never reached out to initially but matched with her thru the app.
+
+– Lehigh
+– West Virginia
+– UT San Antonio
+– Utah Tech
+– Nichols</div>
+              <div class="im-out">This is awesome!</div>
+            </div>
+          </div>
+          <div class="iph-island"></div>
+        </div>
+      </div>
+      <div class="iph-cap kick" style="text-align:center;color:var(--text-3);font-size:15px;line-height:1.5;">Demi · parent<br>Five programs she never contacted</div>
+    </div>
+    <div class="fade a3" style="display:flex;flex-direction:column;align-items:center;">
+      <div class="iph">
+        <div class="iph-scr">
+          <div class="im">
+            <div class="im-nav"><div class="im-av">B</div><div class="im-who">Brian</div></div>
+            <div class="im-body">
+              <div class="im-ts">Fri, Oct 3 at 6:13 PM</div>
+              <div class="im-in">Going great! Ive been getting good responses so far and Ill keep you updated as things move forward. and i also saw the d1</div>
+              <div class="im-ts">Yesterday 8:06 PM</div>
+              <div class="im-in">I saw on the app that Dayton was listed as interested, but I never received an email from them. Do you think I should follow up and send them one myself?</div>
+              <div class="im-in">Also the app has been helping me a lot!</div>
+            </div>
+          </div>
+          <div class="iph-island"></div>
+        </div>
+      </div>
+      <div class="iph-cap kick" style="text-align:center;color:var(--text-3);font-size:15px;line-height:1.5;">Brian · athlete<br>Two messages, neither one asked for</div>
+    </div>
+    <div class="fade a4" style="display:flex;flex-direction:column;align-items:center;">
+      <div class="iph">
+        <div class="iph-scr">
+          <div class="im">
+            <div class="im-nav"><div class="im-av">JN</div><div class="im-who">Johnny</div></div>
+            <div class="im-body">
+              <div class="im-out">Yeah, I would definitely get that up ASAP because you have a bunch of programs already shown you some love but there will be a lot more to come</div>
+              <div class="im-ts">Today 1:38 PM</div>
+              <div class="im-in">Call with Fairfield at 1:45!</div>
+              <div class="im-in">Can you check if my new video is up?</div>
+            </div>
+          </div>
+          <div class="iph-island"></div>
+        </div>
+      </div>
+      <div class="iph-cap kick" style="text-align:center;color:var(--text-3);font-size:15px;line-height:1.5;">Johnny · athlete<br>Seven minutes&rsquo; notice</div>
+    </div>
+    <div class="fade a5" style="display:flex;flex-direction:column;align-items:center;">
+      <div class="iph">
+        <div class="iph-scr">
+          <div class="im">
+            <div class="im-nav" style="padding-bottom:calc(var(--iw)*0.026);"><div class="im-av" style="border-radius:50%;background:#3A3A42;">FP</div><div class="im-who">Franco Piarulli</div><div style="font-size:calc(var(--iw)*0.036);color:#86868C;margin-top:calc(var(--iw)*0.010);">to me · 7:12 AM</div></div>
+            <div class="im-body" style="gap:calc(var(--iw)*0.030);">
+              <div style="color:#E8E8EC;">Hi Elliott,</div>
+              <div style="color:#E8E8EC;">Thank you for your email! The response from the app has been great so far! I&rsquo;m having a little trouble keeping up with all of it (a good problem). How do you propose I handle schools that I might have less interest in?</div>
+              <div style="color:#E8E8EC;">Thanks again and I look forward to staying in touch.</div>
+              <div style="color:#E8E8EC;">Best regards,<br>Franco</div>
+              <div style="margin-top:calc(var(--iw)*0.020);padding-top:calc(var(--iw)*0.026);border-top:1px solid rgba(255,255,255,0.10);font-size:calc(var(--iw)*0.042);color:#9A9AA2;line-height:1.45;">Cedar Stars Academy Bergen · MLS Next<br>Midfielder · Class of 2026</div>
+            </div>
+          </div>
+          <div class="iph-island"></div>
+        </div>
+      </div>
+      <div class="iph-cap kick" style="text-align:center;color:var(--text-3);font-size:15px;line-height:1.5;">Franco · athlete<br>&ldquo;A good problem&rdquo;</div>
+    </div>
+  </div>
+</section>
+
+<section data-tex="lines" data-label="Get on RFX" data-screen-label="22 Closing CTA" data-speaker-notes="Close with the action. Download RFX Soccer Recruit on the App Store and Google Play to put your athlete on the same pipeline." style="background:var(--bg);overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:var(--py) var(--px);">
   <img src="94732ad0-cc6b-420d-9c13-6ed4a80d1876" alt="" aria-hidden="true" style="position:absolute;top:50%;right:-260px;transform:translateY(-50%);width:980px;height:980px;object-fit:contain;opacity:0.09;">
   <div class="fade a1" style="position:relative;display:flex;align-items:center;gap:20px;"><img src="94732ad0-cc6b-420d-9c13-6ed4a80d1876" alt="RFX" style="width:64px;height:64px;object-fit:contain;"><span class="lbl" style="font-size:22px;">RFX — Recruiting platform</span></div>
   <h2 class="display fade a2" style="position:relative;font-size:var(--t-hero);margin-top:36px;max-width:1400px;">Stop paying for camps<br>that go <span style="color:var(--gold);">nowhere</span></h2>
@@ -843,7 +981,7 @@
   </div>
 </section>
 
-<section data-tex="lines" data-label="The Two Ways In" data-screen-label="22 The Two Ways In" data-speaker-notes="Give both, straight, and give the cheaper one first. Two hundred dollars is the honest way to find out whether any of this is real before committing — say that out loud, because a room that hears you point at the smaller option believes the larger one. Cancel any time is on the site; use it, it defuses the contract fear before anyone raises it." style="background:var(--bg);overflow:hidden;display:flex;flex-direction:column;padding:var(--py) var(--px);">
+<section data-tex="lines" data-label="The Two Ways In" data-screen-label="23 The Two Ways In" data-speaker-notes="Give both, straight, and give the cheaper one first. Two hundred dollars is the honest way to find out whether any of this is real before committing — say that out loud, because a room that hears you point at the smaller option believes the larger one. Cancel any time is on the site; use it, it defuses the contract fear before anyone raises it." style="background:var(--bg);overflow:hidden;display:flex;flex-direction:column;padding:var(--py) var(--px);">
   <div class="fade a1"><span class="lbl">Two ways in</span></div>
   <h2 class="h1 fade a1" style="margin-top:18px;max-width:1400px;">Test it once, or keep it running</h2>
   <div style="flex:1;display:grid;grid-template-columns:1fr 1.15fr;gap:44px;align-items:center;margin-top:36px;">
@@ -878,7 +1016,7 @@
   </div>
 </section>
 
-<section data-tex="lines" data-label="You Get the No's Too" data-screen-label="23 You Get The Nos" data-speaker-notes="The last word, and the one to slow down for. Every other service surfaces the interest and buries the passes, because passes make the product look bad. We hand them over with the program's name attached. Land it as the proof of the promise made at the top of the night, not as a feature. Then the calendar line, then stop." style="background:var(--bg);overflow:hidden;display:flex;flex-direction:column;padding:var(--py) var(--px);">
+<section data-tex="lines" data-label="You Get the No's Too" data-screen-label="24 You Get The Nos" data-speaker-notes="The last word, and the one to slow down for. Every other service surfaces the interest and buries the passes, because passes make the product look bad. We hand them over with the program's name attached. Land it as the proof of the promise made at the top of the night, not as a feature. Then the calendar line, then stop." style="background:var(--bg);overflow:hidden;display:flex;flex-direction:column;padding:var(--py) var(--px);">
   <div class="fade a1"><span class="lbl">The part nobody else shows you</span></div>
   <h2 class="h1 fade a1" style="margin-top:18px;max-width:1400px;">You get the no&#39;s, too</h2>
   <div style="flex:1;display:grid;grid-template-columns:1fr 620px;gap:72px;align-items:center;margin-top:32px;">
