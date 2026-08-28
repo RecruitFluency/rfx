@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="currentColor" role="img" aria-label="Shh. badge">
+  <title>Shh. badge — icon cut (32px and below, embroidery, stencil, cut vinyl)</title>
+  <mask id="knockout" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="120">
+    <rect width="120" height="120" fill="#fff"/>
+    <path d="M50.5 24 A9.5 9.5 0 0 1 69.5 24 L71 92 A4 4 0 0 1 67 96 L53 96 A4 4 0 0 1 49 92 Z"
+          fill="none" stroke="#000" stroke-width="10" stroke-linejoin="round"/>
+  </mask>
+  <path d="M20 76 Q60 62 100 76 Q60 90 20 76 Z" mask="url(#knockout)"/>
+  <path d="M50.5 24 A9.5 9.5 0 0 1 69.5 24 L71 92 A4 4 0 0 1 67 96 L53 96 A4 4 0 0 1 49 92 Z"/>
+</svg>

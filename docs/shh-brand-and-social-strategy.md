@@ -69,16 +69,43 @@ rondo in January) rather than claim it.
 
 ## 3. Brand system
 
-### 3.1 The mark
+### 3.1 The badge
 **No crest.** A crest is a claim to heritage the program hasn't earned yet, and every
-competitor has one. Instead:
+competitor has one.
 
-- **Primary wordmark:** `shh` in a heavy condensed grotesque, tight tracking, lowercase,
-  with a period: **`shh.`** The period is the whole personality — it ends the conversation.
-- **Secondary mark:** the shush glyph — a single vertical bar over lips reduced to one
-  horizontal line, abstract enough to read as a stylized `1` or a mute icon at 24px.
-  Works as an app icon, a sleeve patch, a sticker, and a profile picture.
-- **Never:** a shield, a ball icon, a mountain silhouette, a year founded, a Latin motto.
+**The badge is the shush: a pointer finger held vertically over closed lips.** The universal
+gesture, drawn as a mark — reduced to two elements, a tapered vertical finger crossing a
+lens-shaped mouth, with a knockout gap where they meet so the finger reads in front.
+
+This is the strongest possible choice, and the reason is not aesthetic:
+
+> **The badge and the celebration are the same gesture.** When a player scores and puts a
+> finger to their lips, they are performing the logo with their body. No crest in youth
+> soccer can be worn *and* enacted. Every goal is a live logo placement, every opposing
+> parent's phone is a distribution channel, and none of it costs anything.
+
+It also carries no claim — it isn't a lion, a laurel, or a shield. It's an instruction.
+
+**Two lockups, one rule:**
+
+| Lockup | Form | When |
+|---|---|---|
+| **Full** | Badge + `shh.` wordmark (stacked or horizontal) | Any first contact — site header, apparel hangtag, email, poster, tournament program, anything a stranger sees |
+| **Badge alone** | The gesture only | Only where the name is already established or appears elsewhere: kit chest (with `shh.` at the back neck), sleeve patch, sock, favicon, app icon, sticker, stamp, ball |
+
+Never a third lockup, never the wordmark inside a shape, never the badge in a circle or shield.
+
+**Two cuts of the same drawing.** The display cut has fine lip tapers and reads beautifully
+from 48px up. Below that the tapers disappear, so the icon cut thickens the mouth and the
+finger — same silhouette, heavier weights. Use the icon cut at 32px and below, and for
+embroidery, stencil, and anything cut from vinyl.
+
+**Never:** a shield, a ball, a mountain silhouette, a year founded, a Latin motto, a hand
+with visible knuckles (it becomes clipart), or the mark tilted, outlined, gradient-filled,
+or given a drop shadow.
+
+- **Wordmark:** `shh` in heavy expanded grotesque, tight tracking, lowercase, with a period:
+  **`shh.`** The period is the whole personality — it ends the conversation.
 
 ### 3.2 Color
 
