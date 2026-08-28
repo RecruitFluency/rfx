@@ -141,6 +141,20 @@
   .im-out { align-self: flex-end;   background: #0A84FF; color: #fff; border-bottom-right-radius: calc(var(--iw)*0.018); }
   .im-list { margin-top: calc(var(--iw)*0.018); color: #fff; }
 
+  /* ── Horizontal rail — scrolls once there are more cards than fit ── */
+  .rail {
+    display: flex; gap: 46px; justify-content: safe center; align-items: flex-start;
+    overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity;
+    padding: 4px 10px 16px; scroll-behavior: smooth;
+    scrollbar-width: thin; scrollbar-color: var(--accent) rgba(255,255,255,0.07);
+    overscroll-behavior-x: contain;
+  }
+  .rail > * { scroll-snap-align: center; }
+  .rail::-webkit-scrollbar { height: 9px; }
+  .rail::-webkit-scrollbar-track { background: rgba(255,255,255,0.07); border-radius: 99px; }
+  .rail::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 99px; }
+  .rail::-webkit-scrollbar-thumb:hover { background: #FF3546; }
+
   /* ── Texture layer ── */
   section { position: relative; }
   section::after {
@@ -881,7 +895,7 @@
 <section data-tex="lines" data-label="Nobody Asked Them To Send These" data-screen-label="21 Unprompted" data-speaker-notes="Do not read these out. Let the room read them. The only line you say is the eyebrow: nobody asked for any of these. Then point at Demi&#39;s — a 12:01am text and a call at 10am, and five programs she never contacted, which is the whole product in one message. Then Brian&#39;s, because the complaint inside it is the tell: he is annoyed a school that liked him had not emailed yet. That is a problem no family in this room currently has. Note the frames are the same on purpose — one device, four different people, four different weeks." style="background:var(--bg);overflow:hidden;display:flex;flex-direction:column;padding:var(--py) var(--px);">
   <div class="fade a1"><span class="lbl">Unprompted</span></div>
   <h2 class="h1 fade a1" style="margin-top:18px;max-width:1400px;">Nobody asked them to send these</h2>
-  <div style="flex:1;display:flex;justify-content:center;align-items:flex-start;gap:46px;margin-top:34px;">
+  <div class="rail" style="flex:1;margin-top:34px;min-height:0;">
     <div class="fade a2" style="display:flex;flex-direction:column;align-items:center;">
       <div class="iph">
         <div class="iph-scr">
@@ -972,8 +986,8 @@ Several of those schools we never reached out to initially but matched with her 
   <h2 class="display fade a2" style="position:relative;font-size:var(--t-hero);margin-top:36px;max-width:1400px;">Stop paying for camps<br>that go <span style="color:var(--gold);">nowhere</span></h2>
   <p class="body fade a3" style="position:relative;margin-top:28px;max-width:820px;font-size:32px;">Download <strong style="color:var(--text);font-weight:700;">RFX Soccer Recruit</strong> and put your athlete on the same pipeline as this roster.</p>
   <div class="fade a4" style="position:relative;margin-top:40px;display:flex;gap:16px;">
-    <span style="background:var(--gold);color:#fff;border-radius:6px;padding:18px 32px;font-size:22px;font-weight:800;font-stretch:var(--semi);text-transform:uppercase;letter-spacing:0.04em;">Download on the App Store</span>
-    <span style="background:var(--gold);color:#fff;border-radius:6px;padding:18px 32px;font-size:22px;font-weight:800;font-stretch:var(--semi);text-transform:uppercase;letter-spacing:0.04em;">Get it on Google Play</span>
+    <span style="background:var(--gold);color:#fff;border-radius:2px;padding:20px 46px;font-size:22px;font-weight:800;font-stretch:var(--semi);text-transform:uppercase;letter-spacing:0.04em;">Download on the App Store</span>
+    <span style="background:var(--gold);color:#fff;border-radius:2px;padding:20px 46px;font-size:22px;font-weight:800;font-stretch:var(--semi);text-transform:uppercase;letter-spacing:0.04em;">Get it on Google Play</span>
   </div>
   <div class="fade a5" style="position:relative;margin-top:auto;display:flex;gap:56px;align-items:baseline;border-top:1px solid var(--border);padding-top:32px;">
     <span class="kick" style="color:#F1D282;">Orlando Soccer School — Lake Nona</span>
@@ -1026,8 +1040,8 @@ Several of those schools we never reached out to initially but matched with her 
       <p class="body fade a3" style="font-size:24px;max-width:760px;">Every other service in this space surfaces the interest and quietly buries the rejections, because rejections make the product look bad.</p>
       <p class="body fade a3" style="font-size:26px;color:var(--text);max-width:760px;"><strong style="color:var(--accent);font-weight:800;">You cannot build a college list out of maybes.</strong></p>
       <div class="fade a5" style="margin-top:14px;display:flex;gap:16px;">
-        <span style="background:var(--gold);color:#fff;border-radius:6px;padding:16px 28px;font-size:20px;font-weight:800;font-stretch:var(--semi);text-transform:uppercase;letter-spacing:0.04em;">Download on the App Store</span>
-        <span style="background:var(--gold);color:#fff;border-radius:6px;padding:16px 28px;font-size:20px;font-weight:800;font-stretch:var(--semi);text-transform:uppercase;letter-spacing:0.04em;">Get it on Google Play</span>
+        <span style="background:var(--gold);color:#fff;border-radius:2px;padding:20px 46px;font-size:20px;font-weight:800;font-stretch:var(--semi);text-transform:uppercase;letter-spacing:0.04em;">Download on the App Store</span>
+        <span style="background:var(--gold);color:#fff;border-radius:2px;padding:20px 46px;font-size:20px;font-weight:800;font-stretch:var(--semi);text-transform:uppercase;letter-spacing:0.04em;">Get it on Google Play</span>
       </div>
     </div>
 
