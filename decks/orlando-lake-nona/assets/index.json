@@ -1,0 +1,47 @@
+{
+  "523d873c-ba14-43f4-a519-a298b048c507": {
+    "file": "rfx-mark.png",
+    "mime": "image/png",
+    "compressed": false
+  },
+  "94732ad0-cc6b-420d-9c13-6ed4a80d1876": {
+    "file": "club-mark.png",
+    "mime": "image/png",
+    "compressed": false
+  },
+  "4c7d52c2-516c-4525-b818-5919f20427f8": {
+    "file": "ds-bundle.js",
+    "mime": "application/javascript",
+    "compressed": true
+  },
+  "80a0d507-e9d0-45a0-ac0d-b4e57f2e1b41": {
+    "file": "dc-runtime.js",
+    "mime": "text/javascript",
+    "compressed": true
+  },
+  "6650d84d-c293-4d44-9a07-4e079086b37e": {
+    "file": "deck-stage.js",
+    "mime": "text/javascript",
+    "compressed": true
+  },
+  "d931e934-a055-4ece-bf33-c51406f30b07": {
+    "file": "react-dom.js",
+    "mime": "text/javascript",
+    "compressed": true
+  },
+  "6e4b89c8-7950-4850-b50c-f4ff9c33c5ce": {
+    "file": "react.js",
+    "mime": "text/javascript",
+    "compressed": true
+  },
+  "2651600f-b40f-4d9c-80ab-a41438dc9c9c": {
+    "file": "roboto-variable.ttf",
+    "mime": "font/ttf",
+    "compressed": true
+  },
+  "d09fa589-8d2b-4f7d-a79f-21ba58c61529": {
+    "file": "roboto-variable-italic.ttf",
+    "mime": "font/ttf",
+    "compressed": true
+  }
+}
