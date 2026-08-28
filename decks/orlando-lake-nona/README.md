@@ -39,6 +39,24 @@ and re-cut.
 
 `dist/` is generated and not checked in.
 
+## Deploy target
+
+Vercel scope `rfx-5d1a850d`, project
+`rfx-sports-recruiting-deck-9a538891-792b-42bb-8ab3-f95785994181`
+(`prj_YK2Y8mqhCgenuYIETtTdSByb0Hc5`), serving
+`rfx-sports-recruiting-deck-9a538891-eight.vercel.app`. Note this is a
+different scope from the RFX Team that hosts `rfx-landing` and the other
+product projects.
+
+The project has no git remote connected, so deploys are manual uploads of
+`dist/index.html`.
+
+A second project in the same scope, `rfx-sports-recruiting-orlando`
+(`prj_1lEHiBVhQIrOOYdTmEjPzplNvgJl`), serves
+`rfx-sports-recruiting-deck-9a538891.vercel.app` — an earlier cut of this same
+deck, from before the texture layer was added. It is superseded; the two
+projects hold no content that differs beyond that.
+
 ## Funnel bar widths
 
 The bar next to each division is sized by hand as a percentage of the athlete's
