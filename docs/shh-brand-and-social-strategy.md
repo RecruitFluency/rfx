@@ -38,8 +38,15 @@ to college soccer. Small by design. Selective by necessity. Not trying to be you
 trying to make you undeniable.
 
 ### What we are not (say these internally, never in ads)
-Not an "academy." Not "elite." Not a franchise. Not a feeder for someone else's badge. Not a
-club that sells tournament trips as development.
+Not "elite." Not a franchise. Not a feeder for someone else's badge. Not a club that sells
+tournament trips as development.
+
+**On the word "academy" — the distinction matters and it runs through the whole plan.** There
+are two meanings. The American one is a marketing suffix: *Elite Academy FC*, a word bolted
+onto a club to imply seriousness it hasn't got. The European one is an institution: a
+methodology, a curriculum, a facility, a pathway, and a list of graduates. Shh! rejects the
+first completely and takes the second literally — that is exactly what §5 builds the website
+on. So: never call ourselves an academy in copy, and behave like one in every other respect.
 
 ### The enemy
 Not other clubs — **the category.** This distinction is a hard rule (see §7). We punch at
@@ -73,11 +80,15 @@ rondo in January) rather than claim it.
 **No crest.** A crest is a claim to heritage the program hasn't earned yet, and every
 competitor has one.
 
-**The badge is the shush: a pointer finger held vertically over closed lips.** The universal
-gesture, drawn as a mark — reduced to two elements, a tapered vertical finger crossing a
-lens-shaped mouth, with a knockout gap where they meet so the finger reads in front.
+**The badge is the shush: a pointer finger held over closed lips.** The universal gesture,
+drawn as a mark.
 
-This is the strongest possible choice, and the reason is not aesthetic:
+> **Status: the drawing is in progress and nothing is approved.** A first attempt was drawn
+> and rejected. Until a mark is signed off, **the `shh.` wordmark stands alone** — it is a
+> complete identity on its own, and shipping a weak badge would cost more than shipping none.
+> §3.1a records what the drawing has to satisfy.
+
+The choice of the gesture itself is settled, and the reason is not aesthetic:
 
 > **The badge and the celebration are the same gesture.** When a player scores and puts a
 > finger to their lips, they are performing the logo with their body. No crest in youth
@@ -95,17 +106,43 @@ It also carries no claim — it isn't a lion, a laurel, or a shield. It's an ins
 
 Never a third lockup, never the wordmark inside a shape, never the badge in a circle or shield.
 
-**Two cuts of the same drawing.** The display cut has fine lip tapers and reads beautifully
-from 48px up. Below that the tapers disappear, so the icon cut thickens the mouth and the
-finger — same silhouette, heavier weights. Use the icon cut at 32px and below, and for
-embroidery, stencil, and anything cut from vinyl.
-
-**Never:** a shield, a ball, a mountain silhouette, a year founded, a Latin motto, a hand
-with visible knuckles (it becomes clipart), or the mark tilted, outlined, gradient-filled,
-or given a drop shadow.
-
 - **Wordmark:** `shh` in heavy expanded grotesque, tight tracking, lowercase, with a period:
   **`shh.`** The period is the whole personality — it ends the conversation.
+
+### 3.1a What the drawing has to satisfy
+
+Written after the first attempt failed, so the next one doesn't repeat it.
+
+**Three cuts of one drawing**, all on a shared grid so they swap without re-positioning:
+
+| Cut | Range | Notes |
+|---|---|---|
+| Display | 48px and up | Full anatomy. Web, print, apparel, film. |
+| Icon | 32px and below | Thickened, detail dropped — but the cupid's bow is never dropped, it is the thing that says *lips*. Favicons, app icons, embroidery, stencil, cut vinyl. |
+| Solid | any | One continuous silhouette, no knockout gap. Stamps, single-hit foil, laser etch. |
+
+**Lip anatomy that has to survive at every size:** a pronounced cupid's bow with a real
+philtrum notch, upper lip thinner than lower, turned corners rather than spikes, and an
+overall width-to-height ratio near 2:1. A wide, thin, symmetrical lens with a smooth top edge
+is not a mouth — it reads as a leaf, and that was the first attempt's core error.
+
+**The finger has to read as a hand, not as an object.** A single tapered shaft with a rounded
+cap and no hand cue does not read as a finger at any size. *(The earlier rule "never a hand
+with visible knuckles" is deleted — it is what caused the failure.)*
+
+**What the flat-vector route could not solve.** Seven rendered rounds across roughly fifteen
+compositions — finger centred, angled, rising from the philtrum, with a fist, in line art, in
+two tones — all failed the same way. In real shush imagery the finger reads through skin
+tone, shading and depth; strip those for a flat one- or two-colour badge and a vertical index
+finger becomes a geometric primitive laid over an oval. The next attempt works from a
+reference image rather than from invented geometry, and may need an illustrator.
+
+**Never:** a shield, a ball, a mountain silhouette, a year founded, a Latin motto, or the
+mark tilted, stretched, outlined, hollowed, gradient-filled, or given a drop shadow.
+
+**Process rule, learned the hard way:** render the mark at 240 / 96 / 48 / 32 / 24 / 16px on
+black, on accent and on white, and *look at it*, before it goes anywhere near a repo or a
+garment.
 
 ### 3.2 Color
 
@@ -154,7 +191,7 @@ One family, used at violent extremes.
 
 ### 3.4 Kit
 - Home: all black. Black shorts, black socks. Accent only on the number, a sleeve stripe,
-  and the shush glyph on the chest — **no sponsor wall.**
+  and the badge on the chest — **no sponsor wall.**
 - Away: accent-dominant. The one time a year the program is visually screaming.
 - **No player names on the home shirt.** "Shh — you don't need to know who I am." It's a
   merch story, a culture story, and a recruiting story (the tape has the name; the shirt
@@ -244,24 +281,57 @@ distribution that matters.
 
 ## 5. Web presence
 
-### 5.1 Principle
-The site is small, black, and fast. Fewer than 30 words on the homepage. The website's job
-is **not** to explain the program — it's to make a parent feel like they found something
-before everyone else did, and then to capture them.
+### 5.1 Principle: build the American academy site
+The model is not another American club website. It is **La Masia, Seixal, De Toekomst and the
+City Football Academy — in Colorado.**
 
-### 5.2 Architecture
+That instruction turns out to be the same one as the positioning, which is why it's worth
+following literally. European academy sites are institutional and quiet: methodology,
+curriculum, pathway, facility, graduates. American club sites are salesy: tryout banners,
+trophy walls, ranking graphics, "ELITE" in the header. **"Look like an overseas academy" and
+"don't look like an American club" are one instruction, not two.** Shh! is the first program
+in the market to take the European posture seriously on US soil.
 
-| Route | Job | Notes |
+**Minimalist front door, institutional depth behind it.** This revises the earlier
+"fewer than 30 words on the homepage" note — that was right about the door and wrong about
+the building. The academies do exactly this: a still, quiet landing, and then real substance
+underneath. A parent who wants to go deep must be able to go very deep.
+
+### 5.2 The reference set
+
+| | The academies do | The American clubs do |
 |---|---|---|
-| `/` | Stop them | Full-bleed silent loop, wordmark, one line, one button. Nothing else. |
-| `/boys` `/girls` | Split identity | **The site's accent color changes on entry.** A CSS-variable swap — trivial to build, and it's the interaction people will describe to other people. |
-| `/players` | The recruiting engine | Individual player pages: film, verified data (grad year, position, GPA, measurables), coach contact. **This is the product.** |
-| `/proof` | Convert parents | Commitments, results, minutes, GPA average. Mono type. Zero prose. |
-| `/method` | Justify the price | The technical methodology, the altitude case, the coach's background. The one page allowed to have paragraphs. |
-| `/shop` | Fund the brand | The name *is* the merch. `shh.` on a black hoodie sells to people who will never play. |
-| `/apply` | Capture | Trial/tryout form. Three fields, not fifteen. |
+| **Front page** | One still image or slow film. No offer. | Tryout banner, countdown, three CTAs |
+| **What's sold** | A method and a pathway | A season and a tournament schedule |
+| **Proof** | Graduates and where they went | Trophies and rankings |
+| **Facility** | Treated as infrastructure, photographed seriously | A stock photo of a turf field |
+| **Tone** | Institutional, unhurried, long-form | Urgent, superlative, thin |
+| **Typography** | Restrained, editorial | Italic, outlined, gradient |
 
-### 5.3 Player pages are the business, not a feature
+Study `benfica.pt/seixal`, `ajax.nl` (De Toekomst), `mancity.com` (City Football Academy) and
+Sporting's Alcochete pages for structure — not for styling. Shh! keeps its own black and
+electric system; what it borrows is **the information architecture and the refusal to sell.**
+
+### 5.3 Architecture
+
+| Route | Job |
+|---|---|
+| `/` | The still front door. One silent loop, the wordmark, one line, one button. |
+| `/method` | **First-class, and the biggest page on the site.** The named playing model, the curriculum by age band, coaching principles, session structure, the assessment framework. This is what justifies the price and what no local competitor can fake. |
+| `/pathway` | **New.** Graduates and where they went — school, division, year, minutes. The European proof format, and the honest replacement for a trophy wall. |
+| `/players` | The recruiting engine. Film, verified data, coach contact. Still the product. |
+| `/facility` | The mountain as infrastructure — altitude, surfaces, hours, winter. |
+| `/proof` | Results, commitments, minutes, GPA. Mono type, zero prose. |
+| `/boys` `/girls` | Split identity — the accent colour changes on entry. |
+| `/apply` | Three fields, not fifteen. |
+| `/shop` | The name is the merch. |
+
+**Banned furniture**, because this is where American club sites give themselves away: tryout
+countdown banners, championship badge walls, ranking graphics, sponsor logo bars, stock
+smiling team photos in matching polos, testimonial carousels, and the word "elite" anywhere
+on the site.
+
+### 5.4 Player pages are the business, not a feature
 This is the strategic core and it's where Shh! connects to what already exists in this repo.
 
 A Shh! player page is the **front end**; the RFX coach database is the **distribution back
@@ -272,13 +342,26 @@ player page. Parents can see, in numbers, that coaches looked.
 That loop is the thing families will pay a premium for, and no other mountain-town program
 has it. It also means the "exposure package" isn't a promise, it's a dashboard.
 
-### 5.4 Tech
-Reuse this repo's stack — Vite + React + Tailwind + Supabase on Vercel. Player pages are
-DB-driven from the same Postgres that holds the coach master list, so outreach and analytics
-share one source of truth. Do not build the marketing site on a separate Squarespace that
-can't talk to the data; the integration *is* the moat.
+**`/pathway` is the same data, pointed the other way.** Every player who commits becomes a row
+on the graduates page automatically. The academy-style proof page maintains itself, which is
+the only reason a small staff can sustain one.
 
-### 5.5 Domain & SEO — the honest cost of the joke
+### 5.5 The facility as a subject
+Every serious academy treats its ground as part of the argument. Shh! has an unfakeable
+version of this: **altitude.** Training at 7,000–9,000 ft is a real physiological edge and a
+setting no flatland academy can photograph.
+
+Give it a page, and treat it as infrastructure rather than scenery — surfaces, hours, winter
+protocol, what thin air does to a session and how the curriculum accounts for it. Per the
+voice rules, show it and never claim it.
+
+### 5.6 Tech
+Reuse this repo's stack — Vite + React + Tailwind + Supabase on Vercel. Player pages and the
+pathway page are DB-driven from the same Postgres that holds the coach master list, so
+outreach, analytics and proof share one source of truth. Do not build the marketing site on a
+separate Squarespace that can't talk to the data; the integration *is* the moat.
+
+### 5.7 Domain & SEO — the honest cost of the joke
 **"Shh" is an unsearchable brand name.** That's the price of being clever, and it's payable,
 but only if you plan around it.
 
@@ -292,9 +375,11 @@ but only if you plan around it.
   - `soccer academy [town] colorado`, `[town] soccer tryouts`, `youth soccer [county]`
   - `college soccer recruiting colorado`, `soccer id camp colorado`
   - Programmatic location pages for every town within a 90-minute drive.
-  - Method pages that answer real parent questions (`how do college soccer commitments
-    actually work`, `what a recruiting video should look like`) — these outrank club
-    homepages and they pre-sell the exposure product.
+- **The academy model and the SEO fix are the same work.** A thin brochure site has nothing to
+  rank. The method pages, the curriculum by age band, the position and pathway pages — the
+  content the academies publish as a matter of posture — is exactly the long-form, question-
+  answering material that outranks club homepages and pre-sells the exposure product. Building
+  the site like an academy solves the unsearchable-name problem as a side effect.
 - **Google Business Profile** is non-negotiable for a physical location in a small town.
   It's how local parents actually find programs, and competitors neglect it.
 - Every player page should be indexable and carry the player's full name — *those* pages
@@ -390,7 +475,8 @@ losing a tournament, because it proves the whole thing was a costume.
 
 **Weeks 1–2 — Lock the system**
 - [ ] Decide the color assignment (§3.2). Blocks the kit order.
-- [ ] Wordmark, shush glyph, type licenses, one-page brand doc every staffer has on their phone
+- [ ] Wordmark, type licenses, one-page brand doc every staffer has on their phone
+- [ ] **Badge drawn and signed off** (see §3.1a) — the wordmark ships alone until it is
 - [ ] Buy the domain; claim all handles the same day
 - [ ] Consent forms drafted and out to families
 
