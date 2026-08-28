@@ -43,9 +43,9 @@ def build() -> str:
 
 
 if __name__ == "__main__":
-    dist = os.path.join(HERE, "dist")
-    os.makedirs(dist, exist_ok=True)
-    out = os.path.join(dist, "index.html")
+    outdir = os.path.join(HERE, "public")
+    os.makedirs(outdir, exist_ok=True)
+    out = os.path.join(outdir, "index.html")
     with open(out, "w") as fh:
         fh.write(build())
     print(f"{out} ({os.path.getsize(out) / 1024:.0f} KB)")
