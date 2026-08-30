@@ -155,6 +155,46 @@ standing rule is that every number on a client-facing slide traces to rows
 somebody can show. The 76 is in because it is an outcome the graphics
 corroborate; the rest stay out until they can be reconciled.
 
+## Slides 07 and 08 — the two worked examples
+
+Both slides used to be invented. They are now built from rows in this file.
+
+**07 Match Brief — Riley Duncan to Lafayette College.** Every line is verified:
+Lafayette is Riley's only Division I interest and answered on 29 Apr 2026, in
+his second send cycle (27–30 Apr, 8 reviewed / 4 interested); 2,403 coaches
+reviewed him across both cycles; 30 said yes; 9 reviewed and passed. Lafayette
+is already published as a spotlight programme on his own slide, so the slide
+discloses nothing new about him. Lafayette's own details — Division I, Patriot
+League, Easton PA — are public.
+
+The slide states in its footer that per-match analytics are **not** reproduced
+on it. That is deliberate: no match-level data for any athlete exists in this
+repo, so any on-pitch metric under a named real programme would be fabricated —
+the same failure as the West Chester chip. If the real brief is ever exported
+from the app, it can replace the placeholder block.
+
+**08 Do It Yourself — Levi Hunt, in state only.**
+
+| Figure | Source |
+|---|---|
+| 12 schools | Every NCAA Division II men's soccer programme in Florida: the 11 Sunshine State Conference members plus Flagler (Peach Belt) |
+| 9 hours | 12 × the slide's own 45 min per programme |
+| "Not one of the 23 that wanted Levi is on it" | Levi's funnel is D1 3 / D3 11 / NAIA 4 / JUCO 5 — **no D2 at all**, so no D2 programme anywhere is among his interests |
+| "20 of his 23" | D3 11 + NAIA 4 + JUCO 5 = 20, at levels an in-state D2 list does not contain |
+
+Sources for the 12: the [Sunshine State Conference men's soccer standings](https://sunshinestateconference.com/standings.aspx?path=msoc)
+(Eckerd, Embry-Riddle, Florida Southern, Rollins, Lynn, Palm Beach Atlantic,
+Florida Tech, Saint Leo, Tampa, Nova Southeastern, Barry) and the
+[Wikipedia list of NCAA D2 men's soccer programmes](https://en.wikipedia.org/wiki/List_of_NCAA_Division_II_men%27s_soccer_programs),
+which adds Flagler and agrees at 12. Edward Waters is a Florida D2 institution
+but does not appear on the men's-soccer list, so it is excluded.
+
+**The slide deliberately makes no claim about Florida Division III.** Research
+suggested there is little or no D3 men's soccer in the state, but it could not
+be established to the standard the rest of this deck holds, so the argument
+rests on the D2 count alone — which is stronger anyway, because "none of his 23
+is on that list" is true without needing the D3 claim at all.
+
 ## Slide 25 Why Tonight — where its claims come from
 
 The urgency slide makes three factual claims beyond the roster. All are
