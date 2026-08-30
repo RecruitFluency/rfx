@@ -221,6 +221,25 @@ be established to the standard the rest of this deck holds, so the argument
 rests on the D2 count alone — which is stronger anyway, because "none of his 23
 is on that list" is true without needing the D3 claim at all.
 
+## Slide 23 App Store proof — which reviews, and why
+
+Three complete App Store reviews were on this slide. The **Director of Coaching
+review (EHORT1986, 12 Jul 2025) was removed**: it describes running RFX
+club-wide, which is the job of the people being presented to, not the parents
+being sold to. Quoting a director's testimonial at a room that *is* the club
+argues the wrong case.
+
+The two that remain are the right voices for a parent audience:
+
+| Reviewer | Why it stays |
+|---|---|
+| Joel Willard Recruiting, 8 Oct 2025 | A father counting 19 coach emails in the first six hours, offering receipts. This is the load-bearing one — screen 05 promises results at 6/24/48 hours, and until this review that promise was ours alone |
+| CJ_357, 15 Apr 2025 | An athlete in an athlete's words |
+
+The 4.9 and the "21 ratings" are stated plainly rather than rounded away. If
+more reviews are supplied, the third slot is free and the layout takes a third
+card without change.
+
 ## Slide 25 Why Tonight — where its claims come from
 
 The urgency slide makes three factual claims beyond the roster. All are
