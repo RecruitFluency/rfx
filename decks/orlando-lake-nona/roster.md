@@ -164,12 +164,28 @@ Both slides used to be invented. They are now built from rows in this file.
 The brief opens with what the program is **losing to graduation**, because that
 is the only reason a staff opens a position at all. That block is real: from
 [Lafayette's published men's soccer roster](https://goleopards.com/sports/mens-soccer/roster),
-**two of their defenders are seniors** (one listed D, one D/M). The slide says
-"defenders", not "center backs", because the roster lists position group only —
-and it names nobody, since putting real college athletes' names on a sales
-slide buys nothing. It makes no causal claim that the graduation is *why*
+two of their defenders are seniors, and the slide names them with the
+attributes that make the match legible:
+
+| Graduating | Position | Height |
+|---|---|---|
+| Nikolas Hadjimitsis | Defense | 6'0" |
+| Cole Duschang | Defense / Midfield | 6'2" |
+
+Against Riley at **6'4"**, center back, class of 2027 — the group that replaces
+them, and taller than either. Height is the attribute his own slide leads on,
+so the alignment is real rather than rhetorical.
+
+The slide says "defender", not "center back", because the roster records
+position group only. It makes no causal claim that the graduation is *why*
 Lafayette answered; the graduation and the interest are stated as separate
-facts, which is all the evidence supports.
+facts, which is all the evidence supports. Both names are published on the
+official athletics roster, and the card's footer cites it so a parent can
+check every figure on the slide in about thirty seconds.
+
+The video area is a title card typeset live in the deck — Riley's name, position
+and club — rather than an image, so it stays sharp at 1920 and always matches
+the athlete named on the card.
 
 The rest:
 Lafayette is Riley's only Division I interest and answered on 29 Apr 2026, in
