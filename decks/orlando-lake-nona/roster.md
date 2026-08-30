@@ -221,6 +221,26 @@ be established to the standard the rest of this deck holds, so the argument
 rests on the D2 count alone — which is stronger anyway, because "none of his 23
 is on that list" is true without needing the D3 claim at all.
 
+## Slide order — why Do It Yourself sits at 05
+
+It used to close the "how it works" act at position 08. It now opens that act
+at **05**, immediately after the thesis section break, on the client's call:
+state the plan half the room is already considering, then let the rest of the
+evening be the argument against it.
+
+Moving it forced one content change. Its second card carried Levi's funnel —
+4,240 reviews, 23 interests across four levels — as the payoff. At position 05
+the room has not met Levi and has never seen a division funnel, so those
+numbers meant nothing yet. That card now poses the question instead ("what
+level should we be aiming at?") and points forward at the athlete slides.
+
+The payoff moved to **20 Every Level**, which is where the shape is finally on
+screen: "This is the shape three replies could never have drawn." That closes
+the loop fifteen slides later, once it can actually land.
+
+Athlete slides stay at 10–18, so the reconciliation range in "Verifying" is
+unchanged.
+
 ## Slide 23 App Store proof — which reviews, and why
 
 Three complete App Store reviews were on this slide. The **Director of Coaching
