@@ -159,7 +159,19 @@ corroborate; the rest stay out until they can be reconciled.
 
 Both slides used to be invented. They are now built from rows in this file.
 
-**07 Match Brief — Riley Duncan to Lafayette College.** Every line is verified:
+**07 Match Brief — Riley Duncan to Lafayette College.** Every line is verified.
+
+The brief opens with what the program is **losing to graduation**, because that
+is the only reason a staff opens a position at all. That block is real: from
+[Lafayette's published men's soccer roster](https://goleopards.com/sports/mens-soccer/roster),
+**two of their defenders are seniors** (one listed D, one D/M). The slide says
+"defenders", not "center backs", because the roster lists position group only —
+and it names nobody, since putting real college athletes' names on a sales
+slide buys nothing. It makes no causal claim that the graduation is *why*
+Lafayette answered; the graduation and the interest are stated as separate
+facts, which is all the evidence supports.
+
+The rest:
 Lafayette is Riley's only Division I interest and answered on 29 Apr 2026, in
 his second send cycle (27–30 Apr, 8 reviewed / 4 interested); 2,403 coaches
 reviewed him across both cycles; 30 said yes; 9 reviewed and passed. Lafayette
