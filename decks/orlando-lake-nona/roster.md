@@ -159,74 +159,54 @@ corroborate; the rest stay out until they can be reconciled.
 
 Both slides used to be invented. They are now built from rows in this file.
 
-**07 Match Brief — Riley Duncan to Lafayette College.** Every line is verified.
+**07 Match Brief — Levi Hunt to Lafayette College.**
 
-The brief opens with what the program is **losing to graduation**, because that
-is the only reason a staff opens a position at all. That block is real: from
-[Lafayette's published men's soccer roster](https://goleopards.com/sports/mens-soccer/roster),
-two of their defenders are seniors, and the slide names them with the
-attributes that make the match legible:
+The brief is built as **matched pairs**: a blue row for what the program needs,
+a red row directly under it for what this athlete answers with. Four dimensions
+— athletics, academics, location, culture.
 
-| Graduating | Position | Height |
+The athlete is Levi rather than Riley because Levi makes the academics pair
+real. He is a center back in the 2027 class with a **verified 4.0 GPA**, and
+Lafayette is already a published spotlight interest on his own slide. Riley has
+the 6'4" but no 4.0 — this deck's academics slide puts the two 4.0s on Anthony
+and Levi, so pairing a 4.0 with Riley would have contradicted screen 22.
+
+| Pair | Program side | Athlete side |
 |---|---|---|
-| Nikolas Hadjimitsis | Defense | 6'0" |
-| Cole Duschang | Defense / Midfield | 6'2" |
+| Athletics | Two defenders graduate in May, 6'0" and 6'2" ([roster](https://goleopards.com/sports/mens-soccer/roster)) | Levi: center back, 2027 — **real** |
+| Academics | Undergraduate-only, 2,775 students, 10:1; Patriot League academic standard | Levi: 4.0 GPA — **real** |
+| Location | Easton PA; ~90 min from New York City, ~1,000 miles from Orlando | **Not yet his** — needs his stated region preference |
+| Culture | Dennis Bohn, head coach since 2001 | **Not yet his** — needs what his club staff say about him |
 
-Against Riley at **6'4"**, center back, class of 2027 — the group that replaces
-them, and taller than either. Height is the attribute his own slide leads on,
-so the alignment is real rather than rhetorical.
+Head coach confirmed as **Dennis Bohn** (in post since 2001), not "Bond".
 
-The slide says "defender", not "center back", because the roster records
-position group only. It makes no causal claim that the graduation is *why*
-Lafayette answered; the graduation and the interest are stated as separate
-facts, which is all the evidence supports. Both names are published on the
-official athletics roster, and the card's footer cites it so a parent can
-check every figure on the slide in about thirty seconds.
+**Two values would finish this slide** and both are in the app: Levi's stated
+location preference, and one line from his club coach on how he plays. Until
+they arrive, the red rows on Location and Culture describe what the brief does
+rather than what Levi is — honest, but the weaker half of the slide, and the
+speaker notes say to move through those two quickly.
 
-### The four fit blocks
+Nothing about Levi's height is claimed: his slide does not carry one.
 
-The brief is broken into **Athletics, Academics, Location, Culture and fit** —
-the shape a real match brief takes. What each block rests on:
+**08 Do It Yourself — Levi Hunt, and why a small sample cannot answer the question.**
 
-| Block | Verified from | Still needs the athlete's own profile |
-|---|---|---|
-| Athletics | Lafayette roster (two senior defenders, 6'0" and 6'2") + Riley's slide (6'4", CB, 2027) | — nothing, this block is complete |
-| Academics | Lafayette: undergraduate-only, 2,775 students, 10:1 student–faculty | **His GPA and test scores.** Deliberately not invented — fabricating a real 17-year-old's grades on a slide his parents may see is a harder line than the invented match stats ever were |
-| Location | Easton PA, 340-acre campus; ~1,000 miles from Orlando | **His stated region / school-size preference** |
-| Culture and fit | Lafayette's 10:1 ratio and the Patriot League's academic standard | **What his club coach actually says about him** |
-
-Three earlier drafts of these blocks were cut for overclaiming: one asserted
-what his club staff say about him, one asserted how RFX matches on stated
-preferences, and one characterised the Patriot League's recruiting as a fact
-about Lafayette. Each was replaced with something checkable. The culture block
-is the softest of the four and the speaker notes say not to oversell it.
-
-The video area is a title card typeset live in the deck — Riley's name, position
-and club — rather than an image, so it stays sharp at 1920 and always matches
-the athlete named on the card.
-
-The rest:
-Lafayette is Riley's only Division I interest and answered on 29 Apr 2026, in
-his second send cycle (27–30 Apr, 8 reviewed / 4 interested); 2,403 coaches
-reviewed him across both cycles; 30 said yes; 9 reviewed and passed. Lafayette
-is already published as a spotlight programme on his own slide, so the slide
-discloses nothing new about him. Lafayette's own details — Division I, Patriot
-League, Easton PA — are public.
-
-The slide states in its footer that per-match analytics are **not** reproduced
-on it. That is deliberate: no match-level data for any athlete exists in this
-repo, so any on-pitch metric under a named real programme would be fabricated —
-the same failure as the West Chester chip. If the real brief is ever exported
-from the app, it can replace the placeholder block.
-
-**08 Do It Yourself — Levi Hunt, in state only.**
+The slide used to argue about hours. It now argues about **sample size**, which
+is the stronger and more honest point.
 
 | Figure | Source |
 |---|---|
-| 12 schools | Every NCAA Division II men's soccer programme in Florida: the 11 Sunshine State Conference members plus Flagler (Peach Belt) |
-| 9 hours | 12 × the slide's own 45 min per programme |
-| "Not one of the 23 that wanted Levi is on it" | Levi's funnel is D1 3 / D3 11 / NAIA 4 / JUCO 5 — **no D2 at all**, so no D2 programme anywhere is among his interests |
-| "20 of his 23" | D3 11 + NAIA 4 + JUCO 5 = 20, at levels an in-state D2 list does not contain |
+| 37½ hours | 50 programs × the slide's own 45 min |
+| 4,240 reviewed / 23 said yes | Levi's row in the table above |
+| D1 3 · D3 11 · NAIA 4 · JUCO 5 | Levi's funnel, sums to 23 |
+
+The argument: fifty emails is a working week, and if nobody answers the family
+has learned nothing. Even three replies — a no at D1, a yes at D2, a yes at D3 —
+is three coaches speaking for three entire divisions, which cannot tell a family
+what level to target. The shape of Levi's 23 across four levels can. That is
+what the deck sells, and it is the same claim screen 20 makes.
+
+The in-state Florida figure is retained as a run-sheet challenge-handler rather
+than slide copy:
 
 Sources for the 12: the [Sunshine State Conference men's soccer standings](https://sunshinestateconference.com/standings.aspx?path=msoc)
 (Eckerd, Embry-Riddle, Florida Southern, Rollins, Lynn, Palm Beach Atlantic,
