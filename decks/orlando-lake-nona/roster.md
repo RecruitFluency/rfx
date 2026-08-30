@@ -117,7 +117,7 @@ INT = re.compile(r'>(\d[\d,]*)</div>\s*<div class="kick"[^>]*>Interested program
 tot = {}
 for sec in re.split(r'(?=<section )', body):
     m = re.search(r'data-screen-label="(\d\d)[^"]*"', sec)
-    if not m or not 8 <= int(m.group(1)) <= 16: continue
+    if not m or not 10 <= int(m.group(1)) <= 18: continue
     bars = [(k, int(v)) for k, v in BAR.findall(sec)]
     stated = int(INT.search(sec).group(1).replace(',', ''))
     assert stated == sum(v for _, v in bars), (m.group(1), stated, bars)
@@ -127,6 +127,33 @@ print(tot, sum(tot.values()))   # expect D1 14 D2 5 D3 85 NAIA 9 JUCO 27, 140
 
 This is the check that caught the stray `15` left behind when Sam Bassin's
 merged bar was split, so it earns its keep.
+
+## Slide 21 Committed — a different scope, deliberately
+
+The nine athletes above are this club's roster. Slide 21 publishes a
+**company-wide** figure and must never be blended with them:
+
+| Figure | Source |
+|---|---|
+| 76 athletes committed, under 365 days | `gorfx.app` — "See all 76 committed athletes", "Under 365 Days" |
+| Catelyn De Moor · Baylor (D1) | commitment graphic on `gorfx.app` |
+| Kruz Held · Portland (D1) | commitment graphic |
+| Kamden Held · Wisconsin–Green Bay (D1) | commitment graphic |
+| Nerlyn Munoz · Roosevelt (NAIA, national rank #10) | commitment graphic |
+| Patrick Bohan · John Carroll (D3) | commitment graphic |
+
+The division labels on the slide are the programmes' known NCAA/NAIA
+classifications, not something the site states. The slide's footer says out
+loud that these five are from across RFX rather than this club, because
+conflating a company total with a club roster is the same error shape that
+produced the Riley Duncan mistake.
+
+The site also publishes 2,993 programmes indexed, 2,400+ families and 25+
+average responses per athlete. **None of those are in the deck** — they are
+site marketing copy with no counted source behind them here, and the deck's
+standing rule is that every number on a client-facing slide traces to rows
+somebody can show. The 76 is in because it is an outcome the graphics
+corroborate; the rest stay out until they can be reconciled.
 
 ## Notes
 

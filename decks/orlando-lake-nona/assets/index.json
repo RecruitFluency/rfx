@@ -43,5 +43,35 @@
     "file": "roboto-variable-italic.ttf",
     "mime": "font/ttf",
     "compressed": true
+  },
+  "0c3faec8-989b-4c09-ba71-e85cba70a3b4": {
+    "file": "elliot.jpg",
+    "mime": "image/jpeg",
+    "compressed": false
+  },
+  "854ac0e6-2121-40dc-a32c-0185079d01b8": {
+    "file": "commit-munoz.jpg",
+    "mime": "image/jpeg",
+    "compressed": false
+  },
+  "5e927e92-b1ca-4993-b8d5-88e7bf319b2f": {
+    "file": "commit-kheld.jpg",
+    "mime": "image/jpeg",
+    "compressed": false
+  },
+  "e852c7a3-bb76-4d2c-a00f-770bef10dca0": {
+    "file": "commit-bohan.jpg",
+    "mime": "image/jpeg",
+    "compressed": false
+  },
+  "6ec29a3a-dd40-44d8-9b1e-600d22b4d8a5": {
+    "file": "commit-kamden.jpg",
+    "mime": "image/jpeg",
+    "compressed": false
+  },
+  "f8e60ace-b909-4d26-b20f-828bca1ec3e8": {
+    "file": "commit-demoor.jpg",
+    "mime": "image/jpeg",
+    "compressed": false
   }
 }
