@@ -236,9 +236,27 @@ The two that remain are the right voices for a parent audience:
 | Joel Willard Recruiting, 8 Oct 2025 | A father counting 19 coach emails in the first six hours, offering receipts. This is the load-bearing one — screen 05 promises results at 6/24/48 hours, and until this review that promise was ours alone |
 | CJ_357, 15 Apr 2025 | An athlete in an athlete's words |
 
-The 4.9 and the "21 ratings" are stated plainly rather than rounded away. If
-more reviews are supplied, the third slot is free and the layout takes a third
-card without change.
+**Jdouglas13 (★★★★★, "Useful and easy to use", Mar 3) took the free slot.**
+Chosen over the other supplied reviews because it is the only one covering an
+angle nothing else does — a parent's fear of being taken advantage of by this
+industry — and it sets up the "stop paying for camps that go nowhere" CTA.
+Dog90 and Joel Willard both describe volume arriving immediately, so running
+both would have been a duplicate.
+
+Its date is shown as **"Mar 3" with no year**, exactly as the App Store list
+renders it. Apple omits the year in that view, so 2025 vs 2026 is not
+established; the two older cards keep their years because those came from
+full-text captures. Worth resolving before print.
+
+Reviews supplied but not used: Dog90 ("emails pouring in one after the next…
+thousands of views and hundreds of coaches interested" — the strongest
+alternative, and the one to swap in if outside corroboration of the view and
+interest counts is wanted), Foster Hayes, and "RFX app". All three were
+truncated by the App Store list view, so only the visible complete sentences
+could have been quoted.
+
+The 4.9 and the "21 ratings" are stated plainly rather than rounded away, and
+the screenshots confirm both.
 
 ## Slide 25 Why Tonight — where its claims come from
 
