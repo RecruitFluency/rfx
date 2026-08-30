@@ -183,6 +183,24 @@ facts, which is all the evidence supports. Both names are published on the
 official athletics roster, and the card's footer cites it so a parent can
 check every figure on the slide in about thirty seconds.
 
+### The four fit blocks
+
+The brief is broken into **Athletics, Academics, Location, Culture and fit** —
+the shape a real match brief takes. What each block rests on:
+
+| Block | Verified from | Still needs the athlete's own profile |
+|---|---|---|
+| Athletics | Lafayette roster (two senior defenders, 6'0" and 6'2") + Riley's slide (6'4", CB, 2027) | — nothing, this block is complete |
+| Academics | Lafayette: undergraduate-only, 2,775 students, 10:1 student–faculty | **His GPA and test scores.** Deliberately not invented — fabricating a real 17-year-old's grades on a slide his parents may see is a harder line than the invented match stats ever were |
+| Location | Easton PA, 340-acre campus; ~1,000 miles from Orlando | **His stated region / school-size preference** |
+| Culture and fit | Lafayette's 10:1 ratio and the Patriot League's academic standard | **What his club coach actually says about him** |
+
+Three earlier drafts of these blocks were cut for overclaiming: one asserted
+what his club staff say about him, one asserted how RFX matches on stated
+preferences, and one characterised the Patriot League's recruiting as a fact
+about Lafayette. Each was replaced with something checkable. The culture block
+is the softest of the four and the speaker notes say not to oversell it.
+
 The video area is a title card typeset live in the deck — Riley's name, position
 and club — rather than an image, so it stays sharp at 1920 and always matches
 the athlete named on the card.
