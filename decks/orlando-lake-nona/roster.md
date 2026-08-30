@@ -5,6 +5,13 @@ the RFX app. Update this table whenever the deck is re-cut so the aggregate
 slides (02 Totals, 17 Views Convert, 18 Every Level, 22 Closing CTA footer) can
 be recomputed from one place.
 
+**Read the two columns carefully — conflating them caused a real error.**
+*Views* is the number of college coaches who reviewed the athlete's profile
+(Riley: 2,403). The athlete's coach review list holds only the coaches who
+gave an explicit answer (Riley: 39 rows, 30 up / 9 down); every other coach
+who reviewed and did not respond counts as not interested. So the review-row
+count is NOT "how many coaches saw him" — it is how many replied.
+
 The app's "Interest" column is the thumbs-up count on the athlete's coach
 review list — not the number of coaches who looked. That thumbs-up count is
 what the slides call "interested programs". A thumbs-down is a coach who
