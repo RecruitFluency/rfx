@@ -2,7 +2,7 @@
 
 What each athlete slide in `deck.source.html` claims, and how it lines up with
 the RFX app. Update this table whenever the deck is re-cut so the aggregate
-slides (02 Totals, 17 Views Convert, 18 Every Level, 22 Closing CTA footer) can
+slides (02 Totals, 19 Every View, 20 Every Level, 26 Closing CTA footer) can
 be recomputed from one place.
 
 **Read the two columns carefully — conflating them caused a real error.**
@@ -21,15 +21,15 @@ reviewed the profile and passed, and must never appear as a spotlight program.
 
 | Slide | Athlete | Class | Position | Interests | Views | D1 | D2 | D3 | NAIA | JUCO | Source |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 08 | Anthony Allotta | 2027 | Winger (RW/LW) | 36 | — | 2 | 1 | 21 | 4 | 8 | deck snapshot |
-| 09 | Levi Hunt | 2027 | Center back | 23 | 4,240 | 3 | — | 11 | 4 | 5 | deck snapshot |
-| 10 | Riley Duncan | 2027 | Center back | 30 | 2,403 | 1 | 1 | 20 | 1 | 7 | verified, 39 rows |
-| 11 | Sam Bassin | 2027 | Right fullback | 18 | 1,490 | 2 | — | 13 | — | 3 | verified, 21 rows |
-| 12 | Jax Leon Juliao | 2027 | Striker | 8 | 1,084 | 2 | 1 | 5 | — | — | deck snapshot |
-| 13 | Jose Brito | 2027 | Right fullback | 9 | 4,132 | — | 2 | 5 | — | 2 | filter views, 9 of 11 placed |
-| 14 | Eduardo Marquez Cerezo | 2028 | Striker | 6 | 1,734 | 2 | — | 4 | — | — | verified, 7 rows |
-| 15 | Elijah Lee Reed | 2027 | — | 6 | 1,570 | 1 | — | 3 | — | 2 | verified, 15 rows |
-| 16 | Daniel Lai | 2028 | — | 4 | 1,801 | 1 | — | 3 | — | — | verified, 8 rows |
+| 10 | Anthony Allotta | 2027 | Winger (RW/LW) | 36 | — | 2 | 1 | 21 | 4 | 8 | deck snapshot |
+| 11 | Levi Hunt | 2027 | Center back | 23 | 4,240 | 3 | — | 11 | 4 | 5 | deck snapshot |
+| 12 | Riley Duncan | 2027 | Center back | 30 | 2,403 | 1 | 1 | 20 | 1 | 7 | verified, 39 rows |
+| 13 | Sam Bassin | 2027 | Right fullback | 18 | 1,490 | 2 | — | 13 | — | 3 | verified, 21 rows |
+| 14 | Jax Leon Juliao | 2027 | Striker | 8 | 1,084 | 2 | 1 | 5 | — | — | deck snapshot |
+| 15 | Jose Brito | 2027 | Right fullback | 9 | 4,132 | — | 2 | 5 | — | 2 | filter views, 9 of 11 placed |
+| 16 | Eduardo Marquez Cerezo | 2028 | Striker | 6 | 1,734 | 2 | — | 4 | — | — | verified, 7 rows |
+| 17 | Elijah Lee Reed | 2027 | — | 6 | 1,570 | 1 | — | 3 | — | 2 | verified, 15 rows |
+| 18 | Daniel Lai | 2028 | — | 4 | 1,801 | 1 | — | 3 | — | — | verified, 8 rows |
 | | | | **Totals** | **140** | **18,454** | **14** | **5** | **85** | **9** | **27** | 9 athletes |
 
 Every row's division figures sum to that row's interest count, and the column
@@ -81,14 +81,14 @@ flat number.
 ## Aggregate slides
 
 Updated and self-consistent. Every athlete slide's funnel bars sum to its stated
-interest count, and those columns sum to what these four slides publish:
+interest count, and those columns sum to what these four slides publish (slide numbers current as of the 28-slide cut):
 
 | Slide | Reads |
 |---|---|
 | 02 Totals | 18,454+ views · 140 combined program interests · 9 athletes |
-| 17 Views Convert | 18,454+ · 140 · 14 Division I |
-| 18 Every Level | D1 14 · D2 5 · D3 85 · NAIA 9 · JUCO 27, subhead 140 |
-| 22 Closing CTA footer | 18,454+ views · 140 program interests |
+| 19 Every View Is An Answer | 18,454+ · 140 · 14 Division I |
+| 20 Every Level | D1 14 · D2 5 · D3 85 · NAIA 9 · JUCO 27, subhead 140 |
+| 26 Closing CTA footer | 18,454+ views · 140 program interests |
 
 The deck total and the true roster total differ by Jose's two unplaced rows:
 
@@ -154,6 +154,42 @@ site marketing copy with no counted source behind them here, and the deck's
 standing rule is that every number on a client-facing slide traces to rows
 somebody can show. The 76 is in because it is an outcome the graphics
 corroborate; the rest stay out until they can be reconciled.
+
+## Slide 25 Why Tonight — where its claims come from
+
+The urgency slide makes three factual claims beyond the roster. All are
+checkable; none is scarcity we invented.
+
+| Claim | Source |
+|---|---|
+| 121 of the roster's 140 interests are D3 / NAIA / JUCO | This file: 85 + 9 + 27 = 121, from the reconciliation below |
+| D1 and D2 staff may contact an athlete directly from 15 June after sophomore year | [NCSA men's soccer calendar](https://www.ncsasports.org/mens-soccer/recruiting-rules-calendar), [SportsRecruits contact periods](https://sportsrecruits.com/resources/contacting-college-coaches/ncaa-contact-periods) |
+| D3, NAIA and JUCO carry no such contact restriction | same two sources |
+
+The class-year framing is a function of the presentation date: on 30 August
+2026 the class of 2027 are seniors, 2028 juniors, 2029 sophomores. **If this
+deck is ever presented in a later school year, that slide is wrong and has to
+be shifted a year.** It is the only slide in the deck whose accuracy depends on
+when it is shown.
+
+The slide deliberately promises cycles rather than places: "We cannot promise
+anybody a place. We can promise the cycles." No seat limits, no deadlines, no
+"only N spots" — the calendar pressure is real on its own and inventing more
+would put the one unfalsifiable claim in a deck built on countable rows.
+
+## Slides 26 and 28 — the store QR codes
+
+Both ask slides carry two QR codes, generated with `segno` at error level H
+from the URLs published on `gorfx.app`:
+
+- App Store — `https://apps.apple.com/us/app/rfx-soccer-recruit/id6739776891`
+- Google Play — `https://play.google.com/store/apps/details?id=com.recruitfluency.rfx.rfx`
+
+They render at 168px (slide 26) and 124px (slide 28) on the 1920 canvas, on a
+white plate with a quiet zone — a QR on the deck's near-black ground will not
+scan. Both were verified by screenshotting the `<img>` elements out of the
+built deck at 2x and decoding them with OpenCV; all four decode to the intended
+store URL. Re-run that check if the codes are ever regenerated.
 
 ## Notes
 

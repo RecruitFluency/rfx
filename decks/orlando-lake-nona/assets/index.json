@@ -73,5 +73,15 @@
     "file": "commit-demoor.jpg",
     "mime": "image/jpeg",
     "compressed": false
+  },
+  "31722ae6-bbc4-4b3d-9825-5e066bbc6980": {
+    "file": "qr-appstore.png",
+    "mime": "image/png",
+    "compressed": false
+  },
+  "c7bc64f5-2006-4930-92d6-9d22905b67f9": {
+    "file": "qr-play.png",
+    "mime": "image/png",
+    "compressed": false
   }
 }
