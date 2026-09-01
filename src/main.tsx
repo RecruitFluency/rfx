@@ -1,7 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import App from './App.tsx';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AppShell from './app/AppShell.tsx';
 import CommandCenter from './app/pages/CommandCenter.tsx';
 import SyncEngine from './app/pages/SyncEngine.tsx';
@@ -17,7 +16,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App />} />
+        <Route path="/" element={<Navigate to="/app" replace />} />
         <Route path="/app" element={<AppShell />}>
           <Route index element={<CommandCenter />} />
           <Route path="sync" element={<SyncEngine />} />
