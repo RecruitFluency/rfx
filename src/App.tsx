@@ -4,7 +4,6 @@ import MetricsSection from './components/Metrics/MetricsSection';
 import FeaturesSection from './components/Features/FeaturesSection';
 import DashboardPreview from './components/Dashboard/DashboardPreview';
 import IntelligenceSection from './components/Intelligence/IntelligenceSection';
-import TestimonialsSection from './components/Testimonials/TestimonialsSection';
 import CTASection from './components/CTA/CTASection';
 import Footer from './components/Footer/Footer';
 
@@ -16,7 +15,6 @@ function App() {
       <FeaturesSection />
       <DashboardPreview />
       <IntelligenceSection />
-      <TestimonialsSection />
       <CTASection />
       <Footer />
     </div>

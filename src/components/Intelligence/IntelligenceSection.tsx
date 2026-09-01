@@ -79,7 +79,7 @@ const IntelligenceSection = () => {
               Start Your Complete Assessment
             </button>
             <p className="text-gray-400 mt-4 text-sm">
-              Join 10,000+ players who've enhanced their recruitment profile
+              Every response — interested or not — comes back to you by name
             </p>
           </motion.div>
         </div>

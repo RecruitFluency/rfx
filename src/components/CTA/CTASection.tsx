@@ -17,7 +17,7 @@ const CTASection = () => {
             Ready to Take Control of Your Soccer Future?
           </h2>
           <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-            Join thousands of athletes already accelerating their path to college soccer
+            Pick your target divisions, start your outreach, and hear back from real coaches by name
           </p>
           <AppStoreButtons />
         </motion.div>

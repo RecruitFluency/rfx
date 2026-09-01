@@ -38,7 +38,7 @@ const HeroSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          Join thousands of high school athletes generating more visibility, exposure, offers, commitments and scholarship money with a fraction of the time and effort
+          Automated outreach to every program at your target levels — and every coach response comes back to you by name, including the nos
         </motion.h2>
 
         <motion.div
