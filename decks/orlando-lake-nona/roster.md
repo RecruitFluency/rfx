@@ -155,40 +155,7 @@ standing rule is that every number on a client-facing slide traces to rows
 somebody can show. The 76 is in because it is an outcome the graphics
 corroborate; the rest stay out until they can be reconciled.
 
-## Slides 07 and 08 — the two worked examples
-
-Both slides used to be invented. They are now built from rows in this file.
-
-**07 Match Brief — Levi Hunt to Lafayette College.**
-
-The brief is built as **matched pairs**: a blue row for what the program needs,
-a red row directly under it for what this athlete answers with. Four dimensions
-— athletics, academics, location, culture.
-
-The athlete is Levi rather than Riley because Levi makes the academics pair
-real. He is a center back in the 2027 class with a **verified 4.0 GPA**, and
-Lafayette is already a published spotlight interest on his own slide. Riley has
-the 6'4" but no 4.0 — this deck's academics slide puts the two 4.0s on Anthony
-and Levi, so pairing a 4.0 with Riley would have contradicted screen 22.
-
-| Pair | Program side | Athlete side |
-|---|---|---|
-| Athletics | Two defenders graduate in May, 6'0" and 6'2" ([roster](https://goleopards.com/sports/mens-soccer/roster)) | Levi: center back, 2027 — **real** |
-| Academics | Undergraduate-only, 2,775 students, 10:1; Patriot League academic standard | Levi: 4.0 GPA — **real** |
-| Location | Easton PA; ~90 min from New York City, ~1,000 miles from Orlando | **Not yet his** — needs his stated region preference |
-| Culture | Dennis Bohn, head coach since 2001 | **Not yet his** — needs what his club staff say about him |
-
-Head coach confirmed as **Dennis Bohn** (in post since 2001), not "Bond".
-
-**Two values would finish this slide** and both are in the app: Levi's stated
-location preference, and one line from his club coach on how he plays. Until
-they arrive, the red rows on Location and Culture describe what the brief does
-rather than what Levi is — honest, but the weaker half of the slide, and the
-speaker notes say to move through those two quickly.
-
-Nothing about Levi's height is claimed: his slide does not carry one.
-
-**08 Do It Yourself — Levi Hunt, and why a small sample cannot answer the question.**
+## Slide 05 Do It Yourself — Levi Hunt, and why a small sample answers nothing
 
 The slide used to argue about hours. It now argues about **sample size**, which
 is the stronger and more honest point.
@@ -277,6 +244,35 @@ could have been quoted.
 
 The 4.9 and the "21 ratings" are stated plainly rather than rounded away, and
 the screenshots confirm both.
+
+## Slide 08 Match Brief — Levi Hunt to Lafayette College
+
+The brief is a **threshold match**. Programs give RFX the prototype they recruit
+to, position by position; the brief scores the athlete against it and marks each
+line met or not met, across athletic, academic and location.
+
+**This feature is in build and goes live in November 2026.** The card says so in
+a small outlined pill beside the conference line, deliberately visible but not
+the centre of attention. That marker is what makes the rest of the card honest.
+
+| Line | Status |
+|---|---|
+| Two defenders graduate in May | **Real** — [Lafayette's published roster](https://goleopards.com/sports/mens-soccer/roster) lists two senior defenders |
+| Academic, 3.7 minimum vs 4.0 | Levi's **4.0 is real** and on his own slide; the 3.7 threshold is illustrative |
+| Location, Northeast | Lafayette is in Easton PA, which is real; Levi's stated preference is not recorded here |
+| Six athletic thresholds and Levi's marks against them | **Illustrative.** No match-level or combine data for any athlete exists in this repo |
+
+The six athletic figures — 6'2", 4.54, 11:38, 78%, 84%, 61% — and the thresholds
+they are scored against are a worked example, using the categories the client
+specified. They are not Levi's measurements. Replace them with his real profile
+numbers before this card is shown as a live feature rather than a preview, and
+drop the "in build" pill at the same time.
+
+Also still wanted: Levi's stated region preference, so the location row is his
+rather than the programme's.
+
+Head coach confirmed as **Dennis Bohn** (in post since 2001), not "Bond". He no
+longer appears on the card — the prototype rows replaced the culture block.
 
 ## Slide 25 Why Tonight — where its claims come from
 
