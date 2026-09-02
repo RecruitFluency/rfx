@@ -113,7 +113,7 @@ stated interest count and against the aggregate slides:
 import re
 body = open('deck.source.html').read().split('</helmet>', 1)[1]
 BAR = re.compile(r'width:64px;[^"]*">(D1|D2|D3|NAIA|JUCO)</span>.*?width:40px;[^"]*">(\d+)</span>', re.S)
-INT = re.compile(r'>(\d[\d,]*)</div>\s*<div class="kick"[^>]*>Interested programs</div>')
+INT = re.compile(r'>(\d[\d,]*)</div>(?:</div>)?\s*<div class="kick"[^>]*>Interested programs</div>')
 tot = {}
 for sec in re.split(r'(?=<section )', body):
     m = re.search(r'data-screen-label="(\d\d)[^"]*"', sec)
@@ -127,6 +127,42 @@ print(tot, sum(tot.values()))   # expect D1 14 D2 5 D3 85 NAIA 9 JUCO 27, 140
 
 This is the check that caught the stray `15` left behind when Sam Bassin's
 merged bar was split, so it earns its keep.
+
+## Slides 10–18 — what is hidden on screen, and what is not
+
+At the client's request the athlete slides no longer show two figures on
+screen. Every **Interested programs** value (all nine slides) and every
+**Profile views** value (11, 13, 15, 17, 18 — fourteen tiles in total) is
+wrapped in a frosted plate: a `--surface2` rounded panel the same height as
+the numeral it replaces, with the real numeral blurred inside it. Layout,
+tile height and colour coding are unchanged, and the plate reuses the shape
+language of the funnel bar tracks so it reads as a deliberate redaction
+rather than a rendering fault.
+
+Three things to be clear about:
+
+1. **The numbers themselves are untouched.** They are still in the markup,
+   still real, and still reconcile to 140. The blur is a CSS `filter`, so
+   anyone who opens the file or inspects the page can read them. If the
+   figures ever need to be genuinely withheld — a copy of the deck leaving
+   the room, say — they have to be removed from the source, not blurred.
+2. **"Example division funnel" is a presentation label, not a disclaimer
+   about the data.** The nine funnels carry the real, reconciled per-division
+   counts. The word "example" was added at the client's request so the room
+   reads them as an illustration of shape rather than as a promise of what
+   their own child will get. Do not treat the label as licence to put
+   invented numbers in those bars.
+3. **The funnel numerals are still legible**, and they sum to the blurred
+   interest total on every slide. The blur therefore obscures the figure at
+   a glance, not arithmetically. That was the client's choice — funnel gets
+   a label, the tiles get the blur — and it is recorded here so nobody
+   "fixes" one half of it later without knowing about the other.
+
+Two roster-comparative kickers sit beside the relabelled funnels — "Highest
+engagement on roster" (10), "Highest visibility on roster" (11), "Widest
+funnel on roster" (12), "Best interest-per-view rate" (13). They rank the
+athletes by the metrics now blurred but disclose no figure, so they were
+left in place.
 
 ## Slide 21 Committed — a different scope, deliberately
 
