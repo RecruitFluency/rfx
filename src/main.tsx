@@ -1,7 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import App from './App.tsx';
 import AppShell from './app/AppShell.tsx';
 import CommandCenter from './app/pages/CommandCenter.tsx';
 import SyncEngine from './app/pages/SyncEngine.tsx';
@@ -13,11 +12,20 @@ import ProgramProfile from './app/pages/ProgramProfile.tsx';
 import Setup from './app/pages/Setup.tsx';
 import './index.css';
 
+// The site root is the Lake Nona deck, which is a static file copied into
+// public/ by decks/orlando-lake-nona/bundle.py. Vercel serves real files
+// before it consults rewrites, so "/" always resolves to this SPA shell and a
+// rewrite could never reach the deck - the redirect has to happen here.
+function DeckRedirect() {
+  window.location.replace('/lake-nona/');
+  return null;
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App />} />
+        <Route path="/" element={<DeckRedirect />} />
         <Route path="/app" element={<AppShell />}>
           <Route index element={<CommandCenter />} />
           <Route path="sync" element={<SyncEngine />} />
