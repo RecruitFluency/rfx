@@ -5,70 +5,88 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MOBEX Vekt™ — Investor Deck</title>
 <meta name="robots" content="noindex">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --jet:#05070A; --obsidian:#0B0F19; --slate:#1E293B; --border:#26334a;
-    --cyan:#00F0FF; --emerald:#10B981; --amber:#F59E0B; --red:#EF4444;
-    --txt:#E6EBF4; --mute:#8B98AC;
+  @font-face {
+    font-family: 'Roboto';
+    src: url("../assets/roboto-variable.ttf") format('truetype');
+    font-weight: 100 900;
+    font-stretch: 75% 125%;
+    font-style: normal;
+    font-display: swap;
   }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--jet); color:var(--txt); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
-  h1,h2,h3 { font-family:'Space Grotesk',sans-serif; letter-spacing:-0.02em; }
-  .mono { font-family:'JetBrains Mono',monospace; }
+  :root {
+    --bg: #0B0B0D; --surface: #141416; --surface2: #1C1C1F;
+    --accent: #E81C2E; --accent-soft: rgba(232,28,46,0.14); --accent-border: rgba(232,28,46,0.40);
+    --text: #FFFFFF; --text-2: #A8A8BC; --text-3: #606074;
+    --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.16);
+    --emerald: #10B981; --amber: #F59E0B;
+    --cond: 75%; --semi: 87.5%;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Roboto', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
 
-  .stage { min-height:100vh; display:flex; flex-direction:column; }
-  .slide { display:none; flex:1; padding:64px 6vw 110px; max-width:1200px; margin:0 auto; width:100%; }
-  .slide.on { display:block; animation: fade .35s ease; }
-  @keyframes fade { from { opacity:0; transform:translateY(10px);} to { opacity:1; transform:none;} }
+  .display { font-weight: 900; font-stretch: var(--cond); text-transform: uppercase; line-height: 0.88; letter-spacing: -0.01em; }
+  .h1 { font-weight: 800; font-stretch: var(--semi); text-transform: uppercase; line-height: 0.98; letter-spacing: -0.01em; }
+  .lbl { font-size: 12px; font-weight: 700; font-stretch: var(--cond); text-transform: uppercase; letter-spacing: 0.16em; color: var(--accent); }
+  .kick { font-size: 12px; font-weight: 700; font-stretch: var(--cond); text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-3); }
+  .body { font-size: 16px; line-height: 1.55; color: var(--text-2); }
 
-  .kick { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--cyan); letter-spacing:.18em; text-transform:uppercase; }
-  .h { font-size:clamp(28px,4vw,46px); color:#fff; margin-top:14px; line-height:1.1; }
-  .sub { color:var(--mute); margin-top:16px; font-size:16px; line-height:1.65; max-width:760px; }
+  .stage { min-height: 100vh; display: flex; flex-direction: column; }
+  .slide { display: none; flex: 1; padding: 64px 6vw 110px; max-width: 1200px; margin: 0 auto; width: 100%; }
+  .slide.on { display: block; animation: fade .4s cubic-bezier(.22,1,.36,1); }
+  @keyframes fade { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 
-  .cards { display:grid; gap:16px; margin-top:36px; }
-  .c2 { grid-template-columns:repeat(2,1fr); } .c3 { grid-template-columns:repeat(3,1fr); } .c4 { grid-template-columns:repeat(4,1fr); }
-  @media (max-width:860px){ .c2,.c3,.c4 { grid-template-columns:1fr; } }
-  .card { background:var(--obsidian); border:1px solid var(--border); border-radius:10px; padding:22px; }
-  .card .k { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--mute); text-transform:uppercase; letter-spacing:.12em; }
-  .card .big { font-family:'JetBrains Mono',monospace; font-size:30px; font-weight:700; color:var(--cyan); margin-top:6px; }
-  .card .big.em { color:var(--emerald); } .card .big.am { color:var(--amber); }
-  .card h3 { color:#fff; font-size:17px; }
-  .card p { color:var(--mute); font-size:13px; line-height:1.6; margin-top:8px; }
-  .card .note { font-size:11px; color:var(--mute); margin-top:10px; opacity:.8; }
+  .h { font-size: clamp(30px, 4.4vw, 54px); margin-top: 14px; }
+  .sub { margin-top: 18px; max-width: 780px; }
 
-  .tag { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.1em; padding:3px 8px; border-radius:3px; margin-top:10px; }
-  .tag.live { color:var(--emerald); border:1px solid rgba(16,185,129,.4); }
-  .tag.build { color:var(--amber); border:1px solid rgba(245,158,11,.4); }
-  .tag.model { color:var(--cyan); border:1px solid rgba(0,240,255,.35); }
-  .tag.verify { color:var(--amber); border:1px dashed rgba(245,158,11,.55); }
+  .cards { display: grid; gap: 16px; margin-top: 36px; }
+  .c2 { grid-template-columns: repeat(2, 1fr); } .c3 { grid-template-columns: repeat(3, 1fr); } .c4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 860px) { .c2, .c3, .c4 { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 26px; }
+  .card .big { font-size: 44px; font-weight: 900; font-stretch: var(--semi); line-height: 0.9; margin-top: 10px; color: var(--text); }
+  .card .big.rd { color: var(--accent); }
+  .card h3 { font-size: 19px; font-weight: 800; font-stretch: var(--semi); text-transform: uppercase; line-height: 1.05; }
+  .card p { color: var(--text-2); font-size: 13.5px; line-height: 1.6; margin-top: 10px; }
+  .card .note { font-size: 11px; color: var(--text-3); margin-top: 10px; }
+  .card p b { color: var(--text); }
 
-  table { width:100%; border-collapse:collapse; margin-top:32px; font-size:13px; }
-  th { text-align:left; font-family:'JetBrains Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--mute); padding:12px; background:var(--obsidian); border-bottom:1px solid var(--border); }
-  th.vk { color:var(--cyan); }
-  td { padding:12px; border-bottom:1px solid rgba(38,51,74,.5); color:var(--mute); line-height:1.55; vertical-align:top; }
-  td.d { color:var(--txt); font-weight:600; } td.vk { color:var(--txt); background:rgba(0,240,255,.05); }
+  .pill { display: inline-block; font-size: 10px; font-weight: 700; font-stretch: var(--cond); text-transform: uppercase; letter-spacing: 0.14em;
+    padding: 3px 9px; border-radius: 3px; margin-top: 12px; border: 1px solid; }
+  .pill.live { color: var(--emerald); border-color: rgba(16,185,129,.4); }
+  .pill.build { color: var(--amber); border-color: rgba(245,158,11,.4); }
+  .pill.model { color: var(--text-2); border-color: var(--border-strong); }
+  .pill.verify { color: var(--amber); border-color: rgba(245,158,11,.55); border-style: dashed; }
 
-  .flow { display:flex; gap:10px; margin-top:36px; flex-wrap:wrap; align-items:stretch; }
-  .fstep { flex:1; min-width:150px; background:var(--obsidian); border:1px solid var(--border); border-radius:8px; padding:16px; position:relative; }
-  .fstep .n { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--cyan); }
-  .fstep .t { color:#fff; font-size:13px; font-weight:600; margin-top:6px; }
-  .fstep p { font-size:11.5px; color:var(--mute); margin-top:6px; line-height:1.5; }
+  table { width: 100%; border-collapse: collapse; margin-top: 32px; font-size: 13px; }
+  th { text-align: left; font-size: 11px; font-weight: 700; font-stretch: var(--cond); text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--text-3); padding: 12px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  th.vk { color: var(--accent); }
+  td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-2); line-height: 1.55; vertical-align: top; }
+  td.d { color: var(--text); font-weight: 700; } td.vk { color: var(--text); background: var(--accent-soft); }
 
-  .bar { position:fixed; bottom:0; left:0; right:0; background:rgba(5,7,10,.92); backdrop-filter:blur(10px); border-top:1px solid var(--border); z-index:50; }
-  .bar-in { max-width:1200px; margin:0 auto; padding:14px 6vw; display:flex; justify-content:space-between; align-items:center; font-family:'JetBrains Mono',monospace; font-size:12px; }
-  .bar button { background:var(--slate); color:var(--txt); border:1px solid var(--border); border-radius:6px; padding:9px 18px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; }
-  .bar button:hover { border-color:var(--cyan); color:var(--cyan); }
-  .bar button.nx { background:var(--cyan); color:var(--jet); border-color:var(--cyan); }
-  .bar .ind { color:var(--cyan); }
-  .bar .hint { color:var(--mute); font-size:10px; }
-  @media (max-width:640px){ .bar .hint { display:none; } }
+  .flow { display: flex; gap: 10px; margin-top: 36px; flex-wrap: wrap; align-items: stretch; }
+  .fstep { flex: 1; min-width: 150px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
+  .fstep .n { font-size: 11px; font-weight: 700; font-stretch: var(--cond); text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); }
+  .fstep .t { font-size: 14px; font-weight: 800; font-stretch: var(--semi); text-transform: uppercase; margin-top: 8px; line-height: 1.1; }
+  .fstep p { font-size: 12px; color: var(--text-2); margin-top: 8px; line-height: 1.5; }
 
-  .title-slide { display:flex; flex-direction:column; justify-content:center; min-height:calc(100vh - 110px); }
-  .mx { background:var(--cyan); color:var(--jet); font-family:'JetBrains Mono',monospace; font-weight:700; padding:5px 12px; border-radius:4px; letter-spacing:.14em; display:inline-block; }
-  .confidential { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--mute); letter-spacing:.14em; margin-top:40px; }
+  .bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(11,11,13,.94); backdrop-filter: blur(10px); border-top: 1px solid var(--border); z-index: 50; }
+  .bar-in { max-width: 1200px; margin: 0 auto; padding: 14px 6vw; display: flex; justify-content: space-between; align-items: center; }
+  .bar button { background: var(--surface2); color: var(--text-2); border: 1px solid var(--border-strong); border-radius: 6px; padding: 10px 20px;
+    font-family: inherit; font-size: 12px; font-weight: 700; font-stretch: var(--semi); text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; }
+  .bar button:hover { color: var(--text); border-color: var(--text); }
+  .bar button.nx { background: var(--accent); color: var(--text); border-color: var(--accent); }
+  .bar button.nx:hover { filter: brightness(1.1); }
+  .bar .ind { font-size: 12px; font-weight: 700; font-stretch: var(--cond); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-2); }
+  .bar .hint { color: var(--text-3); font-size: 10px; margin-left: 14px; letter-spacing: 0.1em; }
+  @media (max-width: 640px) { .bar .hint { display: none; } }
+
+  .title-slide { display: flex; flex-direction: column; justify-content: center; min-height: calc(100vh - 110px); position: relative; overflow: hidden; }
+  .title-slide .ghostmark { position: absolute; right: -120px; top: 50%; transform: translateY(-50%); width: 560px; opacity: 0.09; pointer-events: none; }
+  .lockup { display: flex; align-items: center; gap: 20px; position: relative; z-index: 2; }
+  .lockup img { width: 64px; height: 64px; object-fit: contain; }
+  .lockup .wm { font-size: 44px; font-weight: 900; font-stretch: var(--cond); text-transform: uppercase; line-height: 0.85; }
+  .confidential { font-size: 11px; font-weight: 700; font-stretch: var(--cond); text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-3); margin-top: 44px; }
 </style>
 </head>
 <body>
@@ -76,40 +94,47 @@
 
 <!-- 1 · TITLE -->
 <section class="slide on title-slide">
-  <div><span class="mx">MOBEX</span> <span style="font-family:'Space Grotesk';font-weight:700;font-size:22px;margin-left:8px">VEKT™</span></div>
-  <h1 class="h" style="font-size:clamp(36px,5.5vw,64px);margin-top:34px">Athletic intelligence for the<br>modern roster era.</h1>
-  <p class="sub" style="font-size:18px">Highlight reels show the best 3 minutes. Vekt™ maps the other 87 — quantifying tactical DNA, coachability, and locker room fit through autonomous voice telemetry.</p>
-  <div class="confidential">SEED ROUND · CONFIDENTIAL · ELLIOT LEONARD, FOUNDER — D1 CAPTAIN · COLLEGE ASSISTANT · DIRECTOR OF COACHING</div>
+  <img class="ghostmark" src="../assets/rfx-mark.png" alt="" aria-hidden="true">
+  <div class="lockup">
+    <img src="../assets/rfx-mark.png" alt="RFX">
+    <div class="wm">Mobex Vekt™</div>
+  </div>
+  <h1 class="display" style="font-size:clamp(44px,7vw,92px);margin-top:40px;position:relative;z-index:2">
+    <span style="display:block">Athletic intelligence</span>
+    <span style="display:block;color:var(--accent)">for the modern roster era.</span>
+  </h1>
+  <p class="body sub" style="font-size:18px;position:relative;z-index:2">Highlight reels show the best 3 minutes. Vekt™ maps the other 87 — quantifying tactical DNA, coachability, and locker room fit through autonomous voice telemetry.</p>
+  <div class="confidential">Seed round · Confidential · Elliot Leonard, Founder — D1 captain · college assistant · Director of Coaching</div>
 </section>
 
 <!-- 2 · PROBLEM -->
 <section class="slide">
-  <div class="kick">02 // The Broken Paradigm</div>
-  <h2 class="h">College rosters are built blind — and they churn like it.</h2>
-  <p class="sub">Legacy platforms charge families thousands to blast unread email behind a 3-minute tape. Hard skills get an athlete recruited; soft skills decide whether they stay. Nobody measures the second thing.</p>
+  <div class="lbl">02 · The Broken Paradigm</div>
+  <h2 class="h h1">College rosters are built blind — and they churn like it.</h2>
+  <p class="body sub">Legacy platforms charge families thousands to blast unread email behind a 3-minute tape. Hard skills get an athlete recruited; soft skills decide whether they stay. Nobody measures the second thing.</p>
   <div class="cards c3">
-    <div class="card"><div class="k">NCAA DI portal entrants / year</div><div class="big">18,400+</div><div class="note">Source: NCAA transfer data</div></div>
-    <div class="card"><div class="k">Annual churn, DI revenue sports</div><div class="big am">35–40%</div><div class="note">Source: NCAA DI men's basketball portal rates</div></div>
-    <div class="card"><div class="k">Primary transfer driver</div><div class="big" style="font-size:20px">Athletic friction</div><div class="note">Playing time, feedback-style clashes, culture mismatch — not academics</div></div>
+    <div class="card"><div class="kick">NCAA DI portal entrants / year</div><div class="big rd">18,400+</div><div class="note">Source: NCAA transfer data</div></div>
+    <div class="card"><div class="kick">Annual churn, DI revenue sports</div><div class="big">35–40%</div><div class="note">Source: NCAA DI men's basketball portal rates</div></div>
+    <div class="card"><div class="kick">Primary transfer driver</div><div class="big" style="font-size:26px;line-height:1.05">Athletic friction</div><div class="note">Playing time, feedback-style clashes, culture mismatch — not academics</div></div>
   </div>
 </section>
 
 <!-- 3 · SOLUTION -->
 <section class="slide">
-  <div class="kick">03 // The Solution</div>
-  <h2 class="h">Two tiers. One ground truth.</h2>
-  <p class="sub">A structured hard-skill baseline feeds a capped, honest outreach engine — live today. The Vekt voice layer triangulates athlete self-perception against blind club-coach verification and each program's culture model.</p>
+  <div class="lbl">03 · The Solution</div>
+  <h2 class="h h1">Two tiers. One ground truth.</h2>
+  <p class="body sub">A structured hard-skill baseline feeds a capped, honest outreach engine — live today. The Vekt voice layer triangulates athlete self-perception against blind club-coach verification and each program's culture model.</p>
   <div class="cards c3">
-    <div class="card"><h3>Stage 1 — The baseline &amp; the engine</h3><p>Structured intake. Throttled outreach: five athletes per coach per day, hard cap. Every coach answer returns to the athlete by name — including the nos.</p><span class="tag live">LIVE</span></div>
-    <div class="card"><h3>Stage 2 — Vekt voice telemetry</h3><p>RAG-driven conversational audits probe high-pressure scenarios against program culture non-negotiables retrieved from the Vault. Consent-gated, athlete-visible by design.</p><span class="tag build">IN BUILD</span></div>
-    <div class="card"><h3>The C.A.L.M. Index</h3><p>Culture &amp; Alignment Maturity: Conscious → Aligned → Lacking → Mismatched. The rating system for competitive self-awareness, computed from the Triangle of Truth.</p><span class="tag build">IN BUILD</span></div>
+    <div class="card"><h3>Stage 1 — The baseline &amp; the engine</h3><p>Structured intake. Throttled outreach: five athletes per coach per day, hard cap. Every coach answer returns to the athlete by name — including the nos.</p><span class="pill live">Live</span></div>
+    <div class="card"><h3>Stage 2 — Vekt voice telemetry</h3><p>RAG-driven conversational audits probe high-pressure scenarios against program culture non-negotiables retrieved from the Vault. Consent-gated, athlete-visible by design.</p><span class="pill build">In build</span></div>
+    <div class="card"><h3>The C.A.L.M. Index</h3><p>Culture &amp; Alignment Maturity: Conscious → Aligned → Lacking → Mismatched. The rating system for competitive self-awareness, computed from the Triangle of Truth.</p><span class="pill build">In build</span></div>
   </div>
 </section>
 
 <!-- 4 · MOAT -->
 <section class="slide">
-  <div class="kick">04 // Why This Cannot Be Copied Quickly</div>
-  <h2 class="h">The moat is behavioral ground truth.</h2>
+  <div class="lbl">04 · Why This Cannot Be Copied Quickly</div>
+  <h2 class="h h1">The moat is <span style="color:var(--accent)">behavioral ground truth.</span></h2>
   <div class="cards c2">
     <div class="card"><h3>The response dataset</h3><p>Real college coaches answering yes or no, by name, to real athletes — accumulated per athlete, per program, per season. Legacy platforms have impressions; we have decisions. Every decision thickens the only dataset that shows who actually gets placed where, and why.</p></div>
     <div class="card"><h3>Coach trust mechanics</h3><p>The 5-a-day cap and returned rejections are why coaches engage at all. A competitor copying our features without our restraint burns their coach inboxes in a season — the mechanic only works if you refuse to spam, and their business models can't refuse.</p></div>
@@ -120,48 +145,48 @@
 
 <!-- 5 · MARKET -->
 <section class="slide">
-  <div class="kick">05 // Market</div>
-  <h2 class="h">A $40B industry that measures everything except what matters.</h2>
+  <div class="lbl">05 · Market</div>
+  <h2 class="h h1">A $40B industry that measures everything except what matters.</h2>
   <div class="cards c3">
-    <div class="card"><div class="k">TAM — US youth sports</div><div class="big">$40.0B</div><p>Annual spend, expanding globally through the early 2030s.</p></div>
-    <div class="card"><div class="k">SAM — youth &amp; collegiate sports software</div><div class="big em">$1.53B</div><p>Growing ~8.7% CAGR as clubs and programs digitize operations.</p></div>
-    <div class="card"><div class="k">SOM — initial wedge</div><div class="big am" style="font-size:20px">Elite club academies + DI–DIII programs</div><p>Club-side accreditation first; demand-side monetization follows the dataset.</p><span class="tag model">MODELED</span></div>
+    <div class="card"><div class="kick">TAM — US youth sports</div><div class="big rd">$40.0B</div><p>Annual spend, expanding globally through the early 2030s.</p></div>
+    <div class="card"><div class="kick">SAM — youth &amp; collegiate sports software</div><div class="big">$1.53B</div><p>Growing ~8.7% CAGR as clubs and programs digitize operations.</p></div>
+    <div class="card"><div class="kick">SOM — initial wedge</div><div class="big" style="font-size:24px;line-height:1.1">Elite club academies + DI–DIII programs</div><p>Club-side accreditation first; demand-side monetization follows the dataset.</p><span class="pill model">Modeled</span></div>
   </div>
 </section>
 
 <!-- 6 · PRODUCT TODAY -->
 <section class="slide">
-  <div class="kick">06 // Product, As It Exists</div>
-  <h2 class="h">This is not a concept deck. The engine runs.</h2>
+  <div class="lbl">06 · Product, As It Exists</div>
+  <h2 class="h h1">This is not a concept deck. The engine runs.</h2>
   <div class="cards c4">
-    <div class="card"><h3>Outreach engine</h3><p>Multi-division automated outreach, coach cap, one-tap responses returned by name.</p><span class="tag live">LIVE</span></div>
-    <div class="card"><h3>Club Command Center</h3><p>Club health, funnel, coach engagement, player pipeline, kanban.</p><span class="tag live">LIVE</span></div>
-    <div class="card"><h3>Coach database</h3><p>2,993+ programs; monthly sync engine with review-queue integrity checks.</p><span class="tag live">LIVE</span></div>
-    <div class="card"><h3>AI outreach personalization</h3><p>Server-side generation service on the MOBEX inference stack; fails closed; human-reviewed before any send.</p><span class="tag build">IN BUILD</span></div>
+    <div class="card"><h3>Outreach engine</h3><p>Multi-division automated outreach, coach cap, one-tap responses returned by name.</p><span class="pill live">Live</span></div>
+    <div class="card"><h3>Club Command Center</h3><p>Club health, funnel, coach engagement, player pipeline, kanban.</p><span class="pill live">Live</span></div>
+    <div class="card"><h3>Coach database</h3><p>2,993+ programs; monthly sync engine with review-queue integrity checks.</p><span class="pill live">Live</span></div>
+    <div class="card"><h3>AI outreach personalization</h3><p>Server-side generation service on the MOBEX inference stack; fails closed; human-reviewed before any send.</p><span class="pill build">In build</span></div>
   </div>
   <div class="cards c3" style="margin-top:16px">
-    <div class="card"><div class="k">App Store rating</div><div class="big em">4.9★</div></div>
-    <div class="card"><div class="k">Sports in implementation</div><div class="big">5</div><div class="note">Soccer live; basketball, volleyball, lacrosse, baseball/softball next</div></div>
-    <div class="card"><div class="k">Paid acquisition to date</div><div class="big">$0</div><div class="note">All growth founder-led and organic</div></div>
+    <div class="card"><div class="kick">App Store rating</div><div class="big">4.9★</div></div>
+    <div class="card"><div class="kick">Sports in implementation</div><div class="big">5</div><div class="note">Soccer live; basketball, volleyball, lacrosse, baseball/softball next</div></div>
+    <div class="card"><div class="kick">Paid acquisition to date</div><div class="big rd">$0</div><div class="note">All growth founder-led and organic</div></div>
   </div>
 </section>
 
 <!-- 7 · BUSINESS MODEL -->
 <section class="slide">
-  <div class="kick">07 // Business Model</div>
-  <h2 class="h">Recurring on every side of the desk.</h2>
+  <div class="lbl">07 · Business Model</div>
+  <h2 class="h h1">Recurring on every side of the desk.</h2>
   <div class="cards c3">
-    <div class="card"><h3>Athletes &amp; families</h3><p><b style="color:#fff">$249 / season</b>, recurring — billing mapped to real recruiting calendars. Full cycle ≈ prior one-time price, but it renews. Entry tier $199/yr.</p><span class="tag live">ROLLING OUT</span></div>
-    <div class="card"><h3>Clubs</h3><p>Recruiting free for the whole club — the wedge and the data engine. <b style="color:#fff">$5K/season</b> placement-marketing layer; roster-indexed tiers in test. VIS accreditation on top.</p><span class="tag live">LIVE + TEST</span></div>
-    <div class="card"><h3>Colleges — the expansion layer</h3><p>Verified cultural dossiers, one-tap pipeline telemetry, retention analytics. Enterprise tiers <b style="color:#fff">$3–10K/yr</b> per program.</p><span class="tag model">MODELED · YEAR 2+</span></div>
+    <div class="card"><h3>Athletes &amp; families</h3><p><b>$249 / season</b>, recurring — billing mapped to real recruiting calendars. Full cycle ≈ prior one-time price, but it renews. Entry tier $199/yr.</p><span class="pill live">Rolling out</span></div>
+    <div class="card"><h3>Clubs</h3><p>Recruiting free for the whole club — the wedge and the data engine. <b>$5K/season</b> placement-marketing layer; roster-indexed tiers in test. VIS accreditation on top.</p><span class="pill live">Live + test</span></div>
+    <div class="card"><h3>Colleges — the expansion layer</h3><p>Verified cultural dossiers, one-tap pipeline telemetry, retention analytics. Enterprise tiers <b>$3–10K/yr</b> per program.</p><span class="pill model">Modeled · Year 2+</span></div>
   </div>
-  <p class="sub" style="margin-top:26px">The athlete line funds the build. The club line endures. The college line is the largest unpriced surface in the business — and it only opens once the dataset makes us the benchmark.</p>
+  <p class="body sub" style="margin-top:26px">The athlete line funds the build. The club line endures. The college line is the largest unpriced surface in the business — and it only opens once the dataset makes us the benchmark.</p>
 </section>
 
 <!-- 8 · GTM -->
 <section class="slide">
-  <div class="kick">08 // Go-To-Market</div>
-  <h2 class="h">Supply-side accreditation forces demand-side adoption.</h2>
+  <div class="lbl">08 · Go-To-Market</div>
+  <h2 class="h h1">Supply-side accreditation forces demand-side adoption.</h2>
   <div class="flow">
     <div class="fstep"><div class="n">01</div><div class="t">Founder-led club outbound</div><p>Coach-credible cold outreach to club directors. Free recruiting wedge lands the roster.</p></div>
     <div class="fstep"><div class="n">02</div><div class="t">VIS accreditation</div><p>Clubs certify under the Vekt Integrity Standard — honest audits become an institutional asset.</p></div>
@@ -169,42 +194,42 @@
     <div class="fstep"><div class="n">04</div><div class="t">Colleges pull</div><p>Scouts come to where the verified athletes are. One-tap telemetry makes engagement effortless.</p></div>
     <div class="fstep"><div class="n">05</div><div class="t">Demand side monetizes</div><p>Enterprise dossier + retention tooling priced to programs already paying for recruiting software.</p></div>
   </div>
-  <p class="sub" style="margin-top:26px">Near-term cash sequence already in motion: failed-payment recovery → dormant-base reactivation onto season billing → club outbound. European institutional relationships (player unions, academy welfare bodies) held as a long-cycle channel.</p>
+  <p class="body sub" style="margin-top:26px">Near-term cash sequence already in motion: failed-payment recovery → dormant-base reactivation onto season billing → club outbound. European institutional relationships (player unions, academy welfare bodies) held as a long-cycle channel.</p>
 </section>
 
 <!-- 9 · TRACTION -->
 <section class="slide">
-  <div class="kick">09 // Traction</div>
-  <h2 class="h">Organic pull, zero paid spend.</h2>
+  <div class="lbl">09 · Traction</div>
+  <h2 class="h h1">Organic pull, zero paid spend.</h2>
   <div class="cards c3">
-    <div class="card"><div class="k">Clubs on platform</div><div class="big em">3</div><p>CSSC · Orlando City Soccer School Lake Nona · ACTA Football</p></div>
-    <div class="card"><div class="k">App Store rating</div><div class="big em">4.9★</div><p>Public, verifiable, uncoached.</p></div>
-    <div class="card"><div class="k">Programs indexed</div><div class="big em">2,993+</div><p>Across DI, DII, DIII, NAIA, JUCO.</p></div>
-    <div class="card"><div class="k">Active athletes</div><div class="big am">[ VERIFY ]</div><span class="tag verify">PENDING LEDGER RECONCILIATION</span></div>
-    <div class="card"><div class="k">Commitments</div><div class="big am">[ VERIFY ]</div><span class="tag verify">PENDING LEDGER RECONCILIATION</span></div>
-    <div class="card"><div class="k">Coach responses delivered</div><div class="big am">[ VERIFY ]</div><span class="tag verify">PENDING LEDGER RECONCILIATION</span></div>
+    <div class="card"><div class="kick">Clubs on platform</div><div class="big rd">3</div><p>CSSC · Orlando City Soccer School Lake Nona · ACTA Football</p></div>
+    <div class="card"><div class="kick">App Store rating</div><div class="big">4.9★</div><p>Public, verifiable, uncoached.</p></div>
+    <div class="card"><div class="kick">Programs indexed</div><div class="big">2,993+</div><p>Across DI, DII, DIII, NAIA, JUCO.</p></div>
+    <div class="card"><div class="kick">Active athletes</div><div class="big" style="color:var(--amber)">[ Verify ]</div><span class="pill verify">Pending ledger reconciliation</span></div>
+    <div class="card"><div class="kick">Commitments</div><div class="big" style="color:var(--amber)">[ Verify ]</div><span class="pill verify">Pending ledger reconciliation</span></div>
+    <div class="card"><div class="kick">Coach responses delivered</div><div class="big" style="color:var(--amber)">[ Verify ]</div><span class="pill verify">Pending ledger reconciliation</span></div>
   </div>
-  <p class="sub" style="margin-top:26px">Deliberate discipline: athlete-count metrics ship in this deck only after the Stripe / RevenueCat / platform reconciliation signs off. Every number an investor reads here survives diligence.</p>
+  <p class="body sub" style="margin-top:26px">Deliberate discipline: athlete-count metrics ship in this deck only after the Stripe / RevenueCat / platform reconciliation signs off. Every number an investor reads here survives diligence.</p>
 </section>
 
 <!-- 10 · FINANCIAL MODEL -->
 <section class="slide">
-  <div class="kick">10 // Financial Trajectory</div>
-  <h2 class="h">The path to $2–3M ARR.</h2>
+  <div class="lbl">10 · Financial Trajectory</div>
+  <h2 class="h h1">The path to <span style="color:var(--accent)">$2–3M ARR.</span></h2>
   <div class="cards c3">
-    <div class="card"><div class="k">Year 1</div><div class="big">$250–400K</div><p>ARR · 8–12 paying clubs · retention measured across a full renewal cycle · second sport with real traction.</p><span class="tag model">PROJECTION</span></div>
-    <div class="card"><div class="k">Year 2</div><div class="big">$0.9–1.4M</div><p>ARR · repeatable club motion independent of founder · multi-sport · college-side pilot pricing.</p><span class="tag model">PROJECTION</span></div>
-    <div class="card"><div class="k">Year 3</div><div class="big em">$2–3M</div><p>ARR · category position defensible on the placement dataset · Vekt enterprise attach as upside above base case.</p><span class="tag model">PROJECTION</span></div>
+    <div class="card"><div class="kick">Year 1</div><div class="big">$250–400K</div><p>ARR · 8–12 paying clubs · retention measured across a full renewal cycle · second sport with real traction.</p><span class="pill model">Projection</span></div>
+    <div class="card"><div class="kick">Year 2</div><div class="big">$0.9–1.4M</div><p>ARR · repeatable club motion independent of founder · multi-sport · college-side pilot pricing.</p><span class="pill model">Projection</span></div>
+    <div class="card"><div class="kick">Year 3</div><div class="big">$2–3M</div><p>ARR · category position defensible on the placement dataset · Vekt enterprise attach as upside above base case.</p><span class="pill model">Projection</span></div>
   </div>
-  <p class="sub" style="margin-top:26px">Model drivers: seasonal athlete subscription (cycle-mapped billing), club placement layer renewing annually, and college enterprise attach. All figures are forward-looking projections, not actuals.</p>
+  <p class="body sub" style="margin-top:26px">Model drivers: seasonal athlete subscription (cycle-mapped billing), club placement layer renewing annually, and college enterprise attach. All figures are forward-looking projections, not actuals.</p>
 </section>
 
 <!-- 11 · MILESTONES -->
 <section class="slide">
-  <div class="kick">11 // Execution Milestones</div>
-  <h2 class="h">What the next 12 months buy.</h2>
+  <div class="lbl">11 · Execution Milestones</div>
+  <h2 class="h h1">What the next 12 months buy.</h2>
   <div class="flow">
-    <div class="fstep"><div class="n">DAY 90</div><div class="t">Recurring architecture live</div><p>Season billing replacing one-time tiers; 2+ paid club contracts; attribution end to end.</p></div>
+    <div class="fstep"><div class="n">Day 90</div><div class="t">Recurring architecture live</div><p>Season billing replacing one-time tiers; 2+ paid club contracts; attribution end to end.</p></div>
     <div class="fstep"><div class="n">Q2</div><div class="t">Vekt voice engine v1</div><p>Scenario audits + blind coach verification live with pilot clubs, consent-gated.</p></div>
     <div class="fstep"><div class="n">Q3</div><div class="t">VIS accreditation launch</div><p>First certified clubs; C.A.L.M. dossiers delivered to college programs.</p></div>
     <div class="fstep"><div class="n">Q4</div><div class="t">Sport #2 + college pilots</div><p>Second sport with a repeatable club motion; demand-side pricing validated.</p></div>
@@ -213,27 +238,27 @@
 
 <!-- 12 · ASK -->
 <section class="slide">
-  <div class="kick">12 // The Ask</div>
-  <h2 class="h">$2M seed — closing.</h2>
+  <div class="lbl">12 · The Ask</div>
+  <h2 class="h display" style="font-size:clamp(40px,6vw,80px)">$2M seed — <span style="color:var(--accent)">closing.</span></h2>
   <div class="cards c3">
-    <div class="card"><div class="k">Engineering — Vekt voice &amp; RAG</div><div class="big">45%</div><p>Voice audit engine, culture vault, dossier pipeline on the MOBEX inference stack.</p></div>
-    <div class="card"><div class="k">B2B sales expansion</div><div class="big">35%</div><p>Club motion beyond the founder; VIS accreditation rollout.</p></div>
-    <div class="card"><div class="k">GTM execution</div><div class="big">20%</div><p>The 87th Minute campaign · attribution-verified acquisition only.</p></div>
+    <div class="card"><div class="kick">Engineering — Vekt voice &amp; RAG</div><div class="big rd">45%</div><p>Voice audit engine, culture vault, dossier pipeline on the MOBEX inference stack.</p></div>
+    <div class="card"><div class="kick">B2B sales expansion</div><div class="big">35%</div><p>Club motion beyond the founder; VIS accreditation rollout.</p></div>
+    <div class="card"><div class="kick">GTM execution</div><div class="big">20%</div><p>The 87th Minute campaign · attribution-verified acquisition only.</p></div>
   </div>
-  <p class="sub" style="margin-top:30px">A $2M seed underwrites the only recruiting platform built on verified ground truth — on the athlete's side of the desk, with the dataset every other player in the category will eventually have to buy.</p>
-  <div class="confidential" style="margin-top:34px">ELLIOT LEONARD · FOUNDER · MOBEX VEKT™ · RFX.SOCCER@GMAIL.COM</div>
+  <p class="body sub" style="margin-top:30px">A $2M seed underwrites the only recruiting platform built on verified ground truth — on the athlete's side of the desk, with the dataset every other player in the category will eventually have to buy.</p>
+  <div class="confidential" style="margin-top:34px">Elliot Leonard · Founder · MOBEX Vekt™ · rfx.soccer@gmail.com</div>
 </section>
 
 </div>
 
 <div class="bar">
   <div class="bar-in">
-    <button onclick="nav(-1)">← PREV</button>
+    <button onclick="nav(-1)">← Prev</button>
     <div>
-      <span class="ind" id="ind">SLIDE 1 / 12</span>
-      <span class="hint" style="margin-left:14px">· ARROW KEYS NAVIGATE</span>
+      <span class="ind" id="ind">Slide 1 / 12</span>
+      <span class="hint kick">· Arrow keys navigate</span>
     </div>
-    <button class="nx" onclick="nav(1)">NEXT →</button>
+    <button class="nx" onclick="nav(1)">Next →</button>
   </div>
 </div>
 
@@ -242,7 +267,7 @@
   var i = 0;
   function show() {
     slides.forEach(function (s, n) { s.classList.toggle('on', n === i); });
-    document.getElementById('ind').textContent = 'SLIDE ' + (i + 1) + ' / ' + slides.length;
+    document.getElementById('ind').textContent = 'Slide ' + (i + 1) + ' / ' + slides.length;
     window.scrollTo(0, 0);
   }
   function nav(d) { i = Math.min(Math.max(i + d, 0), slides.length - 1); show(); }
