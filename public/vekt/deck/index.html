@@ -31,10 +31,12 @@
   .kick { font-size: 12px; font-weight: 700; font-stretch: var(--cond); text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-3); }
   .body { font-size: 16px; line-height: 1.55; color: var(--text-2); }
 
-  .stage { min-height: 100vh; display: flex; flex-direction: column; }
-  .slide { display: none; flex: 1; padding: 64px 6vw 110px; max-width: 1200px; margin: 0 auto; width: 100%; }
-  .slide.on { display: block; animation: fade .4s cubic-bezier(.22,1,.36,1); }
-  @keyframes fade { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+  .stage { display: block; padding-bottom: 80px; }
+  .slide { display: block; min-height: 92vh; padding: 72px 6vw 72px; max-width: 1200px; margin: 0 auto; width: 100%;
+    border-bottom: 1px solid var(--border); position: relative; }
+  .slide:last-of-type { border-bottom: none; }
+  .snum { position: absolute; top: 28px; right: 6vw; font-size: 11px; font-weight: 700; font-stretch: var(--cond);
+    text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-3); }
 
   .h { font-size: clamp(30px, 4.4vw, 54px); margin-top: 14px; }
   .sub { margin-top: 18px; max-width: 780px; }
@@ -93,7 +95,7 @@
 <div class="stage">
 
 <!-- 1 · TITLE -->
-<section class="slide on title-slide">
+<section class="slide title-slide">
   <img class="ghostmark" src="../assets/rfx-mark.png" alt="" aria-hidden="true">
   <div class="lockup">
     <img src="../assets/rfx-mark.png" alt="RFX">
@@ -263,19 +265,43 @@
 </div>
 
 <script>
-  var slides = document.querySelectorAll('.slide');
-  var i = 0;
-  function show() {
-    slides.forEach(function (s, n) { s.classList.toggle('on', n === i); });
-    document.getElementById('ind').textContent = 'Slide ' + (i + 1) + ' / ' + slides.length;
-    window.scrollTo(0, 0);
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var current = 0;
+
+  // number each slide in its corner
+  slides.forEach(function (s, n) {
+    var tag = document.createElement('div');
+    tag.className = 'snum';
+    tag.textContent = 'Slide ' + (n + 1) + ' / ' + slides.length;
+    s.appendChild(tag);
+  });
+
+  function setInd() {
+    var el = document.getElementById('ind');
+    if (el) el.textContent = 'Slide ' + (current + 1) + ' / ' + slides.length;
   }
-  function nav(d) { i = Math.min(Math.max(i + d, 0), slides.length - 1); show(); }
+
+  function goTo(n) {
+    n = Math.min(Math.max(n, 0), slides.length - 1);
+    slides[n].scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function nav(d) { goTo(current + d); }
+
+  // track which slide is in view so the bar and buttons stay honest
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting) { current = slides.indexOf(e.target); setInd(); }
+      });
+    }, { threshold: 0.5 });
+    slides.forEach(function (s) { io.observe(s); });
+  }
+
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); nav(1); }
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); nav(1); }
     if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); nav(-1); }
   });
-  show();
+  setInd();
 </script>
 </body>
 </html>
