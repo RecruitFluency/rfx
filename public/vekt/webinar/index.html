@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Trust Channel — RFX Parent Webinar</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --black: #080808;
+  --black2: #0d0d0d;
+  --black3: #121212;
+  --black4: #1c1c1c;
+  --red: #FF0000;
+  --red-dim: rgba(255,0,0,0.12);
+  --red-glow: rgba(255,0,0,0.3);
+  --white: #F0F0F0;
+  --gray: #777;
+  --gray-mid: #555;
+  --gray-dim: #333;
+  --green: #17c964;
+  --mono: 'Share Tech Mono', monospace;
+  --display: 'Bebas Neue', sans-serif;
+  --body: 'Barlow', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* SCANLINES */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px,
+    rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 9998;
+}
+
+.slide {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 72px 24px;
+  min-height: 92vh;
+  border-bottom: 1px solid var(--gray-dim);
+  position: relative;
+}
+.slide:last-of-type { border-bottom: none; }
+
+.snum {
+  position: absolute; top: 26px; right: 24px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.25em;
+  color: var(--gray-mid); text-transform: uppercase;
+}
+.beat {
+  position: absolute; top: 26px; left: 24px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.25em;
+  color: var(--gray-mid); text-transform: uppercase;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--red);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.eyebrow.dim { color: var(--gray); }
+
+h1, h2, .display {
+  font-family: var(--display);
+  letter-spacing: 0.05em;
+  line-height: 0.88;
+  color: var(--white);
+  font-weight: 400;
+}
+h2 { font-size: clamp(40px, 6.5vw, 76px); }
+h2 .rd, h1 .rd { color: var(--red); }
+
+.sub {
+  font-family: var(--body);
+  font-weight: 300;
+  font-size: 16.5px;
+  line-height: 1.7;
+  color: var(--gray);
+  max-width: 720px;
+  margin-top: 22px;
+}
+.sub b { color: var(--white); font-weight: 600; }
+
+.mono-note {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--gray-mid);
+  letter-spacing: 0.07em;
+  line-height: 1.7;
+  border-left: 2px solid var(--gray-dim);
+  padding-left: 12px;
+  margin-top: 30px;
+  max-width: 640px;
+}
+
+/* ── RED CORE PANEL (corner marks + pulse) ── */
+.core {
+  border: 2px solid var(--red);
+  background: #0f0f0f;
+  padding: 34px 30px;
+  position: relative;
+  margin-top: 34px;
+  animation: pulse-red 3s ease-in-out infinite;
+  box-shadow:
+    0 0 0 1px rgba(255,0,0,0.15),
+    0 0 48px rgba(255,0,0,0.14),
+    0 0 100px rgba(255,0,0,0.05),
+    inset 0 0 60px rgba(255,0,0,0.04);
+}
+.core::before {
+  content: '';
+  position: absolute; top: -2px; left: -2px;
+  width: 20px; height: 20px;
+  border-top: 2px solid var(--red);
+  border-left: 2px solid var(--red);
+}
+.corner-br {
+  position: absolute; bottom: -2px; right: -2px;
+  width: 20px; height: 20px;
+  border-bottom: 2px solid var(--red);
+  border-right: 2px solid var(--red);
+}
+@keyframes pulse-red {
+  0%,100% { box-shadow: 0 0 0 1px rgba(255,0,0,0.15), 0 0 48px rgba(255,0,0,0.14), inset 0 0 60px rgba(255,0,0,0.04); }
+  50%      { box-shadow: 0 0 0 2px rgba(255,0,0,0.35), 0 0 72px rgba(255,0,0,0.22), inset 0 0 60px rgba(255,0,0,0.08); }
+}
+.core .core-name {
+  font-family: var(--display);
+  font-size: clamp(38px, 6.5vw, 72px);
+  letter-spacing: 0.06em;
+  line-height: 0.9;
+  color: var(--white);
+}
+.core .core-name .rd { color: var(--red); }
+.core .core-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--gray);
+  letter-spacing: 0.14em;
+  margin-top: 12px;
+  line-height: 1.7;
+}
+
+/* ── NODES / CARDS ── */
+.nodes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 34px;
+}
+.nodes.n2 { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 700px) { .nodes, .nodes.n2 { grid-template-columns: 1fr; } }
+
+.node {
+  border: 1px solid var(--gray-dim);
+  background: var(--black2);
+  padding: 20px 18px;
+  transition: all 0.22s;
+  position: relative;
+}
+.node:hover {
+  border-color: rgba(255,0,0,0.4);
+  background: var(--black3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(255,0,0,0.08);
+}
+.node-num {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--red);
+  letter-spacing: 0.2em;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.node-title {
+  font-family: var(--display);
+  font-size: 21px;
+  letter-spacing: 0.04em;
+  color: var(--white);
+  line-height: 1.02;
+  margin-bottom: 9px;
+}
+.node-desc {
+  font-family: var(--body);
+  font-weight: 300;
+  font-size: 13px;
+  color: var(--gray);
+  line-height: 1.65;
+}
+.node-desc b { color: var(--white); font-weight: 600; }
+.node-names {
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--gray-mid);
+  line-height: 1.9;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.node-names b { color: var(--gray); font-weight: 400; }
+
+/* ── BELIEF BLOCK ── */
+.belief { margin-top: 34px; max-width: 820px; }
+.belief .false {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--gray-mid);
+  letter-spacing: 0.08em;
+  text-decoration: line-through;
+  text-transform: uppercase;
+}
+.belief .true {
+  font-family: var(--display);
+  font-size: clamp(30px, 4.6vw, 54px);
+  letter-spacing: 0.05em;
+  line-height: 0.95;
+  color: var(--white);
+  margin-top: 14px;
+}
+.belief .true .rd { color: var(--red); }
+
+/* ── CHIPS ── */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 20px; }
+.chip {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  padding: 4px 10px;
+  border: 1px solid rgba(255,0,0,0.25);
+  color: rgba(255,80,80,0.85);
+  background: rgba(255,0,0,0.05);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.chip.gray { border-color: var(--gray-dim); color: var(--gray); background: var(--black3); }
+
+/* ── SCAN PANEL (live proof) ── */
+.scanpanel {
+  border: 1px solid rgba(255,0,0,0.3);
+  background: var(--black2);
+  padding: 26px 28px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(255,0,0,0.06), inset 0 0 40px rgba(255,0,0,0.03);
+  margin-top: 30px;
+}
+.optic-scan {
+  position: absolute; left: 0; right: 0; height: 1px;
+  background: linear-gradient(to right, transparent 5%, rgba(255,0,0,0.25) 30%, rgba(255,0,0,0.25) 70%, transparent 95%);
+  animation: scan 2.8s linear infinite;
+  pointer-events: none;
+}
+@keyframes scan { 0% { top: 0%; } 100% { top: 100%; } }
+
+.msg {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.75;
+  color: var(--gray);
+  letter-spacing: 0.03em;
+  padding: 13px 15px;
+  border: 1px solid var(--gray-dim);
+  background: var(--black3);
+  margin-top: 10px;
+}
+.msg b { color: var(--white); font-weight: 400; }
+.msg.yes { border-left: 2px solid var(--green); }
+.msg.no { border-left: 2px solid var(--red); }
+
+/* ── STACK LIST ── */
+.stackl { margin-top: 32px; max-width: 800px; }
+.sitem {
+  display: flex; align-items: center; gap: 16px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--gray-dim);
+}
+.sitem .tick { font-family: var(--mono); color: var(--red); font-size: 14px; text-shadow: 0 0 8px var(--red-glow); }
+.sitem .what { flex: 1; font-family: var(--body); font-weight: 600; font-size: 15px; color: var(--white); }
+.sitem .why { font-family: var(--mono); font-size: 9px; color: var(--gray-mid); letter-spacing: 0.06em; max-width: 300px; text-align: right; text-transform: uppercase; line-height: 1.6; }
+@media (max-width: 700px) { .sitem .why { display: none; } }
+
+/* ── PRICING ── */
+.ways { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 34px; max-width: 860px; }
+@media (max-width: 700px) { .ways { grid-template-columns: 1fr; } }
+.way {
+  border: 1px solid var(--gray-dim);
+  background: var(--black2);
+  padding: 30px 26px;
+  position: relative;
+}
+.way.primary {
+  border: 2px solid var(--red);
+  background: #0f0f0f;
+  animation: pulse-red 3s ease-in-out infinite;
+}
+.way.primary::before {
+  content: '';
+  position: absolute; top: -2px; left: -2px;
+  width: 18px; height: 18px;
+  border-top: 2px solid var(--red);
+  border-left: 2px solid var(--red);
+}
+.way .wtag { font-family: var(--mono); font-size: 9px; letter-spacing: 0.25em; color: var(--gray); text-transform: uppercase; }
+.way.primary .wtag { color: var(--red); }
+.way .price { font-family: var(--display); font-size: 64px; line-height: 0.9; margin-top: 14px; color: var(--white); }
+.way.primary .price { color: var(--red); text-shadow: 0 0 24px var(--red-glow); }
+.way .per { font-family: var(--mono); font-size: 9.5px; color: var(--gray-mid); letter-spacing: 0.08em; margin-top: 8px; text-transform: uppercase; line-height: 1.7; }
+.way p { font-family: var(--body); font-weight: 300; font-size: 13px; color: var(--gray); line-height: 1.65; margin-top: 14px; }
+
+/* ── CTA ── */
+.btn {
+  display: inline-block;
+  margin-top: 30px;
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: 0.1em;
+  color: var(--white);
+  background: var(--red);
+  padding: 14px 38px;
+  text-decoration: none;
+  box-shadow: 0 0 32px var(--red-glow);
+  transition: all 0.2s;
+}
+.btn:hover { box-shadow: 0 0 56px rgba(255,0,0,0.5); transform: translateY(-2px); }
+
+/* ── TITLE SLIDE ── */
+.title-slide { display: flex; flex-direction: column; justify-content: center; text-align: center; }
+.title-slide h1 { font-size: clamp(64px, 12vw, 148px); }
+.title-slide h1 em {
+  display: block;
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: clamp(12px, 1.7vw, 16px);
+  letter-spacing: 0.22em;
+  color: var(--gray);
+  margin-top: 16px;
+  text-transform: uppercase;
+}
+.brandline {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  margin-top: 48px;
+}
+.brand-name { font-family: var(--display); font-size: 30px; letter-spacing: 0.12em; color: var(--white); }
+.brand-name span { color: var(--red); }
+.brand-url { font-family: var(--mono); font-size: 10px; color: var(--gray-dim); letter-spacing: 0.14em; text-transform: uppercase; }
+
+/* animations */
+@keyframes riseUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.rise { animation: riseUp 0.7s ease both; }
+
+.bigline {
+  font-family: var(--display);
+  font-size: clamp(26px, 4vw, 46px);
+  letter-spacing: 0.05em;
+  line-height: 0.98;
+  color: var(--white);
+  margin-top: 34px;
+  max-width: 900px;
+}
+.bigline .rd { color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- 01 · TITLE -->
+<section class="slide title-slide">
+  <div class="eyebrow rise">// RFX — THE TRUST CHANNEL // A LIVE SESSION FOR PARENTS OF COLLEGE-BOUND ATHLETES</div>
+  <h1 class="rise">THE TRUST<br><span class="rd">CHANNEL</span><em>// WHY SOME ATHLETES GET RECRUITED — AND EQUALLY GOOD ATHLETES HEAR NOTHING</em></h1>
+  <div class="brandline rise">
+    <div class="brand-name">RFX<span>.</span></div>
+    <div class="brand-url">gorfx.app // ELLIOT LEONARD — D1 CAPTAIN · COLLEGE ASSISTANT · DIRECTOR OF COACHING</div>
+  </div>
+</section>
+
+<!-- 02 · THE PROMISE -->
+<section class="slide"><span class="beat">// 0:00 — THE PROMISE</span><span class="snum">02 / 13</span>
+  <div class="eyebrow">// WHAT TONIGHT IS</div>
+  <h2>NOT MORE CAMPS.<br>NOT A BIGGER REEL.</h2>
+  <p class="sub">By the end of this hour you will know the one thing families of recruited athletes have always had — and almost never talk about. And you'll see it working, live, on a real screen.</p>
+  <div class="core"><div class="corner-br"></div>
+    <div class="eyebrow">// STAY TO THE END</div>
+    <div class="core-name">A REAL COACH CONVERSATION —<br><span class="rd">INCLUDING A REJECTION.</span></div>
+    <div class="core-sub">NOBODY ELSE IN THIS INDUSTRY WILL PUT THAT ON SCREEN. YOU'LL SEE WHY WE DO.</div>
+  </div>
+</section>
+
+<!-- 03 · THEIR STRUGGLE -->
+<section class="slide"><span class="beat">// 0:03 — THE MIRROR</span><span class="snum">03 / 13</span>
+  <div class="eyebrow">// YOU'VE DONE THIS WEEKEND</div>
+  <h2>THE SHOWCASE LOOP.</h2>
+  <div class="nodes">
+    <div class="node">
+      <div class="node-num">STAGE / 01</div>
+      <div class="node-title">THE WEEKEND</div>
+      <div class="node-desc">The hotel. The fee. The 8 a.m. kickoff. Coaches on the far sideline with clipboards. "I think the coach from that school watched your half."</div>
+    </div>
+    <div class="node">
+      <div class="node-num">STAGE / 02</div>
+      <div class="node-title">THE TWO WEEKS AFTER</div>
+      <div class="node-desc">The inbox refresh. The film re-edit. The next event deposit — because doing something feels better than waiting.</div>
+    </div>
+    <div class="node">
+      <div class="node-num">STAGE / 03</div>
+      <div class="node-title">THE DINNER TABLE</div>
+      <div class="node-desc">"Did anyone reply?" — and the night you stop asking, because the answer lands on your kid's face before anyone speaks.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 · KILL THE GUILT -->
+<section class="slide"><span class="beat">// 0:07 — THE RELIEF</span><span class="snum">04 / 13</span>
+  <div class="eyebrow">// THE 2 A.M. THOUGHT</div>
+  <div class="belief">
+    <div class="false">"IF I WERE DOING MORE — ONE MORE SHOWCASE, A BIGGER PACKAGE — THIS WOULD BE WORKING."</div>
+    <div class="true">IT WAS NEVER YOUR EFFORT.<br><span class="rd">RECRUITING DOESN'T RUN ON EFFORT.</span></div>
+  </div>
+  <p class="sub">It runs on something your family was never given access to. That's tonight.</p>
+</section>
+
+<!-- 05 · BRIDGE, THREE ACTS -->
+<section class="slide"><span class="beat">// 0:08 — THE STORY</span><span class="snum">05 / 13</span>
+  <div class="eyebrow">// HOW I KNOW</div>
+  <h2>I HAD IT. I BECAME IT.<br><span class="rd">I BUILT IT.</span></h2>
+  <div class="nodes">
+    <div class="node">
+      <div class="node-num">ACT / 01 — I HAD IT AND DIDN'T KNOW IT</div>
+      <div class="node-title">THE KID WITH THE CHANNEL</div>
+      <div class="node-desc">When it was my turn to be recruited, men with real weight picked up the phone for me. A college coach didn't need my tape — he needed thirty seconds from a voice he trusted. I became a two-year D1 captain and believed I'd earned all of it on the field.</div>
+      <div class="node-names"><b>GARY BOOK · DAVE MAZER · JOHN DIFFLEY</b> — CLUB COACHES<br><b>THE ST. JOHN'S STAFF</b><br><b>BOBBY MONTGOMERY</b> — FIRST RED BULLS ACADEMY YOUTH DIRECTOR<br><b>KEVIN ANDERSON</b> — COLUMBIA HEAD COACH</div>
+    </div>
+    <div class="node">
+      <div class="node-num">ACT / 02 — I BECAME IT</div>
+      <div class="node-title">THE MAN MAKING THE CALLS</div>
+      <div class="node-desc">First assistant at FAU running national recruiting — taking those calls. Then Director of Coaching at a small club in the middle of nowhere, not playing top competition day in and day out. Kids from that club got placed who <b>never</b> would have been placed — because I could vouch, and a college coach trusted that I knew this athlete would flourish at that level. Without that voice? Done. And the wall: every club without that voice, every season.</div>
+    </div>
+    <div class="node">
+      <div class="node-num">ACT / 03 — I BUILT IT</div>
+      <div class="node-title">THE CHANNEL, INDUSTRIALIZED</div>
+      <div class="node-desc">You can't scale a phone call. You can build what the call carried: verified, targeted, trusted information a coach respects and answers. An AI engine that knows every program, matches your kid, carries the outreach, and brings back every answer with the coach's name on it.</div>
+    </div>
+  </div>
+  <div class="bigline">IT TOOK ME THIRTY YEARS TO INHERIT IT, BECOME IT, AND BUILD IT. <span class="rd">YOUR KID GETS IT THIS SEASON.</span></div>
+</section>
+
+<!-- 06 · BIG DOMINO -->
+<section class="slide"><span class="beat">// 0:18 — ONE BELIEF</span><span class="snum">06 / 13</span>
+  <div class="eyebrow">// THE ONLY THING THAT HAS TO BE TRUE</div>
+  <div class="core"><div class="corner-br"></div>
+    <div class="core-name">RECRUITING DOESN'T RUN ON EXPOSURE.<br><span class="rd">IT RUNS ON TRUSTED ANSWERS.</span></div>
+    <div class="core-sub">COACHES DON'T ACT ON WHAT THEY SEE. THEY ACT ON WHAT THEY CAN VERIFY. FOR THE FIRST TIME, THE CHANNEL THAT CARRIES TRUSTED ANSWERS ISN'T INHERITED — IT'S AVAILABLE.</div>
+  </div>
+</section>
+
+<!-- 07 · SECRET 1 -->
+<section class="slide"><span class="beat">// 0:24 — SECRET #1</span><span class="snum">07 / 13</span>
+  <div class="eyebrow">// SECRET #1 — THE VEHICLE</div>
+  <div class="belief">
+    <div class="false">"MORE EXPOSURE MEANS MORE OFFERS."</div>
+    <div class="true">ANSWERED OUTREACH<br><span class="rd">BEATS BLAST VOLUME.</span></div>
+  </div>
+  <div class="nodes">
+    <div class="node">
+      <div class="node-num">ENGINE / 01</div>
+      <div class="node-title">IT KNOWS THE MAP</div>
+      <div class="node-desc">2,993+ programs indexed across D1, D2, D3, NAIA and JUCO — and the outreach is matched by intelligence, not sprayed.</div>
+    </div>
+    <div class="node">
+      <div class="node-num">ENGINE / 02</div>
+      <div class="node-title">COACHES READ IT</div>
+      <div class="node-desc">A coach receives <b>five athletes a day. A hard cap, forever.</b> What lands gets read — because we refuse to bury the inbox.</div>
+    </div>
+    <div class="node">
+      <div class="node-num">ENGINE / 03</div>
+      <div class="node-title">ONE TAP ANSWERS</div>
+      <div class="node-desc">Interested — or pass. Two seconds for the coach. An answer, in writing, for your kid. Every time.</div>
+    </div>
+  </div>
+  <div class="nodes n2">
+    <div class="node">
+      <div class="node-num">LAYER / HARD SKILLS</div>
+      <div class="node-title">WHAT COACHES SCREEN FOR</div>
+      <div class="node-desc">Film, measurables, academics, position, stats — the baseline, structured the way coaches read it.</div>
+      <div class="chips"><span class="chip gray">FILM</span><span class="chip gray">MEASURABLES</span><span class="chip gray">ACADEMICS</span><span class="chip gray">POSITION</span><span class="chip gray">STATS</span></div>
+    </div>
+    <div class="node">
+      <div class="node-num">LAYER / SOFT SKILLS</div>
+      <div class="node-title">WHAT COACHES DECIDE ON</div>
+      <div class="node-desc">Coachability, game IQ, response to adversity — collected by our agents. The same things my voice used to carry in a phone call. <b>That's the step nobody else takes.</b></div>
+      <div class="chips"><span class="chip">COACHABILITY</span><span class="chip">GAME IQ</span><span class="chip">ADVERSITY RESPONSE</span></div>
+    </div>
+  </div>
+  <div class="bigline">IT'S NOT MORE EYES ON YOUR KID. <span class="rd">IT'S ANSWERS FROM THE EYES THAT MATTER.</span></div>
+</section>
+
+<!-- 08 · LIVE PROOF -->
+<section class="slide"><span class="beat">// 0:31 — LIVE PROOF</span><span class="snum">08 / 13</span>
+  <div class="eyebrow">// THE SCREEN NOBODY ELSE WILL SHOW YOU</div>
+  <h2>A REAL THREAD.<br><span class="rd">BOTH ANSWERS.</span></h2>
+  <div class="scanpanel">
+    <div class="optic-scan"></div>
+    <div class="eyebrow dim">// LIVE APP — PERMISSIONED ATHLETE THREAD</div>
+    <div class="msg yes"><b>[COACH — D2 PROGRAM]:</b> INTERESTED. HAVE HIM GET US FULL MATCH FILM FROM THE SPRING SEASON.</div>
+    <div class="msg no"><b>[COACH — D1 PROGRAM]:</b> PASS — WE'RE SET AT HIS POSITION THROUGH 2027. GOOD PLAYER, WRONG TIMING HERE.</div>
+  </div>
+  <p class="sub">Every service you've ever looked at hides that second message. <b>We built the company on it.</b></p>
+</section>
+
+<!-- 09 · SECRET 2 -->
+<section class="slide"><span class="beat">// 0:36 — SECRET #2</span><span class="snum">09 / 13</span>
+  <div class="eyebrow">// SECRET #2 — THE INTERNAL WALL</div>
+  <div class="belief">
+    <div class="false">"A REJECTION MEANS MY KID FAILED."</div>
+    <div class="true">THE NO<br><span class="rd">IS A GIFT.</span></div>
+  </div>
+  <p class="sub">An unanswered inbox costs your family two years and thousands of dollars chasing levels that were never watching. A no in writing closes a door — so your kid can walk through the right one. There are five levels of college soccer. The win is finding your kid's, <b>fast</b>.</p>
+  <div class="bigline">THE NO FROM THE D1 IS WHAT MAKES THE YES FROM THE D3 REAL. <span class="rd">KNOWING BEATS WONDERING.</span></div>
+</section>
+
+<!-- 10 · SECRET 3 -->
+<section class="slide"><span class="beat">// 0:41 — SECRET #3</span><span class="snum">10 / 13</span>
+  <div class="eyebrow">// SECRET #3 — THE EXTERNAL WALL</div>
+  <div class="belief">
+    <div class="false">"IT'S ALL POLITICS — WHO YOU KNOW."</div>
+    <div class="true">CORRECT.<br><span class="rd">SO WE BUILT THE WHO-YOU-KNOW.</span></div>
+  </div>
+  <p class="sub">Connections were never magic. They were a trust channel carrying verified information between coaches. Your family either inherits one or it doesn't — until now, that was luck. The engine is the channel: it knows the programs, speaks the coach's language, respects the coach's time, and brings the answers home.</p>
+</section>
+
+<!-- 11 · THE STACK -->
+<section class="slide"><span class="beat">// 0:45 — WHAT YOU GET</span><span class="snum">11 / 13</span>
+  <div class="eyebrow">// EVERYTHING IN THE ENGINE</div>
+  <h2>THE STACK.</h2>
+  <div class="stackl">
+    <div class="sitem"><span class="tick">▸</span><span class="what">Full athlete profile — the hard skills</span><span class="why">FILM · MEASURABLES · ACADEMICS — STRUCTURED THE WAY COACHES READ IT</span></div>
+    <div class="sitem"><span class="tick">▸</span><span class="what">The soft-skill layer — collected by our agents</span><span class="why">COACHABILITY · GAME IQ · ADVERSITY RESPONSE — WHAT COACHES DECIDE ON</span></div>
+    <div class="sitem"><span class="tick">▸</span><span class="what">Intelligence-matched daily outreach</span><span class="why">EVERY DIVISION YOUR KID TARGETS — D1 THROUGH JUCO</span></div>
+    <div class="sitem"><span class="tick">▸</span><span class="what">Every coach answer returned by name</span><span class="why">THE YESES AND THE NOS — IN WRITING, ALWAYS</span></div>
+    <div class="sitem"><span class="tick">▸</span><span class="what">Live engagement dashboard</span><span class="why">SEE WHAT'S MOVING WHILE IT MOVES</span></div>
+    <div class="sitem"><span class="tick">▸</span><span class="what">Season recap your family owns</span><span class="why">THE WHOLE CYCLE, ON THE RECORD</span></div>
+  </div>
+  <div class="mono-note">FOR SCALE: ONE SHOWCASE WEEKEND RUNS $400–700 WITH TRAVEL. A RECRUITING COUNSELOR RUNS $2,000–5,000 — AND MAILS THE SAME BLAST EVERYONE ELSE MAILS.</div>
+</section>
+
+<!-- 12 · TWO WAYS IN -->
+<section class="slide"><span class="beat">// 0:48 — THE DECISION</span><span class="snum">12 / 13</span>
+  <div class="eyebrow">// TWO WAYS IN</div>
+  <h2>PICK YOUR DOOR.</h2>
+  <div class="ways">
+    <div class="way primary"><div class="corner-br"></div>
+      <div class="wtag">// THE ENGINE</div>
+      <div class="price">$249</div>
+      <div class="per">PER SEASON · MAPS TO THE REAL RECRUITING CALENDAR · CANCEL ANYTIME</div>
+      <p>The full stack, running every day of the season. Renew when the next season opens — or don't. No multi-year contract, ever.</p>
+    </div>
+    <div class="way">
+      <div class="wtag">// ONE CYCLE</div>
+      <div class="price">$199</div>
+      <div class="per">ONE TIME · A SINGLE OUTREACH CYCLE</div>
+      <p>See the answers come back with your own eyes. Then decide.</p>
+    </div>
+  </div>
+  <p class="sub"><b>What we will never promise: a roster spot.</b> Nobody can — and anyone who does is lying to you. We promise answers. Answers are enough.</p>
+</section>
+
+<!-- 13 · URGENCY + CLOSE -->
+<section class="slide"><span class="beat">// 0:52 — THE CLOSE</span><span class="snum">13 / 13</span>
+  <div class="eyebrow">// THE CALENDAR IS REAL</div>
+  <h2>OUTREACH STARTED NOW LANDS<br>WHILE BOARDS ARE OPEN.</h2>
+  <p class="sub">Coaches build boards on a cycle, not on your schedule. Outreach that starts today is read while rosters are forming; outreach that starts in three months arrives while doors are closing. That's not pressure — that's the calendar.</p>
+  <div class="core"><div class="corner-br"></div>
+    <div class="core-name">SOMEWHERE THIS SEASON A COACH WILL TELL YOUR KID NO — AND IT WILL BE THE MOST USEFUL SENTENCE THEY'VE HEARD IN TWO YEARS. ANOTHER WILL SAY: <span class="rd">INTERESTED.</span></div>
+    <div class="core-sub">YOU'LL HAVE BOTH. IN WRITING. BY NAME. THAT'S THE CHANNEL.</div>
+  </div>
+  <a class="btn" href="https://www.gorfx.app">STEP INTO THE CHANNEL</a>
+  <div class="brandline" style="justify-content:flex-start">
+    <div class="brand-name">RFX<span>.</span></div>
+    <div class="brand-url">gorfx.app // EVERY DIVISION · EVERY ANSWER</div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('keydown', function (e) {
+    var slides = document.querySelectorAll('.slide');
+    var idx = 0, y = window.scrollY + 10;
+    slides.forEach(function (s, n) { if (s.offsetTop <= y) idx = n; });
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault();
+      var next = slides[Math.min(idx + 1, slides.length - 1)];
+      if (next) next.scrollIntoView({ behavior: 'smooth' }); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault();
+      var prev = slides[Math.max(idx - 1, 0)];
+      if (prev) prev.scrollIntoView({ behavior: 'smooth' }); }
+  });
+</script>
+</body>
+</html>
