@@ -317,7 +317,7 @@ electric system; what it borrows is **the information architecture and the refus
 | Route | Job |
 |---|---|
 | `/` | The still front door. One silent loop, the wordmark, one line, one button. |
-| `/method` | **First-class, and the biggest page on the site.** The named playing model, the curriculum by age band, coaching principles, session structure, the assessment framework. This is what justifies the price and what no local competitor can fake. |
+| `/method` | **First-class, and the biggest page on the site.** The named playing model, the curriculum by age band, coaching principles, session structure, the assessment framework. This is what justifies the price and what no local competitor can fake. **Written out in §11.** |
 | `/pathway` | **New.** Graduates and where they went — school, division, year, minutes. The European proof format, and the honest replacement for a trophy wall. |
 | `/players` | The recruiting engine. Film, verified data, coach contact. Still the product. |
 | `/facility` | The mountain as infrastructure — altitude, surfaces, hours, winter. |
@@ -489,7 +489,7 @@ losing a tournament, because it proves the whole thing was a costume.
 - [ ] Start posting 4×/week from banked assets
 
 **Weeks 7–12 — Build the funnel**
-- [ ] `/players`, `/proof`, `/method` live; player pages DB-driven
+- [ ] `/method` (from §11), `/pathway`, `/players`, `/proof` live; player and graduate pages DB-driven
 - [ ] Player asset packs + posting protocol distributed to the roster
 - [ ] First merch drop, timed to a result
 - [ ] Tryout/trial funnel instrumented end to end
@@ -538,7 +538,134 @@ Five revenue lines, ordered by margin and by how much each reinforces the brand:
 
 ---
 
-## 11. Open decisions I need from you
+## 11. The Method
+
+The content behind `/method` — the page §5 calls the biggest on the site. Academies publish
+their methodology; clubs publish their tournament schedule. This is the difference, and it's
+what a parent is actually buying.
+
+Opinionated and specific on purpose. Overrule any of it — but **pick one model and hold it
+across every age group**, because coherence is the whole point. A methodology that changes by
+coach or by season isn't a methodology.
+
+### 11.1 The playing model
+
+**Positional play, built on the altitude advantage.** The model and the location reinforce
+each other, which is what makes it defensible rather than borrowed.
+
+Four commitments, held at every age:
+
+1. **Build from the goalkeeper. Every time, including when it's stupid.** Losing U13 games to
+   build the habit is the trade, and it's made deliberately. Parents are told this in advance,
+   in writing, before the season, as part of the family agreement in §11.4.
+2. **Play through the lines, not around them.** The ball goes into central midfield even when
+   the wing is safer. Receiving under pressure in traffic is the single most transferable skill
+   to the college game, and the only way to train it is to keep putting players in traffic.
+3. **Counter-press on loss — five seconds, every player.** This is the altitude commitment:
+   a side conditioned at 7,000–9,000 ft can sustain a pressing model for eighty minutes that a
+   flatland opponent cannot hold past sixty. The physiology is the tactic.
+4. **Win your duel.** 1v1 in both directions, trained weekly and never "when there's time."
+   Everything above collapses without it.
+
+**What this model costs, stated honestly:** more goals conceded at U12–U14 than a direct,
+safety-first team would concede, and some weekends that look bad on a sideline. That's the
+bill for players who can still play at nineteen. The receipts page (§4.3) is how the program
+proves the trade paid — not by hiding the scoreline.
+
+### 11.2 Curriculum by age band
+
+| Band | Phase | Focus | What is *not* done |
+|---|---|---|---|
+| **U9–U11** | Foundation | Ball mastery, 1v1 both directions, small-sided only, every player everywhere | No fixed positions, no results recorded, no travel tournaments |
+| **U12–U14** | Formation | Positional structure introduced, receiving under pressure, scanning before the ball arrives, weak foot to parity | No specialisation, no early physical selection |
+| **U15–U16** | Application | Full model, game intelligence, strength and speed development begins, position emerges from evidence | No playing a kid out of position to win a weekend |
+| **U17–U19** | Transition | College-ready: set pieces, game management, video literacy, own recruiting film and outreach | No new technical foundation — that window has closed |
+
+The bands exist to stop the most common youth-soccer mistake: **selecting for early physical
+maturity and calling it talent.** A late-developing 13-year-old who can receive under pressure
+is worth more at nineteen than an early-developing one who can only run past people, and the
+curriculum is built so the program can afford to wait for him.
+
+### 11.3 Session architecture
+
+Every session has the same five-part shape, at every age, so players arrive knowing the rhythm
+and coaches stop improvising:
+
+1. **Arrival ball work** — no lines, no waiting, a ball each from the moment boots are on
+2. **Rondo** — the daily non-negotiable; the model in miniature
+3. **Positional game** — the day's tactical theme in a constrained space
+4. **Duel** — 1v1 or 2v2, competitive, scored
+5. **Game** — free play, minimal coaching
+
+Standards that make it real and are worth publishing:
+
+- **Minimum 70% of session time with a ball at feet.** Measure it; it's the number that
+  separates development from activity.
+- **No laps, no lines, no lectures.** Conditioning comes from the game, not from running.
+- **Sessions are planned a week ahead and written down.** A coach who improvises is not
+  running a curriculum.
+
+### 11.4 The silent sideline
+
+**Coaches do not shout instructions during matches.** Team shape and the week's theme are
+settled in training; the game is the player's to solve. Coaching happens at half time and on
+Monday.
+
+This is the brand rule applied to the touchline, and it is not a gimmick — it's the single
+biggest lever on game intelligence. A player who is joysticked for ten years arrives at
+college unable to make a decision without looking sideways. It is also the most visible
+differentiator the program has: every opposing parent will notice a coaching staff that
+doesn't scream, and will not be able to stop talking about it.
+
+It applies to parents too, and that goes in the family agreement: **encouragement yes,
+instruction no.** Two voices coaching a fourteen-year-old mid-game is worse than none.
+
+### 11.5 Assessment
+
+Four axes, reviewed every term, written up and sent to the family:
+
+| Axis | What's assessed |
+|---|---|
+| **Technical** | First touch under pressure, both feet, striking, 1v1 |
+| **Tactical** | Scanning, decision speed, positional discipline, press triggers |
+| **Physical** | Speed, robustness, and *growth status* — tracked so late developers aren't written off |
+| **Character** | Trainability, response to being beaten, standards without supervision |
+
+No single overall grade and no ranking of players against each other. Rankings are exactly the
+claim-making the brand refuses, and they wreck a locker room.
+
+This is §4.3 applied to development: **the program counts things and shows its working.** It's
+also the strongest retention tool available — a family holding four terms of written evidence
+is a family that can see what they're paying for.
+
+### 11.6 The mountain: altitude and winter
+
+The two questions every parent asks, answered on the page rather than on the phone.
+
+**Altitude** is a genuine, unfakeable edge — and it needs managing, not just boasting about.
+Arriving players need a documented acclimatisation window before full-load training; hydration
+and iron status matter more here than at sea level; and travel to sea-level fixtures needs its
+own protocol, because the advantage runs the other way for the first day.
+
+**Winter** is the real operational question in a mountain town, and vagueness here loses
+families. The page should state plainly: the indoor facility or arrangement, the November–March
+weekly schedule, what happens to sessions when the pitch is unusable, and what the futsal
+block is and why it's there — not as a fallback, but because it's the best technical
+environment of the year.
+
+### 11.7 Coach standards
+
+Published, because it's what parents are really evaluating and almost nobody states it:
+
+- Licences held, by name and by coach
+- Ratio: coaches per player at each age band
+- SafeSport and background-check status (§7)
+- The rule that every coach follows the same curriculum and the same silent-sideline standard,
+  and that sessions are written down a week ahead
+
+---
+
+## 12. Open decisions I need from you
 
 1. **Color assignment** — invert (boys Siren / girls Voltage) or safe (boys Voltage /
    girls Siren)? Blocks the kit order.
