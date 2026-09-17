@@ -152,25 +152,31 @@ Black is the constant. The electric accent is the program identifier.
 |---|---|---|---|
 | Base | Void | `#0A0A0A` | Everything. 80%+ of every surface. |
 | Paper | Static | `#F4F3EF` | Type on black, occasional inverse |
-| Accent A | Voltage | `#CBFF00` | Acid lime — highest-contrast color that exists on black |
-| Accent B | Siren | `#FF0F7B` | Electric magenta |
-| Utility | Signal | `#00E5FF` | Cyan — data, links, live states only. Never a program color. |
+| Program | Voltage | `#CBFF00` | **Girls.** Acid lime — the highest-contrast color that exists on black |
+| Program | Azure | `#00A2FF` | **Boys.** Electric blue |
+| Reserve | Siren | `#FF0F7B` | Electric magenta. Merch drops, camps, the adult-facing brand. **Never a program color, never on kit.** |
 
-**Recommendation on assignment: invert the default. Boys wear Siren. Girls wear Voltage.**
+**The assignment is settled: girls wear Voltage, boys wear Azure.** Decided, not proposed —
+it was the one call blocking the kit order.
 
-A boys' team in the mountains walking out in black and electric magenta is the loudest
-possible silent middle finger — it dares the sideline to say something, and nobody will,
-because the team is good. It costs nothing and it is the single most talked-about decision
-the program can make in year one.
+**Why this blue and not a deeper one.** A true royal-electric blue (`#1A5CFF` and darker)
+looks great on a screenshot and then loses the argument on black: it carries far less
+luminance than the lime, so the boys' kit would read quieter than the girls' at distance, on
+a favicon, under stadium light, and stitched into a sleeve patch. Azure sits close enough to
+Voltage in brightness that both sides punch equally hard. If it ever needs to go deeper for
+print, go down in steps and re-check it on black at 16px before committing.
 
-*Risk, stated honestly:* 15-year-old boys and their fathers may resist before the first
-kit arrives, and you'll absorb some sideline noise. Two mitigations: (1) never explain it —
-explaining kills it; (2) if the room won't hold, the safe assignment is Voltage for boys,
-Siren for girls, and the brand still works. Decide this before any kit order, because it's
-irreversible for a season.
+**Siren is kept but demoted.** It's too good a color to throw away, and it gives the brand
+somewhere to go that isn't a program — a merch drop, a summer camp, the adult-facing side.
+It just never appears on a shirt or on `/boys` and `/girls`.
+
+**There is no utility color.** The palette previously reserved a cyan for data and links;
+with Azure in the system that cyan now reads as the boys' kit, so it's gone. Data, links and
+live states take the active program accent. Void, Static, two program accents, one reserve —
+that's the whole system, and a brand built on restraint shouldn't need more.
 
 **Color rules**
-- One accent per surface. Never lime and magenta together — that's a video game logo.
+- One accent per surface. Never two accents together — that's a video game logo.
 - Accent is ≤10% of any layout. It's a highlighter, not a paint.
 - Boys' and girls' content never appears in the same graphic. Two feeds' worth of identity,
   one voice.
@@ -667,13 +673,20 @@ Published, because it's what parents are really evaluating and almost nobody sta
 
 ## 12. Open decisions I need from you
 
-1. **Color assignment** — invert (boys Siren / girls Voltage) or safe (boys Voltage /
-   girls Siren)? Blocks the kit order.
-2. **Town and facility** — needed for local SEO, Google Business Profile, and location pages.
-3. **Age bands and roster size** in year one — changes cadence and the player-network math.
-4. **Competitive pathway** (ECNL / MLS Next / state league / independent) — changes the
+1. **Town and facility** — needed for local SEO, Google Business Profile, and location pages.
+   The single biggest unlock left; everything local is blocked on it.
+2. **Winter protocol** (§11.6) — the indoor arrangement, the November–March schedule, and the
+   futsal block. Left as a section to fill rather than invented, and it's the question
+   mountain-town families ask first.
+3. **The playing model** (§11.1) — committed to one because an academy whose model changes by
+   coach doesn't have one, but it has to become the coach's own to survive a season.
+4. **Age bands and roster size** in year one — changes cadence and the player-network math.
+5. **Competitive pathway** (ECNL / MLS Next / state league / independent) — changes the
    recruiting story and which searches to target.
-5. **Year-one priority:** fill the roster, or sell exposure services to players already
+6. **Year-one priority:** fill the roster, or sell exposure services to players already
    elsewhere? Both are supported above, but it changes what ships first.
-6. **Who holds the camera?** Everything in §6 assumes one person is accountable for capture
+7. **Who holds the camera?** Everything in §6 assumes one person is accountable for capture
    every match day. If that person doesn't exist, hiring them is the first spend.
+
+**Settled since this list was written:** the color assignment — girls wear Voltage, boys wear
+Azure (§3.2). That was the one item blocking the kit order.
