@@ -336,4 +336,22 @@ check(["club_athlete_add", "club_athlete_invite", "club_athlete_status", "club_p
 check(exr.rows.length === (await jamie("roster")).athletes.length && exr.rows.find((r) => r.Athlete === "Kai Thompson")["On VEKT"] === "Waiting on family", "roster export covers every player with where they stand");
 }
 
+// ---- Teammate invites ----
+{
+  const { data: jordan } = await admin.from("vekt_athletes").select("manage_token, parent_token, ref_code, id").eq("id", "30000000-0000-4000-8000-000000000001").single();
+  const before = await post("vekt-invites", { action: "me_load", token: jordan.manage_token });
+  check(before.share.url.endsWith(`/join?ref=${jordan.ref_code}`) && before.share.joined === 0 && !("ref_code" in before.athlete), "athlete gets a personal invite link, and the code itself isn't exposed as profile data", before.share);
+  const j = await post("vekt-invites", { action: "join", ref: jordan.ref_code, is_minor: true, athlete: { full_name: "Remy Ortiz", sport: "soccer", grad_year: 2029 }, parent: { name: "Lena Ortiz", email: "lena.ortiz@example.com" } });
+  const { data: remy } = await admin.from("vekt_athletes").select("referred_by, parent_token").eq("parent_email", "lena.ortiz@example.com").single();
+  check(j.status === "check_email" && remy.referred_by === jordan.id, "a profile started from the link records who shared it");
+  check((await post("vekt-invites", { action: "me_load", token: jordan.manage_token })).share.joined === 0, "a teammate doesn't count until their parent approves");
+  await post("vekt-invites", { action: "parent_save", token: remy.parent_token, approve: true, feed_visible: false });
+  const after = await post("vekt-invites", { action: "me_load", token: jordan.manage_token });
+  check(after.share.joined === 1 && !JSON.stringify(after).includes("Remy"), "after approval it shows as a count only, never a name", after.share);
+  await post("vekt-invites", { action: "join", ref: "zzzzzzzz", is_minor: false, athlete: { full_name: "No Ref", sport: "soccer", athlete_email: "noref@example.com" } });
+  const { data: noref } = await admin.from("vekt_athletes").select("referred_by").eq("athlete_email", "noref@example.com").single();
+  check(noref.referred_by === null, "a bad invite code is ignored");
+  check((await post("vekt-invites", { action: "parent_load", token: jordan.parent_token })).share.url.includes(jordan.ref_code), "parents get the same link to share with other team parents");
+}
+
 console.log(`\n${passed} checks passed`);

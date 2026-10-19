@@ -101,6 +101,19 @@ an athlete 18+ decides themselves. The club never sees Fit Reads. Coach activity
 
 Demo sign-in (local only): `jamie.porter@lakeshorefc.example.com` / `demo-password-1` (Lakeshore FC is fictional).
 
+## Sharing and teammate invites
+
+One share button (`coach/src/components/ShareButton.tsx`) shows up across the app. On phones it opens the
+native share sheet; elsewhere it offers copy link, text and email. People send it from their own phone or
+inbox. VEKT never messages anyone's contacts.
+
+- **Athlete profile** (`/me`): "Invite teammates", in its own section and as a floating button. The link is
+  `/join?ref=<code>`. A profile started from it records who shared it (`vekt_athletes.referred_by`). The
+  athlete sees only a count of teammates who joined, and a teammate counts once their own profile is
+  approved (by a parent if under 18).
+- **Parent page**: "Share with parents", using the same link.
+- **Coach and club sidebars**: "Share with a coach" / "Share with a director".
+
 ## Run it locally
 
 ```bash

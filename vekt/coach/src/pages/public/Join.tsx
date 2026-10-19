@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { SPORTS } from "../../../../supabase/functions/_shared/sports.ts";
 import { publicApi } from "../../lib/publicApi";
 import { Button, ErrorNote, Field, Input, Select, Segmented } from "../../components/ui";
@@ -7,6 +8,8 @@ import { PublicFrame } from "./PublicFrame";
 // Start a VEKT profile without an invite: underclassmen and early starters.
 // Under 18, a parent's email is required and nothing is visible until they approve.
 export default function Join() {
+  const [params] = useSearchParams();
+  const ref = (params.get("ref") || "").toLowerCase().replace(/[^0-9a-f]/g, "").slice(0, 8);
   const [minor, setMinor] = useState<"yes" | "no">("yes");
   const [f, setF] = useState({ full_name: "", sport: "soccer", team_gender: "", grad_year: "", state: "", club: "", athlete_email: "", parent_name: "", parent_email: "" });
   const [busy, setBusy] = useState(false);
@@ -16,7 +19,7 @@ export default function Join() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setBusy(true); setError(null);
     try {
-      await publicApi("join", "", { is_minor: minor === "yes", athlete: { full_name: f.full_name, sport: f.sport, team_gender: f.team_gender, grad_year: f.grad_year, state: f.state, club: f.club, athlete_email: f.athlete_email }, parent: { name: f.parent_name, email: f.parent_email } });
+      await publicApi("join", "", { ref, is_minor: minor === "yes", athlete: { full_name: f.full_name, sport: f.sport, team_gender: f.team_gender, grad_year: f.grad_year, state: f.state, club: f.club, athlete_email: f.athlete_email }, parent: { name: f.parent_name, email: f.parent_email } });
       setDone(true);
     } catch (err) { setError((err as Error).message); } finally { setBusy(false); }
   };
@@ -28,7 +31,7 @@ export default function Join() {
   );
   return (
     <PublicFrame>
-      <div className="vekt-label mb-4">Start your VEKT profile</div>
+      <div className="vekt-label mb-4">{ref ? "A teammate invited you" : "Start your VEKT profile"}</div>
       <h1 className="vekt-display text-[44px] sm:text-[64px]">Your game, your profile</h1>
       <p className="text-white/80 mt-5 font-light max-w-2xl">One profile you control: positions, the systems you play, honest skills, your numbers and video. You choose which college programs see it. Free, always.</p>
       <form onSubmit={submit} className="mt-10 flex flex-col gap-5">

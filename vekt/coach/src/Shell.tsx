@@ -5,6 +5,7 @@ import { configured } from "./lib/supabase";
 import { useSession } from "./session";
 import { Spinner } from "./components/ui";
 import { programName, roleLabel } from "./lib/format";
+import { ShareButton } from "./components/ShareButton";
 
 export function Frame({ children }: { children: React.ReactNode }) {
   return (
@@ -81,6 +82,8 @@ function Layout() {
             </NavLink>
           ))}
         </nav>
+        <div className="px-6 pb-5"><ShareButton up url={`${window.location.origin}/login`} title="VEKT for your recruiting" label="Share with a coach"
+          text="We use VEKT to see how recruits fit our program before we offer: plain-English Fit Reads, side-by-sides and film. Worth a look:" /></div>
         <div className="px-6 py-6 border-t border-white/[0.08]">
           <div className="text-sm text-white">{me.account.first_name} {me.account.last_name}</div>
           <div className="text-xs text-vekt-grey mt-0.5">{me.account.title || roleLabel[me.account.role]}</div>

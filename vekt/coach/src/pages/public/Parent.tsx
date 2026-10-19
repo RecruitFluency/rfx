@@ -3,9 +3,10 @@ import { useParams } from "react-router-dom";
 import { publicApi } from "../../lib/publicApi";
 import { Button, ErrorNote, Spinner, Toggle } from "../../components/ui";
 import { PublicFrame } from "./PublicFrame";
+import { ShareButton } from "../../components/ShareButton";
 
 interface ClubLink { id: string; club: string; allowed: boolean; text: string }
-interface Load { clubs: ClubLink[]; athlete_first_name: string; sport: string; grad_year: number | null; parent_approved_at: string | null; feed_visible: boolean; consent_text: string; feed_text: string }
+interface Load { share: { url: string; joined: number }; clubs: ClubLink[]; athlete_first_name: string; sport: string; grad_year: number | null; parent_approved_at: string | null; feed_visible: boolean; consent_text: string; feed_text: string }
 
 // Parent approval: the profile itself, and separately, the coach-only film feed.
 export default function Parent() {
@@ -45,6 +46,13 @@ export default function Parent() {
         {error && <ErrorNote message={error} />}
         {saved && <p className="text-sm text-white">Saved. {feed ? "Their videos now show in the coach feed." : "Their videos stay private."}</p>}
         <Button variant="primary" className="self-start" onClick={save} loading={busy} disabled={!approve}>Save</Button>
+      </div>
+      <div className="mt-14 pt-8 border-t border-white/[0.1] flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div className="vekt-label mb-2">Other team parents</div>
+          <p className="text-sm text-white/80 max-w-md">Share VEKT with parents on {d.athlete_first_name}'s team. Each family sets up its own profile and makes its own choices.</p>
+        </div>
+        <ShareButton url={d.share.url} title="VEKT for our team" text="We're using VEKT for college recruiting: a free profile the family controls, shared only with programs you say yes to." label="Share with parents" />
       </div>
     </PublicFrame>
   );

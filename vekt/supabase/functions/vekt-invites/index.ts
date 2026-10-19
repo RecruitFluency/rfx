@@ -612,6 +612,7 @@ async function join(supabase: any, body: any) {
       state: /^[A-Za-z]{2}$/.test(s(a.state)) ? s(a.state).toUpperCase() : null, club: opt(a.club, 120),
       athlete_email: athleteEmail, parent_name: opt(body.parent?.name, 120), parent_email: parentEmail, is_minor: minor,
       parent_approved_at: minor ? null : new Date().toISOString(),
+      referred_by: await referrer(supabase, body.ref),
     }).select("*");
     if (error) return json({ error: "Couldn't start the profile. Please try again." }, 400);
     athlete = data[0];
@@ -675,11 +676,25 @@ const FEED_CONSENT = "I am the parent or legal guardian. I approve this VEKT pro
 const clubText = (club: string) => `I agree that ${club} can see which college programs engage with this VEKT profile: profile views, film plays, watch-list saves, invites and Interested replies. The club doesn't see Fit Reads or our contact details shared with programs. I can turn this off at any time.`;
 const FEED_TEXT = "I agree that verified college coaches using VEKT may see my child's name, sport, grad year, position, club, state, profile and video links in a coach-only feed, and may save them to a watch list. Coaches cannot see our contact details there. I can turn this off at any time.";
 
+// Teammate invites: a short code per athlete, shown back only as a count.
+async function referrer(supabase: any, ref: unknown) {
+  const code = s(ref, 16).toLowerCase();
+  if (!/^[0-9a-f]{8}$/.test(code)) return null;
+  const { data } = await supabase.from("vekt_athletes").select("id").eq("ref_code", code).limit(1);
+  return data?.[0]?.id ?? null;
+}
+async function shareInfo(supabase: any, cfg: Record<string, string>, a: { id: string; ref_code: string | null }) {
+  const base = cfg.profile_base_url || cfg.invite_base_url || "";
+  const { count } = await supabase.from("vekt_athletes").select("id", { count: "exact", head: true }).eq("referred_by", a.id).not("parent_approved_at", "is", null);
+  return { url: a.ref_code ? `${base}/join?ref=${a.ref_code}` : `${base}/join`, joined: count ?? 0 };
+}
+
 async function parentLoad(supabase: any, token: string) {
-  const { data } = await supabase.from("vekt_athletes").select("id, full_name, sport, grad_year, parent_name, parent_approved_at, feed_visible").eq("parent_token", token).limit(1);
+  const { data } = await supabase.from("vekt_athletes").select("id, ref_code, full_name, sport, grad_year, parent_name, parent_approved_at, feed_visible").eq("parent_token", token).limit(1);
   if (!data?.[0]) return json({ error: "This link isn't valid." }, 404);
-  const { id, ...a } = data[0];
-  return json({ ...a, athlete_first_name: firstName(a.full_name), consent_text: FEED_CONSENT, feed_text: FEED_TEXT, clubs: await familyClubLinks(supabase, id) });
+  const { id, ref_code, ...a } = data[0];
+  return json({ ...a, athlete_first_name: firstName(a.full_name), consent_text: FEED_CONSENT, feed_text: FEED_TEXT, clubs: await familyClubLinks(supabase, id),
+    share: await shareInfo(supabase, await config(supabase), { id, ref_code }) });
 }
 
 async function parentSave(supabase: any, token: string, body: any) {
@@ -712,7 +727,7 @@ async function saveClubLinks(supabase: any, athleteId: string, choices: unknown)
 }
 
 async function meLoad(supabase: any, token: string) {
-  const { data } = await supabase.from("vekt_athletes").select(ATHLETE_PUBLIC + ", athlete_email, parent_email").eq("manage_token", token).limit(1);
+  const { data } = await supabase.from("vekt_athletes").select(ATHLETE_PUBLIC + ", athlete_email, parent_email, ref_code").eq("manage_token", token).limit(1);
   const a = data?.[0];
   if (!a) return json({ error: "This link isn't valid." }, 404);
   const { data: videos } = await supabase.from("athlete_videos").select("kind, url, title, recorded_on, notes").eq("athlete_id", a.id).order("sort_order");
@@ -737,8 +752,9 @@ async function meLoad(supabase: any, token: string) {
       pending.push({ recruit_id: r.id, program: comp?.program_name ?? "A program" });
     }
   }
-  const { athlete_email: _e, parent_email: _p, ...pub } = a;
-  return json({ athlete: { ...pub, first_name: firstName(a.full_name) }, videos: videos || [], programs, pending, clubs: await familyClubLinks(supabase, a.id) });
+  const { athlete_email: _e, parent_email: _p, ref_code: _r, ...pub } = a;
+  return json({ athlete: { ...pub, first_name: firstName(a.full_name) }, videos: videos || [], programs, pending, clubs: await familyClubLinks(supabase, a.id),
+    share: await shareInfo(supabase, await config(supabase), a) });
 }
 
 async function meSave(supabase: any, token: string, body: any) {

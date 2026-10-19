@@ -7,6 +7,7 @@ import { ProfileForm, Section, type ProfileValue } from "../../components/Profil
 import { VideoLinks, type VideoValue } from "../../components/VideoLinks";
 import { PublicFrame, SaveBar } from "./PublicFrame";
 import { date } from "../../lib/format";
+import { ShareButton } from "../../components/ShareButton";
 
 interface Load {
   athlete: { id: string; first_name: string; full_name: string; sport: string; grad_year: number | null; state: string | null; club: string | null; is_minor: boolean; parent_approved_at: string | null; feed_visible: boolean; profile: ProfileValue };
@@ -14,7 +15,10 @@ interface Load {
   programs: { recruit_id: string; program: string; status: "shared" | "declined"; last_synced_at: string | null }[];
   pending: { recruit_id: string; program: string }[];
   clubs: { id: string; club: string; allowed: boolean; text: string }[];
+  share: { url: string; joined: number };
 }
+
+const shareText = (sport: string) => `I'm on VEKT, a free ${sport.toLowerCase()} recruiting profile that shows college coaches how you actually fit their program. Start yours:`;
 
 // The athlete's own profile: one place to update, shared program by program.
 export default function Me() {
@@ -99,6 +103,16 @@ export default function Me() {
         </div>
       </Section>
 
+      <Section title="Bring your teammates">
+        <div className="flex flex-wrap items-center justify-between gap-4 border border-white/[0.16] rounded p-5">
+          <div>
+            <p className="text-white">{d.share.joined ? `${d.share.joined} ${d.share.joined === 1 ? "teammate has" : "teammates have"} joined from your link.` : "Know someone who should be on VEKT?"}</p>
+            <p className="text-sm text-vekt-grey mt-1">Send your link. Each teammate builds their own profile, and a parent approves it if they're under 18. They never see yours.</p>
+          </div>
+          <ShareButton url={d.share.url} title="Join me on VEKT" text={shareText(sport.label)} label="Invite teammates" />
+        </div>
+      </Section>
+
       <Section title="The basics">
         <div className="grid sm:grid-cols-3 gap-5">
           <Field label="Grad year"><Input inputMode="numeric" value={info.grad_year} onChange={(e) => setInfo((x) => ({ ...x, grad_year: e.target.value }))} /></Field>
@@ -111,6 +125,7 @@ export default function Me() {
       <ProfileForm sport={sport} value={value} onChange={setValue} mode="athlete" name={a.first_name} />
 
       {shared.length > 0 && <div className="mt-10"><Toggle checked={updateAll} onChange={setUpdateAll} label={`Send updates to all ${shared.length} ${shared.length === 1 ? "program" : "programs"} you share with`} hint="Turn off to keep this change to yourself for now." /></div>}
+      <ShareButton floating url={d.share.url} title="Join me on VEKT" text={shareText(sport.label)} label="Invite teammates" className="hidden sm:block" />
       <SaveBar onSave={() => save(false)} onSubmit={() => save(true)} busy={busy} note={note} submitLabel={shared.length && updateAll ? "Save and update programs" : "Save profile"} />
     </PublicFrame>
   );

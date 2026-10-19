@@ -4,6 +4,7 @@ import { NavLink, Navigate, Outlet, useLocation } from "react-router-dom";
 import { LogOut, Menu, X } from "lucide-react";
 import { useSession } from "../session";
 import { Spinner } from "../components/ui";
+import { ShareButton } from "../components/ShareButton";
 
 export default function ClubShell() {
   const { loading, session, club, signOut } = useSession();
@@ -41,6 +42,8 @@ export default function ClubShell() {
             </NavLink>
           ))}
         </nav>
+        <div className="px-6 pb-5"><ShareButton up url={`${window.location.origin}/login`} title="VEKT for club directors" label="Share with a director"
+          text="Our club uses VEKT to see where every player stands with college programs, and which programs are engaging. Worth a look:" /></div>
         <div className="px-6 py-6 border-t border-white/[0.08]">
           <div className="text-sm text-white">{club.account.first_name} {club.account.last_name}</div>
           <div className="text-xs text-vekt-grey mt-0.5">{club.account.role === "director" ? "Club director" : "Club coach"}</div>
