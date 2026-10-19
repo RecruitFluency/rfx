@@ -6,7 +6,8 @@
     "test": "vitest run",
     "db:start": "supabase start -x studio,imgproxy,logflare,vector,storage-api,realtime,postgres-meta,supavisor",
     "db:reset": "supabase db reset",
-    "test:e2e": "node scripts/e2e.mjs"
+    "test:e2e": "node scripts/e2e.mjs",
+    "functions": "bash scripts/functions.sh"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.110.7",

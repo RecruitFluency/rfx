@@ -6,10 +6,20 @@
 //   start_load                         athlete or club coach opens their conversation (invite_token / club_invite_token)
 // Internal actions (header x-vekt-internal = service role key; only our own functions have it):
 //   prepare        turn the coach's spoken recruit list into rows, email the coach the confirm link
-//   release_due    send held invites whose NCAA contact date has now passed
+//   release_due    send held invites whose NCAA contact date has now passed, then dispatch
+//   dispatch       send queued messages that are due (run on a schedule, e.g. every 5 minutes)
+//   send_reminders nudge recruits and club coaches who haven't started (program reminder_days)
+//   invite_recruits  dashboard: check contact rules and invite recruits on a program's board
+//   send_decision  dashboard: tell an athlete (parent copied) the staff is interested
 //
-// Nothing is sent while app_config.invites_live != 'true' (logged as dry_run instead).
+// Every message goes through vekt_outbox: texts wait for quiet hours in the
+// recipient's time zone, opted-out numbers and emails are blocked, GHL failures
+// retry, and each send's GHL message id is kept so delivery webhooks can be
+// matched. Nothing is sent while app_config.invites_live != 'true' (dry_run).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createGhlClient, GhlError } from "../_shared/ghl.ts";
+import { splitName, suppressionKey } from "../_shared/format.ts";
+import { nextSendTime, zoneForState } from "../_shared/quiet.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -74,35 +84,13 @@ async function contactCheck(supabase: any, division: string, sport: string, gend
     : { status: "hold", date: iso, text: `${pick.rule_text}. Contact opens ${iso}.` };
 }
 
-// ---- Sending (GoHighLevel API v2) ---------------------------------------------
-const GHL = "https://services.leadconnectorhq.com";
-async function ghlUpsert(cfg: Record<string, string>, c: { email?: string | null; phone?: string | null; name: string; tags: string[] }) {
-  const token = Deno.env.get("GHL_PIT") || "";
-  if (!token || !cfg.ghl_location_id) throw new Error("GHL_PIT secret or ghl_location_id config missing");
-  const [first, ...rest] = c.name.split(/\s+/);
-  const res = await fetch(`${GHL}/contacts/upsert`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}`, Version: "2021-07-28", "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ locationId: cfg.ghl_location_id, email: c.email || undefined, phone: c.phone || undefined, firstName: first, lastName: rest.join(" ") || undefined, tags: c.tags, source: "Vekt invite" }),
-  });
-  if (!res.ok) throw new Error(`GHL upsert ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  const d = await res.json();
-  return d.contact?.id || d.id;
-}
-async function ghlSend(cfg: Record<string, string>, contactId: string, m: { type: "Email" | "SMS"; subject?: string; html?: string; text?: string }) {
-  const token = Deno.env.get("GHL_PIT") || "";
-  const body: Record<string, unknown> = { type: m.type, contactId };
-  if (m.type === "Email") { body.subject = m.subject; body.html = m.html; if (cfg.ghl_email_from) body.emailFrom = cfg.ghl_email_from; }
-  else body.message = m.text;
-  const res = await fetch(`${GHL}/conversations/messages`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}`, Version: "2021-04-15", "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(`GHL send ${res.status}: ${(await res.text()).slice(0, 200)}`);
-}
+// ---- Sending (GoHighLevel API v2, through the outbox) ---------------------------
+const MAX_ATTEMPTS = 3;
 
-type Msg = { role: string; name: string; email: string | null; phone: string | null; smsAllowed: boolean; subject: string; lines: string[]; cta: string; url: string; sms: string };
+type Msg = {
+  role: string; name: string; email: string | null; phone: string | null; smsAllowed: boolean; subject: string; lines: string[]; cta: string; url: string; sms: string;
+  kind?: "invite" | "reminder" | "decision" | "coach"; state?: string | null; notBefore?: string | null;
+};
 function emailHtml(m: Msg) {
   const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
   return `<div style="background:#0a0a0a;padding:32px 0;font-family:Helvetica,Arial,sans-serif">
@@ -114,30 +102,99 @@ ${m.lines.map((l) => `<p style="font-size:16px;line-height:1.55">${esc(l)}</p>`)
 <p style="font-size:13px;color:#9a9a9a;line-height:1.5">Vekt is a recruiting fit tool. Your answers are private and are only shared with the program that invited you and your family. Reply STOP to texts to opt out.</p>
 </div></div>`;
 }
+const smsBody = (t: string) => (/reply stop/i.test(t) ? t : `${t} Reply STOP to opt out.`);
+
+async function suppressed(supabase: any, channel: "email" | "sms", value: string) {
+  const { data } = await supabase.from("vekt_suppressions").select("id").eq("channel", channel).eq("value", suppressionKey(channel, value)).limit(1);
+  return !!data?.length;
+}
+
+// Queue one message per channel, then send whatever is already due.
 async function deliver(supabase: any, cfg: Record<string, string>, ids: { comparison_id: string; recruit_id?: string }, m: Msg) {
-  const live = cfg.invites_live === "true";
-  const log = (channel: string, status: string, detail = "") =>
-    supabase.from("invite_events").insert({ comparison_id: ids.comparison_id, recruit_id: ids.recruit_id ?? null, recipient_role: m.role, channel, status, detail: detail.slice(0, 500) });
+  const log = (channel: string, status: string, detail = "", extra: Record<string, unknown> = {}) =>
+    supabase.from("invite_events").insert({ comparison_id: ids.comparison_id, recruit_id: ids.recruit_id ?? null, recipient_role: m.role, channel, status, detail: detail.slice(0, 500), ...extra });
   if (!m.email && !(m.phone && m.smsAllowed)) { await log("none", "error", "no email, and no phone with text consent"); return false; }
-  if (!live) {
-    if (m.email) await log("email", "dry_run", `${m.subject} -> ${m.url}`);
-    if (m.phone && m.smsAllowed) await log("sms", "dry_run", m.sms);
-    return true;
+  const now = new Date();
+  const notBefore = m.notBefore && new Date(m.notBefore) > now ? new Date(m.notBefore) : now;
+  const start = Number(cfg.quiet_hours_start || 9), end = Number(cfg.quiet_hours_end || 20);
+  const rows: Record<string, unknown>[] = [];
+  const base = { comparison_id: ids.comparison_id, recruit_id: ids.recruit_id ?? null, recipient_role: m.role, kind: m.kind ?? "invite", recipient_name: m.name };
+  const subject = m.kind === "reminder" ? `Reminder: ${m.subject}` : m.subject;
+  if (m.email) rows.push({ ...base, channel: "email", to_address: m.email, subject, html: emailHtml(m), scheduled_for: notBefore.toISOString() });
+  // Texts only go to people who opted in (TCPA), and only inside quiet hours in their time zone.
+  if (m.phone && m.smsAllowed) {
+    rows.push({ ...base, channel: "sms", to_address: m.phone, body_text: smsBody(m.sms), scheduled_for: nextSendTime(notBefore, zoneForState(m.state), start, end).toISOString() });
   }
-  try {
-    const contactId = await ghlUpsert(cfg, { email: m.email, phone: m.phone, name: m.name, tags: ["vekt-invite", `vekt-${m.role}`] });
-    if (m.email) { await ghlSend(cfg, contactId, { type: "Email", subject: m.subject, html: emailHtml(m) }); await log("email", "sent"); }
-    // Texts only go to people who opted in (TCPA). Minors' numbers are never texted without a parent's opt-in.
-    if (m.phone && m.smsAllowed) { await ghlSend(cfg, contactId, { type: "SMS", text: m.sms }); await log("sms", "sent"); }
-    return true;
-  } catch (e) {
-    await log(m.email ? "email" : "sms", "error", (e as Error).message);
-    return false;
+  let queued = 0;
+  const ready: string[] = [];
+  for (const row of rows) {
+    if (await suppressed(supabase, row.channel as "email" | "sms", row.to_address as string)) {
+      const { data } = await supabase.from("vekt_outbox").insert({ ...row, status: "blocked", last_error: "recipient opted out" }).select("id");
+      await log(row.channel as string, "blocked", "recipient opted out", { recipient: row.to_address, outbox_id: data?.[0]?.id ?? null });
+      continue;
+    }
+    const { data, error } = await supabase.from("vekt_outbox").insert(row).select("id, scheduled_for");
+    if (error) { await log(row.channel as string, "error", `queue failed: ${error.message}`); continue; }
+    queued++;
+    if (new Date(data[0].scheduled_for) <= new Date()) ready.push(data[0].id);
+    else await log(row.channel as string, "scheduled", `${m.kind ?? "invite"} queued for ${data[0].scheduled_for}`, { recipient: row.to_address, outbox_id: data[0].id });
   }
+  if (ready.length) await dispatch(supabase, cfg, ready);
+  return queued > 0;
+}
+
+// Send due outbox rows. `onlyIds` sends just those (right after queueing).
+async function dispatch(supabase: any, cfg?: Record<string, string>, onlyIds?: string[]) {
+  cfg = cfg ?? await config(supabase);
+  const live = cfg.invites_live === "true";
+  let q = supabase.from("vekt_outbox").select("*").eq("status", "pending").lte("scheduled_for", new Date().toISOString()).order("scheduled_for").limit(50);
+  if (onlyIds?.length) q = q.in("id", onlyIds);
+  const { data: due } = await q;
+  let ghl: ReturnType<typeof createGhlClient> | null = null;
+  const contacts = new Map<string, string>();
+  const counts = { sent: 0, dry_run: 0, failed: 0, retrying: 0, blocked: 0 };
+  for (const row of due || []) {
+    // Claim the row so two dispatchers never send it twice.
+    const { data: claimed } = await supabase.from("vekt_outbox").update({ status: "sending", attempts: row.attempts + 1 }).eq("id", row.id).eq("status", "pending").select("id");
+    if (!claimed?.length) continue;
+    const log = (status: string, detail = "", extra: Record<string, unknown> = {}) =>
+      supabase.from("invite_events").insert({ comparison_id: row.comparison_id, recruit_id: row.recruit_id, recipient_role: row.recipient_role, channel: row.channel, status, detail: detail.slice(0, 500), recipient: row.to_address, outbox_id: row.id, ...extra });
+    if (await suppressed(supabase, row.channel, row.to_address)) {
+      await supabase.from("vekt_outbox").update({ status: "blocked", last_error: "recipient opted out" }).eq("id", row.id);
+      await log("blocked", "recipient opted out"); counts.blocked++; continue;
+    }
+    if (!live) {
+      await supabase.from("vekt_outbox").update({ status: "dry_run", sent_at: new Date().toISOString() }).eq("id", row.id);
+      await log("dry_run", row.channel === "email" ? `${row.subject}` : row.body_text || ""); counts.dry_run++; continue;
+    }
+    try {
+      ghl = ghl ?? createGhlClient({ token: Deno.env.get("GHL_PIT"), locationId: cfg.ghl_location_id, emailFrom: cfg.ghl_email_from || undefined, mock: Deno.env.get("VEKT_GHL_MOCK") === "1", mockFailFor: Deno.env.get("VEKT_GHL_MOCK_FAIL_FOR") });
+      let contactId = contacts.get(row.to_address);
+      if (!contactId) {
+        const { firstName, lastName } = splitName(row.recipient_name || "");
+        contactId = (await ghl.upsertContact({ firstName, lastName: lastName || undefined, email: row.channel === "email" ? row.to_address : undefined, phone: row.channel === "sms" ? row.to_address : undefined, tags: ["vekt-invite", `vekt-${row.recipient_role}`] })).contactId;
+        contacts.set(row.to_address, contactId);
+      }
+      const { messageId } = await ghl.sendMessage(row.channel === "email"
+        ? { type: "Email", contactId, message: row.subject || "", subject: row.subject, html: row.html }
+        : { type: "SMS", contactId, message: row.body_text || "" });
+      await supabase.from("vekt_outbox").update({ status: "sent", sent_at: new Date().toISOString(), ghl_contact_id: contactId, ghl_message_id: messageId, last_error: null }).eq("id", row.id);
+      await log("sent", row.kind, { ghl_message_id: messageId }); counts.sent++;
+    } catch (e) {
+      const msg = (e as Error).message;
+      const retry = (e instanceof GhlError ? e.retryable : true) && row.attempts + 1 < MAX_ATTEMPTS;
+      await supabase.from("vekt_outbox").update(retry
+        ? { status: "pending", last_error: msg.slice(0, 500), scheduled_for: new Date(Date.now() + 5 * 60_000 * (row.attempts + 1)).toISOString() }
+        : { status: "failed", last_error: msg.slice(0, 500) }).eq("id", row.id);
+      await log(retry ? "retrying" : "error", msg);
+      if (retry) counts.retrying++; else counts.failed++;
+    }
+  }
+  return { status: "ok", ...counts };
 }
 
 // ---- Invites for one recruit ---------------------------------------------------
-async function inviteRecruit(supabase: any, cfg: Record<string, string>, comp: any, r: any) {
+async function inviteRecruit(supabase: any, cfg: Record<string, string>, comp: any, r: any, kind: "invite" | "reminder" = "invite") {
   const base = cfg.invite_base_url;
   if (!base) throw new Error("invite_base_url config missing");
   const program = comp.program_name || "a college program";
@@ -148,7 +205,7 @@ async function inviteRecruit(supabase: any, cfg: Record<string, string>, comp: a
     // Athlete and parent are invited together. The athlete's link waits until a parent approves.
     if (r.parent_email || r.parent_phone) {
       tasks.push(deliver(supabase, cfg, { comparison_id: comp.id, recruit_id: r.id }, {
-        role: "parent", name: r.parent_name || "Parent", email: r.parent_email, phone: r.parent_phone, smsAllowed: !!r.sms_opt_in,
+        role: "parent", name: r.parent_name || "Parent", email: r.parent_email, phone: r.parent_phone, smsAllowed: !!r.sms_opt_in, state: r.state, kind,
         subject: `${program} invited ${firstName(r.recruit_name)} to a Vekt conversation`,
         lines: [`The coaching staff at ${program} asked us to talk with ${firstName(r.recruit_name)}. It's a relaxed, 15-minute voice conversation about how they think and play. There are no right or wrong answers.`,
           `Because ${firstName(r.recruit_name)} may be under 18, we need a parent or guardian to approve it first. You can see what we ask and what we share before you agree.`],
@@ -158,7 +215,7 @@ async function inviteRecruit(supabase: any, cfg: Record<string, string>, comp: a
     }
     if (r.athlete_email || r.athlete_phone) {
       tasks.push(deliver(supabase, cfg, { comparison_id: comp.id, recruit_id: r.id }, {
-        role: "athlete", name: r.recruit_name, email: r.athlete_email, phone: r.athlete_phone, smsAllowed: !!r.sms_opt_in,
+        role: "athlete", name: r.recruit_name, email: r.athlete_email, phone: r.athlete_phone, smsAllowed: !!r.sms_opt_in, state: r.state, kind,
         subject: `${program} wants to get to know you`,
         lines: [`The coaching staff at ${program} asked us to talk with you. It's about 15 minutes, by voice, and there are no right or wrong answers. It helps them understand how to coach you.`,
           `A parent or guardian approves first. Once they do, your link opens.`],
@@ -170,7 +227,7 @@ async function inviteRecruit(supabase: any, cfg: Record<string, string>, comp: a
   if (!r.club_invited_at && (r.club_coach_email || r.club_coach_phone)) {
     const coachUrl = `${base}/start.html?t=${r.club_invite_token}`;
     tasks.push(deliver(supabase, cfg, { comparison_id: comp.id, recruit_id: r.id }, {
-      role: "club_coach", name: r.club_coach_name || "Coach", email: r.club_coach_email, phone: r.club_coach_phone, smsAllowed: false,
+      role: "club_coach", name: r.club_coach_name || "Coach", email: r.club_coach_email, phone: r.club_coach_phone, smsAllowed: false, kind,
       subject: `${program} is recruiting ${r.recruit_name} and asked for your read`,
       lines: [`The staff at ${program} is recruiting ${r.recruit_name} and wants your read as their coach. You've watched them develop, and nobody knows how they respond to coaching better than you.`,
         `It's a 10 to 15 minute voice conversation. You won't see what the athlete said, and they won't see what you say.`],
@@ -187,7 +244,7 @@ async function inviteRecruit(supabase: any, cfg: Record<string, string>, comp: a
 }
 
 async function loadComparison(supabase: any, where: Record<string, string>) {
-  let q = supabase.from("recruit_comparisons").select("*, program:program_dna(institution, sport, division, coach_name)");
+  let q = supabase.from("recruit_comparisons").select("*, program:program_dna(institution, sport, division, coach_name, team_gender, reminder_days)");
   for (const [k, v] of Object.entries(where)) q = q.eq(k, v);
   const { data } = await q.limit(1);
   const c = data?.[0];
@@ -195,6 +252,7 @@ async function loadComparison(supabase: any, where: Record<string, string>) {
   c.program_name = c.program?.institution || null;
   c.sport = c.sport || c.program?.sport || null;
   c.division = c.division || c.program?.division || null;
+  c.team_gender = c.team_gender || c.program?.team_gender || null;
   return c;
 }
 
@@ -243,7 +301,7 @@ async function prepare(supabase: any, comparisonId: string) {
   if (comp.coach_email && cfg.invite_base_url) {
     const url = `${cfg.invite_base_url}/confirm.html?t=${comp.confirm_token}`;
     await deliver(supabase, cfg, { comparison_id: comp.id }, {
-      role: "coach", name: comp.coach_name || comp.program?.coach_name || "Coach", email: comp.coach_email, phone: null, smsAllowed: false,
+      role: "coach", name: comp.coach_name || comp.program?.coach_name || "Coach", email: comp.coach_email, phone: null, smsAllowed: false, kind: "coach",
       subject: "Confirm your recruits for the Vekt comparison",
       lines: ["Thanks for the conversation. Here are the recruits you mentioned.",
         "Add each recruit's graduation year and contact details, plus their club coach. We check the NCAA contact calendar for each one before anything goes out."],
@@ -383,7 +441,95 @@ async function releaseDue(supabase: any) {
     await inviteRecruit(supabase, cfg, comp, { ...r, contact_status: "cleared" });
     released++;
   }
-  return { status: "ok", released };
+  const sent = await dispatch(supabase, cfg);
+  return { status: "ok", released, dispatched: sent };
+}
+
+// ---- Reminders -------------------------------------------------------------------
+// Program reminder_days (default {3,7}) are days after the invite. A recruit gets at
+// most app_config.max_reminders. Parents are nudged until they approve; then the athlete.
+async function sendReminders(supabase: any) {
+  const cfg = await config(supabase);
+  const max = Number(cfg.max_reminders || 2);
+  const { data: open } = await supabase.from("comparison_recruits").select("*")
+    .eq("contact_status", "cleared").not("athlete_invited_at", "is", null).lt("reminders_sent", max).is("decision", null);
+  let sent = 0;
+  for (const r of open || []) {
+    const athleteOpen = !r.athlete_done;
+    const clubOpen = !!r.club_invited_at && !r.club_coach_done;
+    if (!athleteOpen && !clubOpen) continue;
+    const comp = await loadComparison(supabase, { id: r.comparison_id });
+    if (!comp) continue;
+    const days: number[] = comp.program?.reminder_days?.length ? comp.program.reminder_days : [3, 7];
+    const due = days[r.reminders_sent];
+    if (due == null) continue;
+    const since = (Date.now() - new Date(r.athlete_invited_at).getTime()) / 86_400_000;
+    if (since < due) continue;
+    // Re-run the invite with "not yet sent" flags so the same messages go out as reminders.
+    const again = { ...r, athlete_invited_at: athleteOpen ? null : r.athlete_invited_at, club_invited_at: clubOpen ? null : r.club_invited_at };
+    if (athleteOpen && r.consent_id) { again.parent_email = null; again.parent_phone = null; }
+    if (athleteOpen && !r.consent_id) { again.athlete_email = null; again.athlete_phone = null; }
+    await inviteRecruit(supabase, cfg, comp, again, "reminder");
+    await supabase.from("comparison_recruits").update({ reminders_sent: r.reminders_sent + 1, last_reminded_at: new Date().toISOString(), athlete_invited_at: r.athlete_invited_at, club_invited_at: r.club_invited_at ?? again.club_invited_at }).eq("id", r.id);
+    sent++;
+  }
+  return { status: "ok", reminded: sent };
+}
+
+// ---- Dashboard actions (called by vekt-coach, which has already checked the coach) --
+async function inviteRecruits(supabase: any, body: any) {
+  const cfg = await config(supabase);
+  const ids: string[] = (Array.isArray(body.recruit_ids) ? body.recruit_ids : []).filter(isUuid).slice(0, 100);
+  const resend = body.resend === true;
+  const out = [];
+  for (const id of ids) {
+    const { data: rr } = await supabase.from("comparison_recruits").select("*").eq("id", id).limit(1);
+    const r = rr?.[0];
+    if (!r) continue;
+    const comp = await loadComparison(supabase, { id: r.comparison_id });
+    if (!comp) continue;
+    if (!comp.coach_attested_at) await supabase.from("recruit_comparisons").update({ coach_attested_at: new Date().toISOString() }).eq("id", comp.id);
+    const chk = await contactCheck(supabase, comp.division, comp.sport, comp.team_gender, r.grad_year);
+    await supabase.from("comparison_recruits").update({ contact_status: chk.status, contact_clear_date: chk.date, contact_rule_text: chk.text, updated_at: new Date().toISOString() }).eq("id", r.id);
+    if (chk.status === "cleared") {
+      const target = resend ? { ...r, athlete_invited_at: r.athlete_done ? r.athlete_invited_at : null, club_invited_at: r.club_coach_done ? r.club_invited_at : null } : r;
+      const ok = await inviteRecruit(supabase, cfg, comp, { ...target, contact_status: "cleared" }, resend ? "reminder" : "invite");
+      out.push({ id: r.id, contact_status: "cleared", sent: ok, text: chk.text });
+    } else {
+      await supabase.from("invite_events").insert({ comparison_id: comp.id, recruit_id: r.id, recipient_role: "athlete", channel: "none", status: "held", detail: chk.text });
+      out.push({ id: r.id, contact_status: chk.status, contact_clear_date: chk.date, sent: false, text: chk.text });
+    }
+  }
+  return { status: "ok", live: cfg.invites_live === "true", recruits: out };
+}
+
+// "Interested": the athlete hears it, with a parent copied, and never before the NCAA
+// contact date. "Not a fit" is recorded for the staff only; nothing is sent.
+async function sendDecision(supabase: any, body: any) {
+  const cfg = await config(supabase);
+  if (!isUuid(body.recruit_id)) throw new Error("recruit_id required");
+  const { data: rr } = await supabase.from("comparison_recruits").select("*").eq("id", body.recruit_id).limit(1);
+  const r = rr?.[0];
+  if (!r) throw new Error("recruit not found");
+  if (body.decision !== "interested") return { status: "recorded", sent: false };
+  const comp = await loadComparison(supabase, { id: r.comparison_id });
+  const program = comp?.program_name || "the program";
+  const coach = s(body.coach_name, 120) || "The coaching staff";
+  const coachEmail = email(body.coach_email);
+  const note = s(body.message, 600);
+  const notBefore = r.contact_status === "cleared" ? null : r.contact_clear_date ? `${r.contact_clear_date}T14:00:00Z` : null;
+  if (r.contact_status !== "cleared" && !notBefore) return { status: "held", sent: false, text: r.contact_rule_text || "Contact date unknown." };
+  const lines = [
+    `${coach} at ${program} reviewed ${firstName(r.recruit_name)}'s Vekt conversation and would like to keep talking.`,
+    ...(note ? [note] : []),
+    "This is an invitation to a conversation, not an offer. A parent or guardian is copied on this message.",
+    ...(coachEmail ? [`You can reply to ${coach} at ${coachEmail}.`] : []),
+  ];
+  const msg = { lines, cta: "See next steps", url: cfg.invite_base_url || "", sms: "", kind: "decision" as const, notBefore, subject: `${program} would like to keep talking` };
+  let any = false;
+  if (r.athlete_email) any = await deliver(supabase, cfg, { comparison_id: r.comparison_id, recruit_id: r.id }, { ...msg, role: "athlete", name: r.recruit_name, email: r.athlete_email, phone: null, smsAllowed: false }) || any;
+  if (r.parent_email) any = await deliver(supabase, cfg, { comparison_id: r.comparison_id, recruit_id: r.id }, { ...msg, role: "parent", name: r.parent_name || "Parent", email: r.parent_email, phone: null, smsAllowed: false }) || any;
+  return { status: notBefore ? "scheduled" : "sent", sent: any, not_before: notBefore };
 }
 
 Deno.serve(async (req) => {
@@ -394,10 +540,16 @@ Deno.serve(async (req) => {
   try {
     const internal = req.headers.get("x-vekt-internal") || "";
     const svc = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-    if (body.action === "prepare" || body.action === "release_due") {
+    if (["prepare", "release_due", "dispatch", "send_reminders", "invite_recruits", "send_decision"].includes(body.action)) {
       if (!svc || internal !== svc) return json({ error: "Unauthorized" }, 401);
-      if (body.action === "prepare") return json(await prepare(supabase, s(body.comparison_id)));
-      return json(await releaseDue(supabase));
+      switch (body.action) {
+        case "prepare": return json(await prepare(supabase, s(body.comparison_id)));
+        case "release_due": return json(await releaseDue(supabase));
+        case "dispatch": return json(await dispatch(supabase));
+        case "send_reminders": return json(await sendReminders(supabase));
+        case "invite_recruits": return json(await inviteRecruits(supabase, body));
+        case "send_decision": return json(await sendDecision(supabase, body));
+      }
     }
     if (!isUuid(body.token)) return json({ error: "This link isn't valid." }, 400);
     switch (body.action) {

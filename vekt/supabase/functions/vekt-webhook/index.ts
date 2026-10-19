@@ -77,7 +77,23 @@ async function callInternal(name: string, body: unknown) {
   } catch (e) { console.error(`internal ${name} failed: ${(e as Error).message}`); }
 }
 // When every invited recruit has both conversations done (and there are at least two), build the side-by-side.
-async function maybeCompare(supabase: any, comparisonId: string) {
+// Recruits added from the coach dashboard sit on the program's standing "board": each gets its own
+// Fit Read as soon as the athlete finishes (self-awareness shows Pending until the club director
+// answers), and the read is rewritten when the director finishes.
+async function maybeCompare(supabase: any, comparisonId: string, recruitId?: string) {
+  const { data: comp } = await supabase.from("recruit_comparisons").select("kind, program_id").eq("id", comparisonId).limit(1);
+  if (comp?.[0]?.kind === "board") {
+    if (!recruitId || !comp[0].program_id) return;
+    const { data: rr } = await supabase.from("comparison_recruits").select("athlete_id, athlete_done").eq("id", recruitId).limit(1);
+    const rec = rr?.[0];
+    if (!rec?.athlete_id || !rec.athlete_done) return;
+    const { data: t } = await supabase.from("fit_read_requests").insert({ athlete_id: rec.athlete_id, program_id: comp[0].program_id }).select("id");
+    if (t?.[0]) {
+      await fetch(FN("vekt-fit-read"), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ request_id: t[0].id }) })
+        .catch((e) => console.error(`fit-read trigger failed: ${(e as Error).message}`));
+    }
+    return;
+  }
   const { data: rs } = await supabase.from("comparison_recruits").select("athlete_done, club_coach_done, contact_status").eq("comparison_id", comparisonId);
   const live = (rs || []).filter((r: any) => r.contact_status === "cleared");
   if (live.length < 2 || !live.every((r: any) => r.athlete_done && r.club_coach_done)) return;
@@ -243,7 +259,7 @@ Deno.serve(async (req) => {
             await supabase.from("coach_verifications").update({ athlete_id: athleteId, link_method: "invite_token" }).eq("id", r.coach_verification_id);
             await supabase.from("scenario_responses").update({ athlete_id: athleteId }).eq("coach_verification_id", r.coach_verification_id);
           }
-          await maybeCompare(supabase, r.comparison_id);
+          await maybeCompare(supabase, r.comparison_id, r.id);
         }
       }
 
@@ -318,7 +334,7 @@ Deno.serve(async (req) => {
 
       if (clubRecruit && cvId) {
         await supabase.from("comparison_recruits").update({ coach_verification_id: cvId, club_coach_done: true }).eq("id", clubRecruit.id);
-        await maybeCompare(supabase, clubRecruit.comparison_id);
+        await maybeCompare(supabase, clubRecruit.comparison_id, clubRecruit.id);
       }
 
       console.log(`TRIAD_SAVED coach_verifications id=${cvId} link=${linkMethod} scenarios=${sc.saved}`);
