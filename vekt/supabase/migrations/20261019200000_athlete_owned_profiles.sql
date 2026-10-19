@@ -16,6 +16,7 @@ create table if not exists public.vekt_athletes (
   id uuid primary key default gen_random_uuid(),
   full_name text not null,
   sport text not null,
+  team_gender text check (team_gender is null or team_gender in ('men', 'women')),
   grad_year integer check (grad_year is null or grad_year between 2024 and 2040),
   state text,
   club text,

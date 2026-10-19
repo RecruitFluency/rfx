@@ -45,6 +45,8 @@ function Layout() {
     { to: "/", label: "Overview", end: true, show: true },
     { to: "/recruits", label: "Recruits", show: true },
     { to: "/side-by-side", label: "Side-by-Side", show: true },
+    { to: "/feed", label: "Film feed", show: true },
+    { to: "/watch", label: "Watch list", show: true },
     { to: "/activity", label: "Invites & activity", show: true },
     { to: "/program", label: "Staff & must-haves", show: true },
     { to: "/department", label: "Department", show: me.can.department || me.account.role === "compliance" },

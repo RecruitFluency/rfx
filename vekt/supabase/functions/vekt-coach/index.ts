@@ -11,7 +11,8 @@
 // recorded in vekt_audit_log. Conversation answers (scenario_responses) are
 // never returned: coaches see the Fit Read, not a minor's words.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { sportFor } from "../_shared/sports.ts";
+import { sportFor, videoKinds } from "../_shared/sports.ts";
+import { contactOpens } from "../_shared/contact.ts";
 import { measurablesTable, skillsRead, systemsFit } from "../_shared/profile.ts";
 
 const cors = {
@@ -230,6 +231,34 @@ async function playerFor(supabase: any, programId: string, recruitIds: string[])
   return out;
 }
 
+// ---- The coach-only video feed and watch list -------------------------------------
+// Only athletes whose parent (or the adult athlete) turned the feed on appear, and
+// never with contact details. Underclassmen show when contact opens.
+async function programCtx(supabase: any, programId: string) {
+  const { data: p } = await supabase.from("program_dna").select("sport, division, team_gender").eq("id", programId).single();
+  const { data: rules } = await supabase.from("contact_rules").select("*");
+  return { p, sport: sportFor(p?.sport), rules: rules || [] };
+}
+
+function athleteCard(a: any, ctx: any) {
+  const prof = a.profile || {};
+  const ms = ctx.sport ? ctx.sport.measurables.filter((m: any) => prof.measurables?.[m.key]).slice(0, 3).map((m: any) => ({ label: m.label, value: prof.measurables[m.key], unit: m.unit })) : [];
+  const c = contactOpens(ctx.rules, ctx.p?.division, ctx.p?.sport, ctx.p?.team_gender, a.grad_year);
+  return {
+    id: a.id, full_name: a.full_name, grad_year: a.grad_year, club: a.club, state: a.state,
+    position: prof.primary_position ?? null, secondary_positions: prof.secondary_positions ?? [],
+    systems: prof.systems ?? {}, measurables: ms, contact: c,
+  };
+}
+
+async function feedAthletes(supabase: any, ctx: any) {
+  if (!ctx.sport) return [];
+  let q = supabase.from("vekt_athletes").select("id, full_name, grad_year, club, state, team_gender, profile").eq("sport", ctx.sport.key).eq("feed_visible", true).not("parent_approved_at", "is", null).limit(1000);
+  if (ctx.p?.team_gender) q = q.or(`team_gender.is.null,team_gender.eq.${ctx.p.team_gender === "women" ? "women" : "men"}`);
+  const { data } = await q;
+  return data || [];
+}
+
 // ---- Actions -----------------------------------------------------------------------
 type Ctx = { supabase: any; c: Coach; body: any };
 
@@ -291,8 +320,13 @@ const actions: Record<string, (x: Ctx) => Promise<unknown>> = {
     const { data: p } = await supabase.from("program_dna").select("institution, sport, division, team_gender").eq("id", r.program_id).single();
     const { invite_token: _a, club_invite_token: _b, ...safe } = r;
     const player = (await playerFor(supabase, r.program_id, [r.id])).get(r.id) ?? null;
+    const { data: sh } = await supabase.from("athlete_shares").select("athlete_id, status").eq("recruit_id", r.id).limit(1);
+    const shared = sh?.[0]?.status === "shared";
+    const { data: videos } = shared ? await supabase.from("athlete_videos").select("kind, url, youtube_id, title, recorded_on, notes").eq("athlete_id", sh[0].athlete_id).order("sort_order") : { data: [] };
+    // Found in the feed: the family's details stay private until they share the profile with you.
+    if (r.source === "feed" && !shared) for (const k of ["athlete_email", "athlete_phone", "parent_email", "parent_phone"]) if (safe[k]) safe[k] = "Hidden until the family shares";
     return {
-      player,
+      player, videos: videos || [], profile_shared: shared,
       recruit: { ...safe, stage: stage(r, !!read?.report), consented: !!r.consent_id },
       program: p,
       fit_read: read ? { id: read.id, report: read.report, fit_narrative: read.fit_narrative, verification_level: read.verification_level, updated_at: read.updated_at } : null,
@@ -400,6 +434,117 @@ const actions: Record<string, (x: Ctx) => Promise<unknown>> = {
     if (!r.athlete_id) fail(400, "The athlete hasn't finished their conversation yet.");
     background(fitRead({ athlete_id: r.athlete_id, program_id: r.program_id, force: true }));
     return { status: "queued" };
+  },
+
+  // ---- Coach feed and watch list ----
+  async feed({ supabase, c, body }) {
+    const pid = program(c, body.program_id);
+    const ctx = await programCtx(supabase, pid);
+    if (!ctx.sport) return { videos: [], kinds: [], positions: [], total: 0 };
+    let athletes = await feedAthletes(supabase, ctx);
+    const years = (Array.isArray(body.grad_years) ? body.grad_years : []).map(Number).filter(Boolean);
+    if (years.length) athletes = athletes.filter((a: any) => years.includes(a.grad_year));
+    if (s(body.position)) athletes = athletes.filter((a: any) => [a.profile?.primary_position, ...(a.profile?.secondary_positions ?? [])].includes(s(body.position)));
+    if (state2(body.state)) athletes = athletes.filter((a: any) => a.state === state2(body.state));
+    const ids = athletes.map((a: any) => a.id);
+    if (!ids.length) return { videos: [], kinds: videoKinds(ctx.sport), positions: ctx.sport.positions.map((x) => x.label), total: 0 };
+    let vq = supabase.from("athlete_videos").select("id, athlete_id, kind, url, youtube_id, title, recorded_on, notes, created_at").in("athlete_id", ids).order("created_at", { ascending: false });
+    if (s(body.kind)) vq = vq.eq("kind", s(body.kind));
+    const { data: vids } = await vq.limit(500);
+    const { data: watch } = await supabase.from("watch_list").select("athlete_id").eq("program_id", pid);
+    const { data: board } = await supabase.from("comparison_recruits").select("vekt_athlete_id").eq("program_id", pid).not("vekt_athlete_id", "is", null);
+    const watched = new Set((watch || []).map((w: any) => w.athlete_id)), onBoard = new Set((board || []).map((b: any) => b.vekt_athlete_id));
+    const byId = new Map(athletes.map((a: any) => [a.id, a]));
+    const offset = int(body.offset, 0, 10000) ?? 0;
+    const kinds = new Map(videoKinds(ctx.sport).map((k) => [k.key, k.label]));
+    const all = (vids || []).map((v: any) => ({ ...v, kind_label: kinds.get(v.kind) ?? v.kind, athlete: athleteCard(byId.get(v.athlete_id), ctx), watched: watched.has(v.athlete_id), on_board: onBoard.has(v.athlete_id) }));
+    return { videos: all.slice(offset, offset + 20), total: all.length, kinds: videoKinds(ctx.sport), positions: ctx.sport.positions.map((x) => x.label) };
+  },
+
+  async athlete_card({ supabase, c, body }) {
+    const pid = program(c, body.program_id);
+    if (!isUuid(body.athlete_id)) fail(404, "Not found.");
+    const ctx = await programCtx(supabase, pid);
+    const { data } = await supabase.from("vekt_athletes").select("id, full_name, grad_year, club, state, sport, feed_visible, parent_approved_at, profile").eq("id", body.athlete_id).limit(1);
+    const a = data?.[0];
+    const { data: shared } = a ? await supabase.from("athlete_shares").select("recruit_id, comparison_recruits!inner(program_id)").eq("athlete_id", a.id).eq("status", "shared").eq("comparison_recruits.program_id", pid) : { data: [] };
+    const inFeed = a ? (await feedAthletes(supabase, ctx)).some((x: any) => x.id === a.id) : false;
+    if (!a || a.sport !== ctx.sport?.key || !(inFeed || shared?.length)) fail(404, "Not found.");
+    const { data: vids } = await supabase.from("athlete_videos").select("kind, url, youtube_id, title, recorded_on, notes").eq("athlete_id", a.id).order("sort_order");
+    const { data: w } = await supabase.from("watch_list").select("note").eq("program_id", pid).eq("athlete_id", a.id).limit(1);
+    return { athlete: athleteCard(a, ctx), profile: a.profile, videos: vids || [], watched: !!w?.length, note: w?.[0]?.note ?? null };
+  },
+
+  async watch_add({ supabase, c, body }) {
+    canWrite(c);
+    const pid = program(c, body.program_id);
+    if (!isUuid(body.athlete_id)) fail(404, "Not found.");
+    const ctx = await programCtx(supabase, pid);
+    const visible = (await feedAthletes(supabase, ctx)).some((a: any) => a.id === body.athlete_id);
+    if (!visible) fail(404, "Not found.");
+    await supabase.from("watch_list").upsert({ program_id: pid, athlete_id: body.athlete_id, added_by: c.id, note: opt(body.note, 500) }, { onConflict: "program_id,athlete_id" });
+    await audit(supabase, c, "watch", "athlete", body.athlete_id);
+    return { watched: true };
+  },
+
+  async watch_remove({ supabase, c, body }) {
+    canWrite(c);
+    const pid = program(c, body.program_id);
+    if (!isUuid(body.athlete_id)) fail(404, "Not found.");
+    await supabase.from("watch_list").delete().eq("program_id", pid).eq("athlete_id", body.athlete_id);
+    return { watched: false };
+  },
+
+  async watch_list({ supabase, c, body }) {
+    const pid = program(c, body.program_id);
+    const ctx = await programCtx(supabase, pid);
+    const { data: rows } = await supabase.from("watch_list").select("athlete_id, note, created_at, added_by").eq("program_id", pid).order("created_at", { ascending: false });
+    const ids = (rows || []).map((r: any) => r.athlete_id);
+    if (!ids.length) return { athletes: [] };
+    const { data: as } = await supabase.from("vekt_athletes").select("id, full_name, grad_year, club, state, profile, feed_visible").in("id", ids);
+    const { data: board } = await supabase.from("comparison_recruits").select("id, vekt_athlete_id").eq("program_id", pid).in("vekt_athlete_id", ids);
+    const { data: who } = await supabase.from("coach_accounts").select("id, first_name, last_name").in("id", (rows || []).map((r: any) => r.added_by).filter(Boolean));
+    const names = new Map((who || []).map((w: any) => [w.id, `${w.first_name} ${w.last_name}`]));
+    return {
+      athletes: (rows || []).map((r: any) => {
+        const a = (as || []).find((x: any) => x.id === r.athlete_id);
+        if (!a) return null;
+        const b = (board || []).find((x: any) => x.vekt_athlete_id === a.id);
+        return { ...athleteCard(a, ctx), note: r.note, added_at: r.created_at, added_by: names.get(r.added_by) ?? null, recruit_id: b?.id ?? null, still_visible: a.feed_visible };
+      }).filter(Boolean),
+    };
+  },
+
+  // Contact is open: put them on the board and send the usual invite to the family.
+  // Their contact details stay hidden from staff until the family shares the profile.
+  async watch_invite({ supabase, c, body }) {
+    canWrite(c);
+    if (body.attest !== true) fail(400, "Confirm your staff is cleared to contact this recruit.");
+    const pid = program(c, body.program_id);
+    if (!isUuid(body.athlete_id)) fail(404, "Not found.");
+    const ctx = await programCtx(supabase, pid);
+    const { data: w } = await supabase.from("watch_list").select("athlete_id").eq("program_id", pid).eq("athlete_id", body.athlete_id).limit(1);
+    if (!w?.length) fail(404, "Add them to your watch list first.");
+    const { data } = await supabase.from("vekt_athletes").select("*").eq("id", body.athlete_id).limit(1);
+    const a = data?.[0];
+    if (!a) fail(404, "Not found.");
+    const open = contactOpens(ctx.rules, ctx.p?.division, ctx.p?.sport, ctx.p?.team_gender, a.grad_year);
+    if (!open.open) fail(400, open.date ? `Contact opens ${open.date}. We'll keep them on your watch list until then.` : open.text);
+    const { data: existing } = await supabase.from("comparison_recruits").select("id").eq("program_id", pid).eq("vekt_athlete_id", a.id).limit(1);
+    let id = existing?.[0]?.id;
+    if (!id) {
+      const comparison_id = await board(supabase, c, pid);
+      const { data: made, error } = await supabase.from("comparison_recruits").insert({
+        program_id: pid, comparison_id, source: "feed", added_by: c.id, vekt_athlete_id: a.id,
+        recruit_name: a.full_name, grad_year: a.grad_year, position: a.profile?.primary_position ?? null, club_or_school: a.club, state: a.state,
+        athlete_email: a.athlete_email, parent_name: a.parent_name, parent_email: a.parent_email,
+      }).select("id");
+      if (error) fail(400, error.message);
+      id = made[0].id;
+    }
+    const out = await internal("vekt-invites", { action: "invite_recruits", recruit_ids: [id] });
+    await audit(supabase, c, "invite", "recruit", id, { from: "watch_list", attested: true });
+    return { recruit_id: id, ...out };
   },
 
   // ---- Side-by-Side ----

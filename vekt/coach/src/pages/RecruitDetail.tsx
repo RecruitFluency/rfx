@@ -8,6 +8,7 @@ import { Badge, Button, ButtonLink, ErrorNote, Field, PageHeader, Panel, PanelTi
 import { date, dateTime, eventLabel, firstName, roleTo, usd } from "../lib/format";
 import { InviteDrawer } from "./Recruits";
 import { PlayerGame } from "../components/PlayerGame";
+import { VideoPlayer } from "./Feed";
 
 const STEPS = [
   { key: "invited", label: "Invited" },
@@ -99,6 +100,14 @@ export default function RecruitDetail() {
             </dl>
             {(r.notes || r.coach_open_question) && <div className="px-6 pb-6 text-sm text-white/80 font-light">{r.coach_open_question && <p><span className="vekt-label mr-2">Your question</span>{r.coach_open_question}</p>}{r.notes && <p className="mt-2"><span className="vekt-label mr-2">Notes</span>{r.notes}</p>}</div>}
           </Panel>
+          {data.videos.length > 0 && (
+            <Panel>
+              <PanelTitle>Video</PanelTitle>
+              <div className="p-6 grid sm:grid-cols-2 gap-6">
+                {data.videos.map((v, i) => <div key={i}><div className="vekt-label mb-2">{v.kind.replace(/_/g, " ")}{v.title ? ` · ${v.title}` : ""}{v.notes ? ` · ${v.notes}` : ""}</div><VideoPlayer v={v} /></div>)}
+              </div>
+            </Panel>
+          )}
           {!data.fit_read?.report && (
             <Panel>
               <PanelTitle>Their game</PanelTitle>

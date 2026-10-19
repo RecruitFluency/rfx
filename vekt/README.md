@@ -51,6 +51,20 @@ No accounts. Each person uses the private link from their invite email:
 Each program gets its own copy of the profile, matching what the parent agreed to share.
 Set `app_config.profile_base_url` to the dashboard URL so invite emails include these links.
 
+## Athlete-owned profile, film feed, watch list
+
+- **One profile the athlete controls** (`/me/<manage token>`, emailed to athlete and parent). When a new
+  program invites them, the invite page asks "Share your VEKT profile with this program?" Yes loads it
+  in; then any update can go to every program they share with at once. They can stop sharing anytime.
+- **Join without an invite** (`/join`), for freshmen and sophomores. Under 18, a parent approves the
+  profile (`/parent/<token>`) before anything is visible, and separately decides whether verified college
+  coaches can see their videos.
+- **Video links** by the kind each sport recruits on (highlight, every touch, half game, full game; race,
+  swing or routine video for individual sports). YouTube, Hudl and Vimeo links only; nothing is hosted.
+- **Film feed** for college staff: newest video from opted-in athletes in their sport and team, with the
+  date NCAA contact opens. No contact details. **Watch list** keeps underclassmen until contact opens;
+  then "Invite" sends the family the normal invite, and their details stay hidden until they share.
+
 ## Run it locally
 
 ```bash

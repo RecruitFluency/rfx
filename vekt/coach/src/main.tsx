@@ -17,6 +17,11 @@ import Department from "./pages/Department";
 import Compliance from "./pages/Compliance";
 import AthleteProfile from "./pages/public/AthleteProfile";
 import ClubEval from "./pages/public/ClubEval";
+import Join from "./pages/public/Join";
+import Parent from "./pages/public/Parent";
+import Me from "./pages/public/Me";
+import Feed from "./pages/Feed";
+import WatchList from "./pages/WatchList";
 import { Spinner } from "./components/ui";
 
 // The spreadsheet reader is large; load it only on the import page.
@@ -30,6 +35,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           <Route path="/login" element={<Login />} />
           <Route path="/athlete/:token" element={<AthleteProfile />} />
           <Route path="/club/:token" element={<ClubEval />} />
+          <Route path="/join" element={<Join />} />
+          <Route path="/parent/:token" element={<Parent />} />
+          <Route path="/me/:token" element={<Me />} />
           <Route element={<Shell />}>
             <Route index element={<Overview />} />
             <Route path="recruits" element={<Recruits />} />
@@ -38,6 +46,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <Route path="recruits/:id" element={<RecruitDetail />} />
             <Route path="recruits/:id/edit" element={<RecruitForm />} />
             <Route path="recruits/:id/fit-read" element={<FitRead />} />
+            <Route path="feed" element={<Feed />} />
+            <Route path="watch" element={<WatchList />} />
             <Route path="side-by-side" element={<SideBySideList />} />
             <Route path="side-by-side/:id" element={<SideBySide />} />
             <Route path="activity" element={<Activity />} />

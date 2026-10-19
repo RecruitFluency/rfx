@@ -84,3 +84,17 @@ describe("video links", () => {
     expect(videoKinds(sportFor("golf")!)[0].key).toBe("swing");
   });
 });
+
+describe("contact opens", () => {
+  it("dates D1 soccer from the grad year and opens D3 any time", async () => {
+    const { contactOpens } = await import("./contact.ts");
+    const rules = [
+      { division: "D1", sport: "soccer", gender: "any", rule_kind: "fixed_date", month: 6, day: 15, year_offset: -2, rule_text: "June 15 after sophomore year" },
+      { division: "D3", sport: "*", gender: "any", rule_kind: "anytime", month: null, day: null, year_offset: null, rule_text: "Any time" },
+    ];
+    const today = new Date("2026-10-19T12:00:00Z");
+    expect(contactOpens(rules, "D1", "soccer", "men", 2030, today)).toEqual({ open: false, date: "2028-06-15", text: "June 15 after sophomore year" });
+    expect(contactOpens(rules, "D1", "soccer", "men", 2028, today).open).toBe(true);
+    expect(contactOpens(rules, "Division III", "rowing", null, 2031, today).open).toBe(true);
+  });
+});

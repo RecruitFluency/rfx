@@ -549,7 +549,7 @@ async function profileSave(supabase: any, token: string, body: any) {
   const { sport: _sp, ...profile } = clean;
   if (!athlete) {
     const { data: made } = await supabase.from("vekt_athletes").insert({
-      full_name: r.recruit_name, sport: sport.key, grad_year: r.grad_year, state: r.state, club: r.club_or_school,
+      full_name: r.recruit_name, sport: sport.key, team_gender: comp?.team_gender ?? null, grad_year: r.grad_year, state: r.state, club: r.club_or_school,
       athlete_email: r.athlete_email, parent_name: r.parent_name, parent_email: r.parent_email, is_minor: !!r.parent_email,
       // The parent already approved sharing with this program; the coach feed stays off until they opt in.
       parent_approved_at: new Date().toISOString(), parent_consent_text: "Approved through the program's invite consent.", profile,
@@ -608,7 +608,7 @@ async function join(supabase: any, body: any) {
   if (!athlete) {
     const gy = Number(a.grad_year);
     const { data, error } = await supabase.from("vekt_athletes").insert({
-      full_name: name, sport: sport.key, grad_year: Number.isInteger(gy) && gy >= 2024 && gy <= 2040 ? gy : null,
+      full_name: name, sport: sport.key, team_gender: ["men", "women"].includes(a.team_gender) ? a.team_gender : null, grad_year: Number.isInteger(gy) && gy >= 2024 && gy <= 2040 ? gy : null,
       state: /^[A-Za-z]{2}$/.test(s(a.state)) ? s(a.state).toUpperCase() : null, club: opt(a.club, 120),
       athlete_email: athleteEmail, parent_name: opt(body.parent?.name, 120), parent_email: parentEmail, is_minor: minor,
       parent_approved_at: minor ? null : new Date().toISOString(),

@@ -132,3 +132,32 @@ insert into public.club_evaluations (recruit_id, evaluator_name, evaluator_email
    '{"height": "73", "sprint_30m": "4.10"}', 'Elite athlete. Still learning to play out of pressure; we mostly play direct.', now() - interval '3 days');
 
 update public.app_config set value = 'http://localhost:5174' where key = 'profile_base_url';
+
+-- Athlete-owned profiles and the coach feed (fictional athletes; video links are placeholders).
+insert into public.vekt_athletes (id, full_name, sport, team_gender, grad_year, state, club, athlete_email, parent_name, parent_email, is_minor, parent_approved_at, feed_visible, feed_approved_at, profile) values
+  ('30000000-0000-4000-8000-000000000001', 'Jordan Ellis', 'soccer', 'men', 2028, 'OH', 'Lakeshore FC', 'jordan.ellis@example.com', 'Morgan Ellis', 'morgan.ellis@example.com', true, now() - interval '6 days', false, null,
+   (select to_jsonb(p) - 'id' - 'recruit_id' - 'sport' - 'submitted_at' - 'created_at' - 'updated_at' from public.athlete_profiles p where recruit_id = '20000000-0000-4000-8000-000000000001')),
+  ('30000000-0000-4000-8000-000000000002', 'Mateo Reyes', 'soccer', 'men', 2029, 'TX', 'Metro United', 'mateo.reyes@example.com', 'Ana Reyes', 'ana.reyes@example.com', true, now() - interval '20 days', true, now() - interval '20 days',
+   '{"primary_position": "Center back", "secondary_positions": ["Defensive midfielder"], "systems": {"formation": ["4-3-3", "3-5-2"], "style": ["High press"]}, "skills": {"first_touch": "solid", "aerial_duels": "strength"}, "measurables": {"height": "74", "sprint_30m": "4.18"}, "attributes": {"foot": "Left"}}'),
+  ('30000000-0000-4000-8000-000000000003', 'Kai Thompson', 'soccer', 'men', 2030, 'CA', 'Ridgeway SC', null, 'Lee Thompson', 'lee.thompson@example.com', true, now() - interval '9 days', true, now() - interval '9 days',
+   '{"primary_position": "Center back", "systems": {"formation": ["4-3-3"], "style": ["Possession build-out"]}, "skills": {"first_touch": "strength"}, "measurables": {"height": "71"}}'),
+  ('30000000-0000-4000-8000-000000000004', 'Eli Brooks', 'soccer', 'men', 2028, 'FL', 'Bayside Academy', 'eli.brooks@example.com', 'Dana Brooks', 'dana.brooks@example.com', true, now() - interval '30 days', true, now() - interval '30 days',
+   '{"primary_position": "Striker", "systems": {"formation": ["4-2-3-1"]}, "measurables": {"height": "70", "sprint_30m": "3.98"}}'),
+  ('30000000-0000-4000-8000-000000000005', 'Ava Lindqvist', 'soccer', 'women', 2029, 'WA', 'Sound FC', 'ava.l@example.com', 'Erik Lindqvist', 'erik.l@example.com', true, now() - interval '12 days', true, now() - interval '12 days',
+   '{"primary_position": "Central midfielder"}');
+
+insert into public.athlete_shares (athlete_id, recruit_id, status, last_synced_at) values
+  ('30000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001', 'shared', now() - interval '6 days');
+update public.comparison_recruits set vekt_athlete_id = '30000000-0000-4000-8000-000000000001' where id = '20000000-0000-4000-8000-000000000001';
+
+insert into public.athlete_videos (athlete_id, kind, url, youtube_id, title, recorded_on, notes, sort_order, created_at) values
+  ('30000000-0000-4000-8000-000000000001', 'highlight', 'https://www.youtube.com/watch?v=VEKTdemo001', 'VEKTdemo001', 'Fall season highlights', '2026-10-01', '#4, white', 0, now() - interval '6 days'),
+  ('30000000-0000-4000-8000-000000000001', 'full_game', 'https://www.youtube.com/watch?v=VEKTdemo002', 'VEKTdemo002', 'vs. Metro United', '2026-09-20', '#4, white', 1, now() - interval '6 days'),
+  ('30000000-0000-4000-8000-000000000002', 'highlight', 'https://www.youtube.com/watch?v=VEKTdemo003', 'VEKTdemo003', 'Sophomore season', '2026-10-05', '#5, blue', 0, now() - interval '3 days'),
+  ('30000000-0000-4000-8000-000000000002', 'every_touch', 'https://www.youtube.com/watch?v=VEKTdemo004', 'VEKTdemo004', 'Every touch vs. Sound FC', '2026-09-27', '#5, blue', 1, now() - interval '3 days'),
+  ('30000000-0000-4000-8000-000000000003', 'highlight', 'https://www.youtube.com/watch?v=VEKTdemo005', 'VEKTdemo005', 'Freshman year so far', '2026-10-10', '#14, red', 0, now() - interval '1 day'),
+  ('30000000-0000-4000-8000-000000000004', 'half_game', 'https://www.hudl.com/video/3/0000/demo', null, 'Second half vs. Lakeshore', '2026-09-13', '#9, black', 0, now() - interval '10 days'),
+  ('30000000-0000-4000-8000-000000000005', 'highlight', 'https://www.youtube.com/watch?v=VEKTdemo006', 'VEKTdemo006', 'Highlights', '2026-10-02', '#8', 0, now() - interval '2 days');
+
+insert into public.watch_list (program_id, athlete_id, added_by, note) values
+  ('a0000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000003', 'c0000000-0000-4000-8000-000000000001', 'Left-sided CB with real composure. Check again at the spring showcase.');

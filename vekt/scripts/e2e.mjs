@@ -194,4 +194,60 @@ check((await dana("program_get", { program_id: PROGRAM })).program.systems.forma
 const list2 = await dana("recruits", { program_id: PROGRAM });
 check(list2.recruits.find((r) => r.recruit_name === "Theo Brandt").club_eval_in === true, "recruit list shows who has sent a profile and a club read");
 
+// ---- Athlete-owned profile, sharing, feed, watch list ----
+const pr = (action, token, body = {}) => post("vekt-invites", { action, token, ...body });
+// Jordan's shared profile: an update can go to every program at once.
+const jordanAth = (await admin.from("vekt_athletes").select("manage_token, parent_token").eq("id", "30000000-0000-4000-8000-000000000001")).data[0];
+const meJ = await pr("me_load", jordanAth.manage_token);
+check(meJ.programs.length === 1 && meJ.programs[0].status === "shared", "athlete sees which programs have their profile");
+const saveJ = await pr("me_save", jordanAth.manage_token, { profile: { ...meJ.athlete.profile, measurables: { height: "75" } }, videos: [
+  { kind: "highlight", url: "https://youtu.be/VEKTdemo001" }, { kind: "full_game", url: "https://evil.example/x" }, { kind: "made_up", url: "https://youtu.be/abcdefghijk" }] });
+check(saveJ.synced === 1, "update sent to every program they share with", saveJ);
+const { data: jp } = await admin.from("athlete_profiles").select("measurables").eq("recruit_id", R.jordan);
+check(jp[0].measurables.height === "75", "the program's copy updated together");
+const { data: jv } = await admin.from("athlete_videos").select("kind, youtube_id").eq("athlete_id", "30000000-0000-4000-8000-000000000001");
+check(jv.length === 1 && jv[0].youtube_id === "VEKTdemo001", "only valid video links of known types are kept");
+const jd = await dana("recruit", { id: R.jordan });
+check(jd.profile_shared && jd.videos.length === 1, "the program sees the shared videos");
+
+// Join without an invite (a freshman), parent approval, feed opt-in.
+check((await post("vekt-invites", { action: "join", is_minor: true, athlete: { full_name: "Noah Park", sport: "soccer" } })).status === 400, "under-18s need a parent email to join");
+check((await post("vekt-invites", { action: "join", is_minor: true, athlete: { full_name: "Noah Park", sport: "soccer", team_gender: "men", grad_year: 2030, state: "NJ" }, parent: { name: "Sue Park", email: "sue.park@example.com" } })).status === "check_email", "freshman starts a profile");
+const noah = (await admin.from("vekt_athletes").select("*").eq("full_name", "Noah Park")).data[0];
+const { data: noahMail } = await admin.from("vekt_outbox").select("to_address, subject").eq("to_address", "sue.park@example.com");
+check(noahMail.length === 2, "parent gets the approval link and the profile link", noahMail);
+await pr("me_save", noah.manage_token, { profile: { primary_position: "Center back" }, videos: [{ kind: "highlight", url: "https://youtube.com/watch?v=NOAHdemo001" }], feed_visible: true });
+let feed1 = await dana("feed", { program_id: PROGRAM });
+check(!feed1.videos.some((v) => v.athlete.full_name === "Noah Park"), "not in the feed before a parent approves it");
+check((await pr("parent_save", noah.parent_token, { approve: true, feed_visible: true })).feed_visible === true, "parent approves the profile and the feed");
+feed1 = await dana("feed", { program_id: PROGRAM });
+const noahCard = feed1.videos.find((v) => v.athlete.full_name === "Noah Park");
+check(noahCard && noahCard.athlete.contact.open === false && noahCard.athlete.contact.date === "2028-06-15", "freshman shows in the feed with the date contact opens");
+check(!JSON.stringify(feed1).includes("@example.com"), "the feed never shows contact details");
+check(!feed1.videos.some((v) => v.athlete.full_name === "Ava Lindqvist"), "a men's program doesn't see women's players");
+check(!feed1.videos.some((v) => v.athlete.full_name === "Jordan Ellis"), "athletes who didn't opt in stay out of the feed");
+check(feed1.videos.filter((v) => v.athlete.grad_year === 2030).length >= 2, "freshmen are in the feed");
+
+// Watch list: save a freshman, can't invite until contact opens; invite a junior.
+await dana("watch_add", { program_id: PROGRAM, athlete_id: noah.id, note: "Composed on the ball" });
+const wl = await dana("watch_list", { program_id: PROGRAM });
+check(wl.athletes.some((a) => a.full_name === "Noah Park" && a.note === "Composed on the ball"), "freshman saved to the watch list");
+const early = await dana("watch_invite", { program_id: PROGRAM, athlete_id: noah.id, attest: true });
+check(early.status === 400 && /2028-06-15/.test(early.error), "can't invite before NCAA contact opens", early);
+const eli = "30000000-0000-4000-8000-000000000004";
+await dana("watch_add", { program_id: PROGRAM, athlete_id: eli });
+const inv2 = await dana("watch_invite", { program_id: PROGRAM, athlete_id: eli, attest: true });
+check(!!inv2.recruit_id, "a junior on the watch list can be invited", inv2);
+const eliDetail = await dana("recruit", { id: inv2.recruit_id });
+check(eliDetail.recruit.parent_email === "Hidden until the family shares", "family contact stays hidden until they share");
+const eliTok = (await admin.from("comparison_recruits").select("invite_token").eq("id", inv2.recruit_id)).data[0].invite_token;
+await admin.from("comparison_recruits").update({ consent_id: "10000000-0000-4000-8000-000000000003" }).eq("id", inv2.recruit_id);
+const eliLoad = await pr("profile_load", eliTok);
+check(eliLoad.share_prompt === true, "the invited family is asked to share their existing VEKT profile");
+await pr("profile_share", eliTok, { share: true });
+const eliAfter = await dana("recruit", { id: inv2.recruit_id });
+check(eliAfter.profile_shared && eliAfter.recruit.parent_email === "dana.brooks@example.com" && eliAfter.player.profile.primary_position === "Striker", "saying yes loads the profile and reveals contact details");
+check((await dana("athlete_card", { program_id: PROGRAM, athlete_id: "30000000-0000-4000-8000-000000000005" })).status === 404, "a profile outside this program's feed and not shared can't be opened");
+check((await dana("athlete_card", { program_id: PROGRAM, athlete_id: "30000000-0000-4000-8000-000000000001" })).videos.length === 1, "a profile shared with this program opens, with its video");
+
 console.log(`\n${passed} checks passed`);

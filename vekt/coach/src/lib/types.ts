@@ -23,6 +23,8 @@ export interface RecruitRow {
 export interface InviteEvent { id: string; recruit_id?: string; recruit_name?: string | null; recipient_role: string | null; channel: string | null; status: string; detail?: string | null; recipient?: string | null; created_at: string }
 export interface RecruitDetail {
   player: Player | null;
+  videos: { kind: string; url: string; youtube_id: string | null; title: string | null; recorded_on: string | null; notes: string | null }[];
+  profile_shared: boolean;
   recruit: Record<string, any> & { id: string; recruit_name: string; stage: { key: StageKey; label: string }; consented: boolean };
   program: { institution: string; sport: string; division: string | null; team_gender: string | null };
   fit_read: { id: string; report: FitReport | null; fit_narrative: string | null; verification_level: string | null; updated_at: string } | null;
