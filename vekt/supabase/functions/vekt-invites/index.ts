@@ -7,6 +7,10 @@
 //   profile_load   / profile_save     athlete's player profile: positions, systems, hard skills (invite_token, after a parent approves)
 //   club_load      / club_save        club director's own read of the same, plus their other athletes (club_invite_token)
 //   club_links                         email the club director every link they have
+//   profile_share                      "Share your VEKT profile with this program?" yes / no (invite_token)
+//   join                               an athlete (or parent) starts a VEKT profile without an invite (no token)
+//   parent_load    / parent_save      parent approves the profile and, separately, the coach video feed (parent_token)
+//   me_load / me_save / me_share       the athlete's own profile, videos and sharing (manage_token)
 // Internal actions (header x-vekt-internal = service role key; only our own functions have it):
 //   prepare        turn the coach's spoken recruit list into rows, email the coach the confirm link
 //   release_due    send held invites whose NCAA contact date has now passed, then dispatch
@@ -23,7 +27,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { createGhlClient, GhlError } from "../_shared/ghl.ts";
 import { splitName, suppressionKey } from "../_shared/format.ts";
 import { nextSendTime, zoneForState } from "../_shared/quiet.ts";
-import { sportFor } from "../_shared/sports.ts";
+import { sportFor, videoKinds, videoLink, type Sport } from "../_shared/sports.ts";
 import { cleanEvaluation, cleanProfile } from "../_shared/profile.ts";
 
 const cors = {
@@ -115,7 +119,7 @@ async function suppressed(supabase: any, channel: "email" | "sms", value: string
 }
 
 // Queue one message per channel, then send whatever is already due.
-async function deliver(supabase: any, cfg: Record<string, string>, ids: { comparison_id: string; recruit_id?: string }, m: Msg) {
+async function deliver(supabase: any, cfg: Record<string, string>, ids: { comparison_id: string | null; recruit_id?: string }, m: Msg) {
   const log = (channel: string, status: string, detail = "", extra: Record<string, unknown> = {}) =>
     supabase.from("invite_events").insert({ comparison_id: ids.comparison_id, recruit_id: ids.recruit_id ?? null, recipient_role: m.role, channel, status, detail: detail.slice(0, 500), ...extra });
   if (!m.email && !(m.phone && m.smsAllowed)) { await log("none", "error", "no email, and no phone with text consent"); return false; }
@@ -440,6 +444,67 @@ async function startLoad(supabase: any, token: string) {
 const PROFILE_COLS = "primary_position, secondary_positions, systems, skills, measurables, attributes, marks, film_links, intended_major, submitted_at, updated_at";
 const EVAL_COLS = "team_name, team_level, primary_position, positions_played, systems_played, team_systems, skills, measurables, notes, submitted_at, updated_at";
 
+// ---- The athlete's own profile (vekt_athletes), shared program by program --------
+const ATHLETE_PUBLIC = "id, full_name, sport, grad_year, state, club, is_minor, parent_approved_at, feed_visible, profile, updated_at";
+const lower = (v: unknown) => (typeof v === "string" ? v.trim().toLowerCase() : "");
+
+async function athleteForRecruit(supabase: any, r: any, sport: Sport | null) {
+  if (r.vekt_athlete_id) {
+    const { data } = await supabase.from("vekt_athletes").select("*").eq("id", r.vekt_athlete_id).limit(1);
+    if (data?.[0]) return data[0];
+  }
+  if (!sport) return null;
+  // Same family email and same sport. Only the holder of this invite (sent to that
+  // email) learns that a profile exists; nothing about other programs is shown.
+  const emails = [lower(r.athlete_email), lower(r.parent_email)].filter(Boolean);
+  if (!emails.length) return null;
+  const { data } = await supabase.from("vekt_athletes").select("*").eq("sport", sport.key).limit(200);
+  const first = (n: string) => lower(n).split(/\s+/)[0];
+  return (data || []).find((a: any) => (emails.includes(lower(a.athlete_email)) || emails.includes(lower(a.parent_email))) && first(a.full_name) === first(r.recruit_name)) ?? null;
+}
+
+async function saveVideos(supabase: any, athleteId: string, sport: Sport, raw: unknown) {
+  if (!Array.isArray(raw)) return;
+  const kinds = new Set(videoKinds(sport).map((k) => k.key));
+  const rows = raw.slice(0, 12).map((v: any, i: number) => {
+    const url = s(v?.url, 300);
+    const link = videoLink(url);
+    return { athlete_id: athleteId, kind: s(v?.kind, 30), url, youtube_id: link.youtubeId, title: opt(v?.title, 120), recorded_on: /^\d{4}-\d{2}-\d{2}$/.test(s(v?.recorded_on)) ? s(v.recorded_on) : null, notes: opt(v?.notes, 200), sort_order: i, ok: link.ok };
+  }).filter((v) => v.ok && kinds.has(v.kind)).map(({ ok: _ok, ...v }) => v);
+  await supabase.from("athlete_videos").delete().eq("athlete_id", athleteId);
+  if (rows.length) await supabase.from("athlete_videos").insert(rows);
+}
+
+// Push the athlete's profile to every program they said yes to.
+async function syncShares(supabase: any, athlete: any, profile: Record<string, unknown>) {
+  const { data: shares } = await supabase.from("athlete_shares").select("recruit_id").eq("athlete_id", athlete.id).eq("status", "shared");
+  const now = new Date().toISOString();
+  for (const sh of shares || []) {
+    await supabase.from("athlete_profiles").upsert({ ...profile, recruit_id: sh.recruit_id, sport: athlete.sport, updated_at: now, submitted_at: now }, { onConflict: "recruit_id" });
+  }
+  if (shares?.length) await supabase.from("athlete_shares").update({ last_synced_at: now }).eq("athlete_id", athlete.id).eq("status", "shared");
+  return shares?.length ?? 0;
+}
+
+async function shareCount(supabase: any, athleteId: string) {
+  const { count } = await supabase.from("athlete_shares").select("id", { count: "exact", head: true }).eq("athlete_id", athleteId).eq("status", "shared");
+  return count ?? 0;
+}
+
+async function emailManageLink(supabase: any, cfg: Record<string, string>, a: any, recruitId?: string) {
+  const base = cfg.profile_base_url || cfg.invite_base_url;
+  const to = a.is_minor ? a.parent_email : (a.athlete_email || a.parent_email);
+  if (!to) return;
+  await deliver(supabase, cfg, { comparison_id: null, recruit_id: recruitId }, {
+    role: a.is_minor ? "parent" : "athlete", name: a.is_minor ? (a.parent_name || "Parent") : a.full_name, email: to, phone: null, smsAllowed: false, kind: "coach",
+    subject: `${firstName(a.full_name)}'s VEKT profile`,
+    lines: [`This is ${firstName(a.full_name)}'s own VEKT profile: positions, skills, numbers and video. Keep it up to date here.`,
+      "When a college program asks for it, you choose whether to share it. Updates can go to every program you've shared with at once.",
+      ...(a.athlete_email && a.is_minor ? [`${firstName(a.full_name)} can use the same link.`] : [])],
+    cta: "Open the profile", url: `${base}/me/${a.manage_token}`, sms: "",
+  });
+}
+
 async function profileLoad(supabase: any, token: string) {
   const hit = await recruitByToken(supabase, token);
   if (!hit || hit.role !== "athlete") return json({ error: "This link isn't valid." }, 404);
@@ -448,7 +513,15 @@ async function profileLoad(supabase: any, token: string) {
   if (!r.consent_id) return json({ status: "needs_consent", athlete_first_name: firstName(r.recruit_name), program: comp?.program_name });
   const sport = sportFor(comp?.sport);
   const { data } = await supabase.from("athlete_profiles").select(PROFILE_COLS).eq("recruit_id", r.id).limit(1);
+  const athlete = await athleteForRecruit(supabase, r, sport);
+  const { data: share } = athlete ? await supabase.from("athlete_shares").select("status").eq("recruit_id", r.id).limit(1) : { data: [] };
+  const { data: videos } = athlete && share?.[0]?.status === "shared" ? await supabase.from("athlete_videos").select("kind, url, title, recorded_on, notes").eq("athlete_id", athlete.id).order("sort_order") : { data: [] };
   return json({
+    // "share_prompt": they already have a VEKT profile and haven't said yes or no to this program.
+    share_prompt: !!athlete && !share?.[0],
+    shared: share?.[0]?.status === "shared",
+    other_programs: athlete ? Math.max(0, (await shareCount(supabase, athlete.id)) - (share?.[0]?.status === "shared" ? 1 : 0)) : 0,
+    videos: videos || [],
     status: "ready", athlete_first_name: firstName(r.recruit_name), program: comp?.program_name, sport: sport?.key ?? null,
     known: { position: r.position, grad_year: r.grad_year, club: r.club_or_school },
     profile: data?.[0] ?? null,
@@ -462,10 +535,194 @@ async function profileSave(supabase: any, token: string, body: any) {
   const comp = await loadComparison(supabase, { id: hit.r.comparison_id });
   const sport = sportFor(comp?.sport);
   if (!sport) return json({ error: "This sport isn't set up for profiles yet." }, 400);
-  const row = { ...cleanProfile(sport, body.profile || {}), recruit_id: hit.r.id, updated_at: new Date().toISOString(), ...(body.submit === true ? { submitted_at: new Date().toISOString() } : {}) };
+  const clean = cleanProfile(sport, body.profile || {});
+  const row = { ...clean, recruit_id: hit.r.id, updated_at: new Date().toISOString(), ...(body.submit === true ? { submitted_at: new Date().toISOString() } : {}) };
   const { error } = await supabase.from("athlete_profiles").upsert(row, { onConflict: "recruit_id" });
   if (error) return json({ error: "Couldn't save. Please try again." }, 400);
-  return json({ status: "saved" });
+  if (body.submit !== true) return json({ status: "saved" });
+
+  // On send, this also becomes (or updates) the athlete's own VEKT profile.
+  const r = hit.r;
+  let athlete = await athleteForRecruit(supabase, r, sport);
+  const { data: share } = athlete ? await supabase.from("athlete_shares").select("status").eq("recruit_id", r.id).limit(1) : { data: [] };
+  const cfg = await config(supabase);
+  const { sport: _sp, ...profile } = clean;
+  if (!athlete) {
+    const { data: made } = await supabase.from("vekt_athletes").insert({
+      full_name: r.recruit_name, sport: sport.key, grad_year: r.grad_year, state: r.state, club: r.club_or_school,
+      athlete_email: r.athlete_email, parent_name: r.parent_name, parent_email: r.parent_email, is_minor: !!r.parent_email,
+      // The parent already approved sharing with this program; the coach feed stays off until they opt in.
+      parent_approved_at: new Date().toISOString(), parent_consent_text: "Approved through the program's invite consent.", profile,
+    }).select("*");
+    athlete = made?.[0];
+    if (athlete) {
+      await supabase.from("athlete_shares").insert({ athlete_id: athlete.id, recruit_id: r.id, status: "shared", last_synced_at: new Date().toISOString() });
+      await supabase.from("comparison_recruits").update({ vekt_athlete_id: athlete.id }).eq("id", r.id);
+      await saveVideos(supabase, athlete.id, sport, body.videos);
+      await emailManageLink(supabase, cfg, athlete, r.id);
+    }
+    return json({ status: "saved", synced: 1 });
+  }
+  if (share?.[0]?.status !== "shared") return json({ status: "saved", synced: 1 });
+  await saveVideos(supabase, athlete.id, sport, body.videos);
+  if (body.update_all === false) return json({ status: "saved", synced: 1 });
+  await supabase.from("vekt_athletes").update({ profile, updated_at: new Date().toISOString() }).eq("id", athlete.id);
+  return json({ status: "saved", synced: await syncShares(supabase, athlete, profile) });
+}
+
+// "Share your VEKT profile with {program}?" Yes copies it in; no leaves this program's copy blank.
+async function profileShare(supabase: any, token: string, body: any) {
+  const hit = await recruitByToken(supabase, token);
+  if (!hit || hit.role !== "athlete") return json({ error: "This link isn't valid." }, 404);
+  if (!hit.r.consent_id) return json({ error: "A parent or guardian needs to approve first." }, 403);
+  const comp = await loadComparison(supabase, { id: hit.r.comparison_id });
+  const sport = sportFor(comp?.sport);
+  const athlete = await athleteForRecruit(supabase, hit.r, sport);
+  if (!athlete || !sport) return json({ error: "No VEKT profile to share." }, 404);
+  const yes = body.share === true;
+  await supabase.from("athlete_shares").upsert({ athlete_id: athlete.id, recruit_id: hit.r.id, status: yes ? "shared" : "declined", decided_at: new Date().toISOString(), last_synced_at: yes ? new Date().toISOString() : null }, { onConflict: "recruit_id" });
+  if (yes) {
+    await supabase.from("comparison_recruits").update({ vekt_athlete_id: athlete.id }).eq("id", hit.r.id);
+    await supabase.from("athlete_profiles").upsert({ ...athlete.profile, sport: sport.key, recruit_id: hit.r.id, updated_at: new Date().toISOString(), submitted_at: new Date().toISOString() }, { onConflict: "recruit_id" });
+  }
+  return json({ status: yes ? "shared" : "declined" });
+}
+
+// ---- Joining without an invite (underclassmen, families who want to start early) --
+async function join(supabase: any, body: any) {
+  const a = body.athlete || {};
+  const sport = sportFor(s(a.sport));
+  const name = s(a.full_name, 120);
+  const minor = body.is_minor !== false;
+  const parentEmail = email(body.parent?.email);
+  const athleteEmail = email(a.athlete_email);
+  if (!name || !sport) return json({ error: "Add the athlete's name and sport." }, 400);
+  if (minor && !parentEmail) return json({ error: "Athletes under 18 need a parent or guardian's email." }, 400);
+  if (!minor && !athleteEmail) return json({ error: "Add your email." }, 400);
+  const cfg = await config(supabase);
+  const base = cfg.profile_base_url || cfg.invite_base_url;
+  // Same family and sport already here: resend the links instead of making a second profile.
+  const { data: existing } = await supabase.from("vekt_athletes").select("*").eq("sport", sport.key).limit(500);
+  const found = (existing || []).find((x: any) => (parentEmail && lower(x.parent_email) === parentEmail || athleteEmail && lower(x.athlete_email) === athleteEmail) && lower(x.full_name) === lower(name));
+  let athlete = found;
+  if (!athlete) {
+    const gy = Number(a.grad_year);
+    const { data, error } = await supabase.from("vekt_athletes").insert({
+      full_name: name, sport: sport.key, grad_year: Number.isInteger(gy) && gy >= 2024 && gy <= 2040 ? gy : null,
+      state: /^[A-Za-z]{2}$/.test(s(a.state)) ? s(a.state).toUpperCase() : null, club: opt(a.club, 120),
+      athlete_email: athleteEmail, parent_name: opt(body.parent?.name, 120), parent_email: parentEmail, is_minor: minor,
+      parent_approved_at: minor ? null : new Date().toISOString(),
+    }).select("*");
+    if (error) return json({ error: "Couldn't start the profile. Please try again." }, 400);
+    athlete = data[0];
+  }
+  if (athlete.is_minor && !athlete.parent_approved_at) {
+    await deliver(supabase, cfg, { comparison_id: null }, {
+      role: "parent", name: athlete.parent_name || "Parent", email: athlete.parent_email, phone: null, smsAllowed: false, kind: "coach",
+      subject: `Approve ${firstName(athlete.full_name)}'s VEKT profile`,
+      lines: [`${firstName(athlete.full_name)} started a VEKT recruiting profile: positions, skills, numbers and video links.`,
+        "Because they're under 18, nothing is shared with anyone until you approve. You also decide separately whether verified college coaches can see their videos."],
+      cta: "Review and approve", url: `${base}/parent/${athlete.parent_token}`, sms: "",
+    });
+  }
+  await emailManageLink(supabase, cfg, athlete);
+  return json({ status: "check_email" });
+}
+
+const FEED_CONSENT = "I am the parent or legal guardian. I approve this VEKT profile. I understand VEKT shares it with a college program only when we say yes to that program.";
+const FEED_TEXT = "I agree that verified college coaches using VEKT may see my child's name, sport, grad year, position, club, state, profile and video links in a coach-only feed, and may save them to a watch list. Coaches cannot see our contact details there. I can turn this off at any time.";
+
+async function parentLoad(supabase: any, token: string) {
+  const { data } = await supabase.from("vekt_athletes").select("full_name, sport, grad_year, parent_name, parent_approved_at, feed_visible").eq("parent_token", token).limit(1);
+  if (!data?.[0]) return json({ error: "This link isn't valid." }, 404);
+  return json({ ...data[0], athlete_first_name: firstName(data[0].full_name), consent_text: FEED_CONSENT, feed_text: FEED_TEXT });
+}
+
+async function parentSave(supabase: any, token: string, body: any) {
+  const { data } = await supabase.from("vekt_athletes").select("id, parent_approved_at").eq("parent_token", token).limit(1);
+  const a = data?.[0];
+  if (!a) return json({ error: "This link isn't valid." }, 404);
+  if (body.approve !== true && !a.parent_approved_at) return json({ error: "Please check the box to approve." }, 400);
+  const now = new Date().toISOString();
+  const feed = body.feed_visible === true;
+  await supabase.from("vekt_athletes").update({
+    parent_approved_at: a.parent_approved_at ?? now, parent_consent_text: FEED_CONSENT + (feed ? ` ${FEED_TEXT}` : ""),
+    feed_visible: feed, feed_approved_at: feed ? now : null, updated_at: now,
+  }).eq("id", a.id);
+  return json({ status: "saved", feed_visible: feed });
+}
+
+async function meLoad(supabase: any, token: string) {
+  const { data } = await supabase.from("vekt_athletes").select(ATHLETE_PUBLIC + ", athlete_email, parent_email").eq("manage_token", token).limit(1);
+  const a = data?.[0];
+  if (!a) return json({ error: "This link isn't valid." }, 404);
+  const { data: videos } = await supabase.from("athlete_videos").select("kind, url, title, recorded_on, notes").eq("athlete_id", a.id).order("sort_order");
+  const { data: shares } = await supabase.from("athlete_shares").select("recruit_id, status, decided_at, last_synced_at").eq("athlete_id", a.id);
+  const programs = [];
+  for (const sh of shares || []) {
+    const { data: rr } = await supabase.from("comparison_recruits").select("comparison_id").eq("id", sh.recruit_id).limit(1);
+    const comp = rr?.[0] ? await loadComparison(supabase, { id: rr[0].comparison_id }) : null;
+    programs.push({ recruit_id: sh.recruit_id, program: comp?.program_name ?? "A program", status: sh.status, last_synced_at: sh.last_synced_at });
+  }
+  // Programs that invited this athlete (same family email, same sport) and haven't had an answer yet.
+  const emails = [lower(a.athlete_email), lower(a.parent_email)].filter(Boolean);
+  const pending = [];
+  if (emails.length) {
+    const decided = new Set((shares || []).map((x: any) => x.recruit_id));
+    const { data: rs } = await supabase.from("comparison_recruits").select("id, recruit_name, athlete_email, parent_email, comparison_id, consent_id").limit(500)
+      .or(emails.map((e) => `athlete_email.ilike.${e.replace(/[,()]/g, "")},parent_email.ilike.${e.replace(/[,()]/g, "")}`).join(","));
+    for (const r of rs || []) {
+      if (decided.has(r.id) || !r.consent_id || firstName(r.recruit_name).toLowerCase() !== firstName(a.full_name).toLowerCase()) continue;
+      const comp = await loadComparison(supabase, { id: r.comparison_id });
+      if (sportFor(comp?.sport)?.key !== a.sport) continue;
+      pending.push({ recruit_id: r.id, program: comp?.program_name ?? "A program" });
+    }
+  }
+  const { athlete_email: _e, parent_email: _p, ...pub } = a;
+  return json({ athlete: { ...pub, first_name: firstName(a.full_name) }, videos: videos || [], programs, pending });
+}
+
+async function meSave(supabase: any, token: string, body: any) {
+  const { data } = await supabase.from("vekt_athletes").select("*").eq("manage_token", token).limit(1);
+  const a = data?.[0];
+  if (!a) return json({ error: "This link isn't valid." }, 404);
+  const sport = sportFor(a.sport)!;
+  const { sport: _sp, ...profile } = cleanProfile(sport, body.profile || {});
+  const patch: Record<string, unknown> = { profile, updated_at: new Date().toISOString() };
+  const gy = Number(body.grad_year);
+  if (Number.isInteger(gy) && gy >= 2024 && gy <= 2040) patch.grad_year = gy;
+  if (/^[A-Za-z]{2}$/.test(s(body.state))) patch.state = s(body.state).toUpperCase();
+  if (body.club !== undefined) patch.club = opt(body.club, 120);
+  // Adults control the coach feed themselves; for minors only the parent link can turn it on.
+  if (!a.is_minor && typeof body.feed_visible === "boolean") { patch.feed_visible = body.feed_visible; patch.feed_approved_at = body.feed_visible ? new Date().toISOString() : null; }
+  if (a.is_minor && body.feed_visible === false) { patch.feed_visible = false; patch.feed_approved_at = null; }
+  await supabase.from("vekt_athletes").update(patch).eq("id", a.id);
+  await saveVideos(supabase, a.id, sport, body.videos);
+  const synced = body.update_all === false ? 0 : await syncShares(supabase, a, profile);
+  return json({ status: "saved", synced });
+}
+
+async function meShare(supabase: any, token: string, body: any) {
+  const { data } = await supabase.from("vekt_athletes").select("*").eq("manage_token", token).limit(1);
+  const a = data?.[0];
+  if (!a || !isUuid(body.recruit_id)) return json({ error: "This link isn't valid." }, 404);
+  if (a.is_minor && !a.parent_approved_at) return json({ error: "A parent or guardian needs to approve the profile first." }, 403);
+  const { data: rr } = await supabase.from("comparison_recruits").select("*").eq("id", body.recruit_id).limit(1);
+  const r = rr?.[0];
+  const comp = r ? await loadComparison(supabase, { id: r.comparison_id }) : null;
+  const match = r && (await athleteForRecruit(supabase, { ...r, vekt_athlete_id: r.vekt_athlete_id ?? null }, sportFor(comp?.sport)))?.id === a.id;
+  if (!match || !r.consent_id) return json({ error: "This program isn't waiting on you." }, 404);
+  const yes = body.share === true;
+  await supabase.from("athlete_shares").upsert({ athlete_id: a.id, recruit_id: r.id, status: yes ? "shared" : "declined", decided_at: new Date().toISOString(), last_synced_at: yes ? new Date().toISOString() : null }, { onConflict: "recruit_id" });
+  if (yes) {
+    await supabase.from("comparison_recruits").update({ vekt_athlete_id: a.id }).eq("id", r.id);
+    await supabase.from("athlete_profiles").upsert({ ...a.profile, sport: a.sport, recruit_id: r.id, updated_at: new Date().toISOString(), submitted_at: new Date().toISOString() }, { onConflict: "recruit_id" });
+  } else {
+    // Stop sharing: remove this program's copy of what we pushed.
+    const { data: own } = await supabase.from("athlete_shares").select("id").eq("recruit_id", r.id).eq("status", "declined").limit(1);
+    if (own?.length) await supabase.from("athlete_profiles").delete().eq("recruit_id", r.id);
+  }
+  return json({ status: yes ? "shared" : "declined" });
 }
 
 async function clubLoad(supabase: any, token: string) {
@@ -653,6 +910,7 @@ Deno.serve(async (req) => {
         case "send_decision": return json(await sendDecision(supabase, body));
       }
     }
+    if (body.action === "join") return await join(supabase, body);
     if (!isUuid(body.token)) return json({ error: "This link isn't valid." }, 400);
     switch (body.action) {
       case "confirm_load": return await confirmLoad(supabase, body.token);
@@ -665,6 +923,12 @@ Deno.serve(async (req) => {
       case "club_load": return await clubLoad(supabase, body.token);
       case "club_save": return await clubSave(supabase, body.token, body);
       case "club_links": return await clubLinks(supabase, body.token);
+      case "profile_share": return await profileShare(supabase, body.token, body);
+      case "parent_load": return await parentLoad(supabase, body.token);
+      case "parent_save": return await parentSave(supabase, body.token, body);
+      case "me_load": return await meLoad(supabase, body.token);
+      case "me_save": return await meSave(supabase, body.token, body);
+      case "me_share": return await meShare(supabase, body.token, body);
       default: return json({ error: "Unknown action" }, 400);
     }
   } catch (e) {
