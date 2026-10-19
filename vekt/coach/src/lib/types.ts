@@ -18,7 +18,7 @@ export interface RecruitRow {
   stage: { key: StageKey; label: string };
   self_awareness: { level: SelfAwarenessLevel; label: string; same_story: number; covered: number } | null;
   headline: string | null; must_haves_missed: number | null;
-  profile_in?: boolean; club_eval_in?: boolean;
+  profile_in?: boolean; club_eval_in?: boolean; fills_need?: boolean;
 }
 export interface InviteEvent { id: string; recruit_id?: string; recruit_name?: string | null; recipient_role: string | null; channel: string | null; status: string; detail?: string | null; recipient?: string | null; created_at: string }
 export interface RecruitDetail {

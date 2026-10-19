@@ -22,6 +22,7 @@ import Parent from "./pages/public/Parent";
 import Me from "./pages/public/Me";
 import Feed from "./pages/Feed";
 import WatchList from "./pages/WatchList";
+import Roster from "./pages/Roster";
 import { Spinner } from "./components/ui";
 
 // The spreadsheet reader is large; load it only on the import page.
@@ -48,6 +49,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <Route path="recruits/:id/fit-read" element={<FitRead />} />
             <Route path="feed" element={<Feed />} />
             <Route path="watch" element={<WatchList />} />
+            <Route path="roster" element={<Roster />} />
             <Route path="side-by-side" element={<SideBySideList />} />
             <Route path="side-by-side/:id" element={<SideBySide />} />
             <Route path="activity" element={<Activity />} />

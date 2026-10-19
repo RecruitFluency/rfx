@@ -65,6 +65,17 @@ Set `app_config.profile_base_url` to the dashboard URL so invite emails include 
   date NCAA contact opens. No contact details. **Watch list** keeps underclassmen until contact opens;
   then "Invite" sends the family the normal invite, and their details stay hidden until they share.
 
+## Roster plan and export
+
+- **Roster plan** (`/roster`): the current roster with each player's last season, the program's roster
+  limit (D1 House limits suggested where sourced: football 105, baseball 34, basketball 15, soccer 28,
+  softball 25) and position targets. For any fall it shows open spots, gaps by position, players at risk,
+  aid freed, and how many recruits of that incoming class are on the board and marked Interested.
+  Recruits who fill an open need are badged on the board.
+- **Export** on the Recruits page: one CSV with the columns Teamworks, Front Rush or a spreadsheet import,
+  including each recruit's VEKT Fit Read link. A live Teamworks sync needs their API through a partner
+  agreement.
+
 ## Run it locally
 
 ```bash

@@ -250,4 +250,23 @@ check(eliAfter.profile_shared && eliAfter.recruit.parent_email === "dana.brooks@
 check((await dana("athlete_card", { program_id: PROGRAM, athlete_id: "30000000-0000-4000-8000-000000000005" })).status === 404, "a profile outside this program's feed and not shared can't be opened");
 check((await dana("athlete_card", { program_id: PROGRAM, athlete_id: "30000000-0000-4000-8000-000000000001" })).videos.length === 1, "a profile shared with this program opens, with its video");
 
+// ---- Roster planning and export ----
+const rp = await dana("roster_get", { program_id: PROGRAM });
+check(rp.plan.season === 2028 && rp.suggested_limit === 28, "plan defaults to the class most of the board is in; D1 soccer limit suggested", { season: rp.plan.season, s: rp.suggested_limit });
+check(rp.plan.returning === 10 && rp.plan.designated === 1 && rp.plan.open_spots === 18, "counts returning players and open spots under the limit (designated not counted)", rp.plan);
+const cb = rp.plan.positions.find((x) => x.position === "Center back");
+check(cb.returning === 1 && cb.gap === 4 && cb.recruits >= 3, "center back gap and board coverage for the class of 2028", cb);
+const rp27 = await dana("roster_get", { program_id: PROGRAM, season: 2027 });
+check(rp27.plan.returning === 14 && rp27.plan.open_spots === 14, "another season changes who's still here");
+const recs = await dana("recruits", { program_id: PROGRAM });
+check(recs.recruits.find((r) => r.recruit_name === "Marcus Hill").fills_need === true, "board marks recruits who fill an open need");
+check((await marco("roster_settings_save", { program_id: PROGRAM, roster_limit: 30 })).status === 403, "assistants can't change the roster limit");
+const addP = await marco("roster_player_save", { program_id: PROGRAM, player: { name: "New Keeper", position: "Goalkeeper", final_season: 2030 } });
+check(!!addP.id, "staff add a player to the roster");
+check((await dana("roster_import", { program_id: PROGRAM, rows: [{ name: "Pasted One", position: "Winger", final_season: 2029 }, { name: "", final_season: 2029 }] })).added === 1, "paste a roster; rows without a name are skipped");
+const ex = await dana("export_board", { program_id: PROGRAM });
+const exJ = ex.rows.find((r) => r["First Name"] === "Jordan");
+check(exJ && exJ["VEKT Fit Read"].endsWith(`/recruits/${R.jordan}/fit-read`) && exJ["Self-Awareness"], "export carries each recruit's Fit Read link and self-awareness", exJ);
+check((await priya("roster_player_save", { program_id: PROGRAM, player: { name: "X", final_season: 2028 } })).status === 403, "compliance can't edit the roster");
+
 console.log(`\n${passed} checks passed`);

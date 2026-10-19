@@ -13,6 +13,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sportFor, videoKinds } from "../_shared/sports.ts";
 import { contactOpens } from "../_shared/contact.ts";
+import { D1_HOUSE_LIMITS, fillsNeed, LIMITS_SOURCE, rosterPlan } from "../_shared/roster.ts";
 import { measurablesTable, skillsRead, systemsFit } from "../_shared/profile.ts";
 
 const cors = {
@@ -231,6 +232,24 @@ async function playerFor(supabase: any, programId: string, recruitIds: string[])
   return out;
 }
 
+// ---- Roster planning ----------------------------------------------------------------
+// The season recruiting is for: next fall by default (the incoming class is that HS grad year).
+const defaultSeason = () => new Date().getUTCFullYear() + 1;
+const ROSTER_STATUS = ["returning", "leaving", "transfer_risk", "undecided"];
+
+async function planFor(supabase: any, programId: string, season: number | null) {
+  const { data: p } = await supabase.from("program_dna").select("roster_limit, roster_targets").eq("id", programId).single();
+  const { data: roster } = await supabase.from("program_roster").select("*").eq("program_id", programId).order("position").order("final_season");
+  const { data: board } = await supabase.from("comparison_recruits").select("id, recruit_name, position, grad_year, decision").eq("program_id", programId);
+  // No season asked for: plan for the class most of the board is in (next fall or later).
+  if (!season) {
+    const counts = new Map<number, number>();
+    for (const r of board || []) if (r.grad_year && r.grad_year >= defaultSeason()) counts.set(r.grad_year, (counts.get(r.grad_year) ?? 0) + 1);
+    season = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0]?.[0] ?? defaultSeason();
+  }
+  return { plan: rosterPlan(roster || [], p?.roster_limit ?? null, p?.roster_targets ?? {}, season, board || []), roster: roster || [], settings: p };
+}
+
 // ---- The coach-only video feed and watch list -------------------------------------
 // Only athletes whose parent (or the adult athlete) turned the feed on appear, and
 // never with contact details. Underclassmen show when contact opens.
@@ -308,7 +327,8 @@ const actions: Record<string, (x: Ctx) => Promise<unknown>> = {
     const { data: pr } = ids.length ? await supabase.from("athlete_profiles").select("recruit_id").in("recruit_id", ids).not("submitted_at", "is", null) : { data: [] };
     const { data: ev } = ids.length ? await supabase.from("club_evaluations").select("recruit_id").in("recruit_id", ids).not("submitted_at", "is", null) : { data: [] };
     const hasP = new Set((pr || []).map((x: any) => x.recruit_id)), hasE = new Set((ev || []).map((x: any) => x.recruit_id));
-    return { recruits: (rs || []).map((r: any) => ({ ...listRow(r, reads.get(r.athlete_id)), profile_in: hasP.has(r.id), club_eval_in: hasE.has(r.id) })) };
+    const { plan } = await planFor(supabase, pid, null);
+    return { season: plan.season, recruits: (rs || []).map((r: any) => ({ ...listRow(r, reads.get(r.athlete_id)), profile_in: hasP.has(r.id), club_eval_in: hasE.has(r.id), fills_need: fillsNeed(plan, r) })) };
   },
 
   async recruit({ supabase, c, body }) {
@@ -434,6 +454,104 @@ const actions: Record<string, (x: Ctx) => Promise<unknown>> = {
     if (!r.athlete_id) fail(400, "The athlete hasn't finished their conversation yet.");
     background(fitRead({ athlete_id: r.athlete_id, program_id: r.program_id, force: true }));
     return { status: "queued" };
+  },
+
+  // ---- Export: a CSV-ready board for Teamworks, Front Rush or a spreadsheet ----
+  async export_board({ supabase, c, body }) {
+    const pid = program(c, body.program_id);
+    const { data: rs } = await supabase.from("comparison_recruits").select("*").eq("program_id", pid).order("created_at");
+    const reads = await readsFor(supabase, pid, (rs || []).filter((r: any) => r.athlete_id).map((r: any) => r.athlete_id));
+    const { data: shares } = await supabase.from("athlete_shares").select("recruit_id").eq("status", "shared").in("recruit_id", (rs || []).map((r: any) => r.id));
+    const shared = new Set((shares || []).map((x: any) => x.recruit_id));
+    const { data: cfg } = await supabase.from("app_config").select("value").eq("key", "coach_app_url").limit(1);
+    const base = cfg?.[0]?.value || "";
+    const { plan } = await planFor(supabase, pid, null);
+    const rows = (rs || []).map((r: any) => {
+      const read = reads.get(r.athlete_id);
+      const hide = r.source === "feed" && !shared.has(r.id);
+      const [first, ...rest] = (r.recruit_name || "").split(/\s+/);
+      return {
+        "First Name": first, "Last Name": rest.join(" "), "Grad Year": r.grad_year ?? "", "Position": r.position ?? "", "Club / School": r.club_or_school ?? "", "State": r.state ?? "",
+        "Email": hide ? "" : r.athlete_email ?? "", "Phone": hide ? "" : r.athlete_phone ?? "",
+        "Parent Name": r.parent_name ?? "", "Parent Email": hide ? "" : r.parent_email ?? "", "Parent Phone": hide ? "" : r.parent_phone ?? "",
+        "Club Coach": r.club_coach_name ?? "", "Club Coach Email": r.club_coach_email ?? "",
+        "Priority": r.priority, "VEKT Status": stage(r, !!read?.report).label, "Staff Decision": r.decision === "interested" ? "Interested" : r.decision === "not_a_fit" ? "Not a fit" : "",
+        "Self-Awareness": read?.report?.self_awareness?.label ?? "", "Fills a Need": fillsNeed(plan, r) ? `Yes (Fall ${plan.season})` : "",
+        "VEKT Fit Read": read?.report && base ? `${base}/recruits/${r.id}/fit-read` : "",
+      };
+    });
+    await audit(supabase, c, "export", "board", pid, { rows: rows.length });
+    return { rows };
+  },
+
+  // ---- Roster planning ----
+  async roster_get({ supabase, c, body }) {
+    const pid = program(c, body.program_id);
+    const { plan, roster, settings } = await planFor(supabase, pid, int(body.season, 2024, 2040));
+    const { data: p } = await supabase.from("program_dna").select("sport, division").eq("id", pid).single();
+    const sport = sportFor(p?.sport);
+    const suggested = sport && (p?.division || "").toUpperCase().replace(/\s/g, "").match(/^(D1|DI|DIVISIONI)$/) ? D1_HOUSE_LIMITS[sport.key] ?? null : null;
+    return {
+      plan, roster, limit: settings?.roster_limit ?? null, targets: settings?.roster_targets ?? {},
+      suggested_limit: suggested, suggested_source: suggested ? LIMITS_SOURCE : null,
+      positions: sport?.positions.map((x) => x.label) ?? [], seasons: [0, 1, 2, 3].map((i) => defaultSeason() + i),
+    };
+  },
+
+  async roster_settings_save({ supabase, c, body }) {
+    canSettings(c);
+    const pid = program(c, body.program_id);
+    const targets: Record<string, number> = {};
+    for (const [k, v] of Object.entries((body.targets && typeof body.targets === "object") ? body.targets : {})) {
+      const n = int(v, 0, 60);
+      if (s(k, 60) && n != null && n > 0) targets[s(k, 60)] = n;
+    }
+    const limit = body.roster_limit === null || body.roster_limit === "" ? null : int(body.roster_limit, 1, 200);
+    await supabase.from("program_dna").update({ roster_limit: limit, roster_targets: targets }).eq("id", pid);
+    await audit(supabase, c, "update", "roster_settings", pid, { roster_limit: limit });
+    return { saved: true };
+  },
+
+  async roster_player_save({ supabase, c, body }) {
+    canWrite(c);
+    const pid = program(c, body.program_id);
+    const x = body.player || {};
+    const row = {
+      program_id: pid, name: s(x.name, 120), position: opt(x.position, 60), final_season: int(x.final_season, 2020, 2040),
+      status: ROSTER_STATUS.includes(x.status) ? x.status : "returning", designated: x.designated === true,
+      aid_dollars: x.aid_dollars === "" || x.aid_dollars == null ? null : int(x.aid_dollars, 0, 500000), notes: opt(x.notes, 300), updated_at: new Date().toISOString(),
+    };
+    if (!row.name || !row.final_season) fail(400, "Add the player's name and last season.");
+    if (isUuid(x.id)) {
+      const { data } = await supabase.from("program_roster").update(row).eq("id", x.id).eq("program_id", pid).select("id");
+      if (!data?.length) fail(404, "Player not found.");
+      return { id: x.id };
+    }
+    const { data, error } = await supabase.from("program_roster").insert(row).select("id");
+    if (error) fail(400, error.message);
+    return { id: data[0].id };
+  },
+
+  async roster_player_delete({ supabase, c, body }) {
+    canWrite(c);
+    const pid = program(c, body.program_id);
+    if (!isUuid(body.id)) fail(404, "Player not found.");
+    await supabase.from("program_roster").delete().eq("id", body.id).eq("program_id", pid);
+    return { deleted: true };
+  },
+
+  async roster_import({ supabase, c, body }) {
+    canWrite(c);
+    const pid = program(c, body.program_id);
+    const rows = (Array.isArray(body.rows) ? body.rows : []).slice(0, 200).map((x: any) => ({
+      program_id: pid, name: s(x.name, 120), position: opt(x.position, 60), final_season: int(x.final_season, 2020, 2040),
+      status: ROSTER_STATUS.includes(x.status) ? x.status : "returning", designated: false,
+    })).filter((r: any) => r.name && r.final_season);
+    if (!rows.length) fail(400, "No rows with a name and last season.");
+    const { error } = await supabase.from("program_roster").insert(rows);
+    if (error) fail(400, error.message);
+    await audit(supabase, c, "import", "roster", pid, { added: rows.length });
+    return { added: rows.length };
   },
 
   // ---- Coach feed and watch list ----

@@ -44,6 +44,7 @@ function Layout() {
   const nav = [
     { to: "/", label: "Overview", end: true, show: true },
     { to: "/recruits", label: "Recruits", show: true },
+    { to: "/roster", label: "Roster plan", show: true },
     { to: "/side-by-side", label: "Side-by-Side", show: true },
     { to: "/feed", label: "Film feed", show: true },
     { to: "/watch", label: "Watch list", show: true },

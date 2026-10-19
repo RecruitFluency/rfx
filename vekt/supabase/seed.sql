@@ -161,3 +161,32 @@ insert into public.athlete_videos (athlete_id, kind, url, youtube_id, title, rec
 
 insert into public.watch_list (program_id, athlete_id, added_by, note) values
   ('a0000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000003', 'c0000000-0000-4000-8000-000000000001', 'Left-sided CB with real composure. Check again at the spring showcase.');
+
+-- Roster planning demo (fictional players).
+update public.program_dna set roster_limit = 28,
+  roster_targets = '{"Goalkeeper": 3, "Center back": 5, "Fullback": 4, "Defensive midfielder": 3, "Central midfielder": 4, "Attacking midfielder": 2, "Winger": 4, "Striker": 3}'
+where id = 'a0000000-0000-4000-8000-000000000001';
+
+insert into public.program_roster (program_id, name, position, final_season, status, designated, aid_dollars) values
+  ('a0000000-0000-4000-8000-000000000001', 'Owen Hale', 'Goalkeeper', 2026, 'returning', false, 12000),
+  ('a0000000-0000-4000-8000-000000000001', 'Luis Ortega', 'Goalkeeper', 2028, 'returning', false, null),
+  ('a0000000-0000-4000-8000-000000000001', 'Ben Carver', 'Goalkeeper', 2029, 'returning', true, null),
+  ('a0000000-0000-4000-8000-000000000001', 'Isaac Moore', 'Center back', 2026, 'returning', false, 18000),
+  ('a0000000-0000-4000-8000-000000000001', 'Tariq Bello', 'Center back', 2026, 'returning', false, 15000),
+  ('a0000000-0000-4000-8000-000000000001', 'Gavin Shaw', 'Center back', 2027, 'transfer_risk', false, 9000),
+  ('a0000000-0000-4000-8000-000000000001', 'Rory Quinn', 'Center back', 2029, 'returning', false, null),
+  ('a0000000-0000-4000-8000-000000000001', 'Sam Ito', 'Fullback', 2027, 'returning', false, null),
+  ('a0000000-0000-4000-8000-000000000001', 'Drew Patel', 'Fullback', 2028, 'returning', false, null),
+  ('a0000000-0000-4000-8000-000000000001', 'Nico Ferrer', 'Fullback', 2026, 'returning', false, 6000),
+  ('a0000000-0000-4000-8000-000000000001', 'Jalen Ross', 'Defensive midfielder', 2027, 'returning', false, 10000),
+  ('a0000000-0000-4000-8000-000000000001', 'Theo Grant', 'Defensive midfielder', 2029, 'returning', false, null),
+  ('a0000000-0000-4000-8000-000000000001', 'Max Albright', 'Central midfielder', 2026, 'leaving', false, 14000),
+  ('a0000000-0000-4000-8000-000000000001', 'Cole Vance', 'Central midfielder', 2028, 'returning', false, null),
+  ('a0000000-0000-4000-8000-000000000001', 'Ari Levin', 'Central midfielder', 2029, 'undecided', false, null),
+  ('a0000000-0000-4000-8000-000000000001', 'Kenji Mori', 'Attacking midfielder', 2027, 'returning', false, 8000),
+  ('a0000000-0000-4000-8000-000000000001', 'Dev Sharma', 'Winger', 2026, 'returning', false, null),
+  ('a0000000-0000-4000-8000-000000000001', 'Elias Brandt', 'Winger', 2028, 'returning', false, null),
+  ('a0000000-0000-4000-8000-000000000001', 'Marco Silva', 'Winger', 2029, 'returning', false, null),
+  ('a0000000-0000-4000-8000-000000000001', 'Andre Wells', 'Striker', 2026, 'returning', false, 16000),
+  ('a0000000-0000-4000-8000-000000000001', 'Felix Nunez', 'Striker', 2028, 'returning', false, null),
+  ('a0000000-0000-4000-8000-000000000001', 'Pete Okoro', 'Striker', 2029, 'transfer_risk', false, null);

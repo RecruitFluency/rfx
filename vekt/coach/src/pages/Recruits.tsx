@@ -39,6 +39,16 @@ export default function Recruits() {
   const samePosition = sel.length > 0 && new Set(sel.map((r) => norm(r.position))).size === 1 && !!sel[0].position;
   const toggle = (id: string) => setPicked((p) => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
+  // One CSV with the columns recruiting systems import, plus each recruit's VEKT Fit Read link.
+  const exportCsv = async () => {
+    const { rows } = await api<{ rows: Record<string, string | number>[] }>("export_board", { program_id: program!.id });
+    if (!rows.length) return;
+    const cell = (v: unknown) => { const t = v == null ? "" : String(v); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+    const head = Object.keys(rows[0]);
+    const blob = new Blob([[head.join(","), ...rows.map((r) => head.map((h) => cell(r[h])).join(","))].join("\n")], { type: "text/csv" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `vekt-board-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+  };
+
   const compare = async () => {
     setBusy(true); setError2(null);
     try { const out = await api<{ id: string }>("side_by_side_create", { program_id: program!.id, recruit_ids: [...picked] }); nav(`/side-by-side/${out.id}`); }
@@ -48,7 +58,7 @@ export default function Recruits() {
   return (
     <div>
       <PageHeader eyebrow="Your board" title="Recruits" subtitle="Everyone you've added, their contacts, and where they are in the VEKT conversation."
-        actions={me?.can.write ? <><ButtonLink to="/recruits/new" variant="primary">Add a recruit</ButtonLink><ButtonLink to="/recruits/import">Import a list</ButtonLink></> : undefined} />
+        actions={<>{me?.can.write && <><ButtonLink to="/recruits/new" variant="primary">Add a recruit</ButtonLink><ButtonLink to="/recruits/import">Import a list</ButtonLink></>}<Button variant="ghost" onClick={exportCsv}>Export (Teamworks, Front Rush, Excel)</Button></>} />
 
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <div className="relative flex-1 min-w-[220px] max-w-sm">
@@ -101,6 +111,7 @@ export default function Recruits() {
                       <Badge tone={r.has_athlete_contact ? "progress" : "neutral"}>Athlete</Badge>
                       <Badge tone={r.has_parent_contact ? "progress" : "neutral"}>Parent</Badge>
                       <Badge tone={r.has_club_contact ? "progress" : "neutral"}>Director</Badge>
+                      {r.fills_need && <Badge tone="done">Fills a need</Badge>}
                       {r.profile_in && <Badge tone="done">Profile</Badge>}
                       {r.club_eval_in && <Badge tone="done">Club read</Badge>}
                     </div>
