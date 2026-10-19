@@ -159,7 +159,9 @@ Nothing here has been applied to production. Each step needs a go-ahead.
    - `VEKT_GHL_WEBHOOK_TOKEN` (a long random string), optionally `GHL_WEBHOOK_PUBLIC_KEY`
    - `VEKT_COACH_APP_ORIGIN` = the dashboard URL (locks down CORS)
    - Never set `VEKT_FIT_MOCK` or `VEKT_GHL_MOCK` in production.
-3. **Deploy functions**: `supabase functions deploy vekt-invites vekt-webhook vekt-fit-read vekt-coach vekt-club vekt-ghl-webhook --no-verify-jwt`.
+3. **Deploy functions** (done: all six are live in production). Later changes deploy through
+   the GitHub Action `deploy-vekt-functions.yml` once the repo has a `SUPABASE_ACCESS_TOKEN`
+   secret, or by hand: `supabase functions deploy vekt-invites vekt-webhook vekt-fit-read vekt-coach vekt-club vekt-ghl-webhook --no-verify-jwt`.
 4. **Schedules** (Supabase cron or GHL): every 5 minutes call `vekt-invites` with
    `{"action":"dispatch"}`; daily call `release_due` and `send_reminders`. Each needs the
    header `x-vekt-internal: <service role key>`.
