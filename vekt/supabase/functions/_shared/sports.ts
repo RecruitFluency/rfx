@@ -303,6 +303,68 @@ export const SPORTS: Sport[] = [
   },
 ];
 
+// ---- Video: what each sport's coaches expect to see -------------------------
+// Team sports recruit off a highlight plus unedited film (every touch, half, full
+// game). Individual sports recruit off race, match or event video.
+export interface VideoKind { key: string; label: string; hint: string }
+const TEAM_VIDEO: VideoKind[] = [
+  { key: "highlight", label: "Highlight", hint: "Your best plays, 3 to 5 minutes, best clips first" },
+  { key: "every_touch", label: "Every touch", hint: "Every time you're involved in one game, unedited" },
+  { key: "half_game", label: "Half game", hint: "One unedited half against good opposition" },
+  { key: "full_game", label: "Full game", hint: "A full unedited game; say your number and jersey color" },
+];
+const VIDEO_BY_SPORT: Record<string, VideoKind[]> = {
+  football: [
+    { key: "highlight", label: "Highlight", hint: "Best 15 to 25 plays, best first, you marked before each snap" },
+    { key: "full_game", label: "Full game film", hint: "One complete game, every snap you play" },
+    { key: "camp", label: "Camp or combine", hint: "Drills and testing from a camp" },
+  ],
+  basketball: [
+    { key: "highlight", label: "Highlight", hint: "3 to 5 minutes, best plays first" },
+    { key: "every_touch", label: "Every possession", hint: "Every possession you're on the floor for one game" },
+    { key: "full_game", label: "Full game", hint: "A full unedited game; say your number and jersey color" },
+  ],
+  volleyball: [
+    { key: "highlight", label: "Highlight / skills", hint: "Best plays plus position skills, 3 to 5 minutes" },
+    { key: "full_game", label: "Full match", hint: "An unedited match; say your number and jersey color" },
+  ],
+  baseball: [
+    { key: "highlight", label: "Skills video", hint: "Hitting, fielding and throwing, or a bullpen for pitchers" },
+    { key: "every_touch", label: "Game at-bats / innings", hint: "Unedited at-bats or innings from games" },
+    { key: "full_game", label: "Full game", hint: "One unedited game" },
+  ],
+  softball: [
+    { key: "highlight", label: "Skills video", hint: "Hitting, fielding and throwing, or pitching" },
+    { key: "every_touch", label: "Game at-bats / innings", hint: "Unedited at-bats or innings from games" },
+    { key: "full_game", label: "Full game", hint: "One unedited game" },
+  ],
+  track_field: [{ key: "race", label: "Race or event video", hint: "Full races, jumps or throws from meets" }, { key: "highlight", label: "Highlight", hint: "Best marks in one video" }],
+  cross_country: [{ key: "race", label: "Race video", hint: "A full race or finish" }],
+  swimming_diving: [{ key: "race", label: "Race or dive video", hint: "Full races from meets, or a full dive list" }],
+  tennis: [{ key: "match", label: "Match play", hint: "Unedited points from a match, filmed from behind the baseline" }, { key: "highlight", label: "Skills video", hint: "Strokes, serve and movement" }],
+  golf: [{ key: "swing", label: "Swing video", hint: "Face-on and down-the-line, driver, iron and wedge" }, { key: "highlight", label: "On-course video", hint: "Holes played in competition" }],
+  wrestling: [{ key: "full_game", label: "Full matches", hint: "Unedited matches against good opponents" }, { key: "highlight", label: "Highlight", hint: "Best takedowns and pins" }],
+  rowing: [{ key: "race", label: "Rowing or erg video", hint: "Side-on technique video, or a race" }],
+  gymnastics: [{ key: "routine", label: "Routines", hint: "Full routines from meets, one per event" }, { key: "highlight", label: "Skills / upgrades", hint: "New skills in training" }],
+};
+export const videoKinds = (sport: Sport): VideoKind[] => VIDEO_BY_SPORT[sport.key] ?? TEAM_VIDEO;
+
+/** YouTube, Hudl and Vimeo links only; returns the YouTube id when it is one. */
+export function videoLink(url: string): { ok: boolean; youtubeId: string | null } {
+  let u: URL;
+  try { u = new URL(url.trim()); } catch { return { ok: false, youtubeId: null }; }
+  if (u.protocol !== "https:") return { ok: false, youtubeId: null };
+  const host = u.hostname.replace(/^www\.|^m\./, "");
+  let id: string | null = null;
+  if (host === "youtu.be") id = u.pathname.slice(1).split("/")[0];
+  else if (host === "youtube.com" || host === "youtube-nocookie.com") {
+    id = u.searchParams.get("v") ?? (u.pathname.match(/^\/(?:shorts|embed|live)\/([^/?]+)/)?.[1] ?? null);
+  }
+  if (id && /^[A-Za-z0-9_-]{6,20}$/.test(id)) return { ok: true, youtubeId: id };
+  const ok = /(^|\.)hudl\.com$/.test(host) || host === "vimeo.com" || host === "player.vimeo.com";
+  return { ok, youtubeId: null };
+}
+
 const ALIASES: Record<string, string> = {
   hockey: "ice_hockey", icehockey: "ice_hockey", fieldhockey: "field_hockey", waterpolo: "water_polo", track: "track_field",
   trackandfield: "track_field", trackfield: "track_field", xc: "cross_country", crosscountry: "cross_country",

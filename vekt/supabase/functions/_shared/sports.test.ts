@@ -70,3 +70,17 @@ describe("cleaning profiles", () => {
     });
   });
 });
+
+describe("video links", () => {
+  it("accepts YouTube, Hudl and Vimeo over https", async () => {
+    const { videoLink, videoKinds } = await import("./sports.ts");
+    expect(videoLink("https://www.youtube.com/watch?v=dQw4w9WgXcQ")).toEqual({ ok: true, youtubeId: "dQw4w9WgXcQ" });
+    expect(videoLink("https://youtu.be/dQw4w9WgXcQ?t=30").youtubeId).toBe("dQw4w9WgXcQ");
+    expect(videoLink("https://youtube.com/shorts/abcDEF12345").youtubeId).toBe("abcDEF12345");
+    expect(videoLink("https://www.hudl.com/video/3/123/abc")).toEqual({ ok: true, youtubeId: null });
+    expect(videoLink("http://youtube.com/watch?v=dQw4w9WgXcQ").ok).toBe(false);
+    expect(videoLink("https://evil.example/watch?v=dQw4w9WgXcQ").ok).toBe(false);
+    expect(videoKinds(sportFor("soccer")!).map((k) => k.key)).toEqual(["highlight", "every_touch", "half_game", "full_game"]);
+    expect(videoKinds(sportFor("golf")!)[0].key).toBe("swing");
+  });
+});
