@@ -1,0 +1,48 @@
+# Deploys the VEKT Supabase functions to production (College Coach_DNA_2027).
+# Needs one repository secret: SUPABASE_ACCESS_TOKEN (a Supabase personal access token).
+# Without it the job skips instead of failing.
+name: Deploy VEKT functions
+
+on:
+  push:
+    branches: [main, claude/vekt-coach-portal]
+    paths: ["vekt/supabase/functions/**", ".github/workflows/deploy-vekt-functions.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: vekt-functions
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: xpzenyjmpqzmhdeuqmto
+    defaults:
+      run:
+        working-directory: vekt
+    steps:
+      - name: Skip until the token secret is added
+        if: env.SUPABASE_ACCESS_TOKEN == ''
+        run: echo "::notice::Add the SUPABASE_ACCESS_TOKEN repository secret to deploy the VEKT functions."
+      - uses: actions/checkout@v4
+        if: env.SUPABASE_ACCESS_TOKEN != ''
+      - uses: supabase/setup-cli@v1
+        if: env.SUPABASE_ACCESS_TOKEN != ''
+        with:
+          version: latest
+      - name: Deploy functions
+        if: env.SUPABASE_ACCESS_TOKEN != ''
+        run: |
+          supabase functions deploy vekt-invites vekt-webhook vekt-fit-read vekt-coach vekt-club vekt-ghl-webhook \
+            --project-ref "$PROJECT_REF" --no-verify-jwt
+      # 404 = not deployed, 503 = failed to boot. Anything else means the function is up.
+      - name: Check each function is up
+        if: env.SUPABASE_ACCESS_TOKEN != ''
+        run: |
+          for f in vekt-invites vekt-webhook vekt-fit-read vekt-coach vekt-club vekt-ghl-webhook; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "content-type: application/json" -d '{}' "https://$PROJECT_REF.supabase.co/functions/v1/$f")
+            echo "$f -> $code"
+            if [ "$code" = "404" ] || [ "$code" = "503" ] || [ "$code" = "000" ]; then echo "::error::$f is not up ($code)"; exit 1; fi
+          done
