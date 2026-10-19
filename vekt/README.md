@@ -137,9 +137,10 @@ Nothing here has been applied to production. Each step needs a go-ahead.
 
 1. **Database. Done on 2026-10-19.** All five migrations were applied to production (in smaller
    pieces through the Supabase tool, so production's migration history shows different version names).
+   The share-link migration (`20261019240000`) is applied too.
    Everything uses `if not exists`, so a later `supabase db push` would be harmless, but to keep the
    history tidy mark the local files as applied first:
-   `supabase migration repair --status applied 20261017173246 20261019120000 20261019180000 20261019200000 20261019220000 20261019230000`.
+   `supabase migration repair --status applied 20261017173246 20261019120000 20261019180000 20261019200000 20261019220000 20261019230000 20261019240000`.
 2. **Function secrets** (Supabase → Edge Functions → Secrets):
    - `VEKT_WEBHOOK_SECRET`: **set this.** Until it is set, `vekt-webhook` still accepts the
      old secret written in its source code, which anyone with the code can use. Set it at the same
@@ -160,8 +161,11 @@ Nothing here has been applied to production. Each step needs a go-ahead.
    webhooks (OutboundMessage, InboundMessage, LCEmailStats, ContactDndUpdate) at
    `.../functions/v1/vekt-ghl-webhook?token=<VEKT_GHL_WEBHOOK_TOKEN>`. Keep
    `app_config.invites_live = false` until a test send to your own number and email works.
-7. **Dashboard**: new Vercel project from `vekt/coach` (root directory `vekt/coach`), with
-   `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Then set `app_config.coach_app_url`.
+7. **Dashboard. Done on 2026-10-19.** It runs on Vercel only: project `vekt-dashboard` (RFX Team),
+   root directory `vekt/coach`, live at https://vekt-dashboard.vercel.app. `VITE_SUPABASE_URL` and
+   `VITE_SUPABASE_ANON_KEY` are set. `app_config.coach_app_url` and `profile_base_url` point at it.
+   Pushes to `main` deploy it after PR #18 merges. The Netlify previews on this repo come from a
+   separate Netlify integration; disconnect it in Netlify.
 8. **First accounts**: insert a `vekt_departments` row, link `program_dna.department_id`,
    and add the department admin to `coach_accounts`; they add the rest of their staff. For a club,
    insert a `vekt_clubs` row and its director in `club_accounts`.
