@@ -10,6 +10,17 @@ import CoachProfile from './app/pages/CoachProfile.tsx';
 import Programs from './app/pages/Programs.tsx';
 import ProgramProfile from './app/pages/ProgramProfile.tsx';
 import Setup from './app/pages/Setup.tsx';
+import PortalShell from './portal/PortalShell.tsx';
+import PortalLogin from './portal/pages/Login.tsx';
+import PortalDashboard from './portal/pages/Dashboard.tsx';
+import PortalProspects from './portal/pages/Prospects.tsx';
+import PortalProspectDetail from './portal/pages/ProspectDetail.tsx';
+import PortalProspectForm from './portal/pages/ProspectForm.tsx';
+import PortalImport from './portal/pages/Import.tsx';
+import PortalInvitations from './portal/pages/Invitations.tsx';
+import PortalDepartment from './portal/pages/Department.tsx';
+import PortalCompliance from './portal/pages/Compliance.tsx';
+import PortalSettings from './portal/pages/Settings.tsx';
 import './index.css';
 
 // The site root is the Lake Nona deck, which is a static file copied into
@@ -35,6 +46,19 @@ createRoot(document.getElementById('root')!).render(
           <Route path="programs" element={<Programs />} />
           <Route path="programs/:id" element={<ProgramProfile />} />
           <Route path="setup" element={<Setup />} />
+        </Route>
+        <Route path="/portal/login" element={<PortalLogin />} />
+        <Route path="/portal" element={<PortalShell />}>
+          <Route index element={<PortalDashboard />} />
+          <Route path="prospects" element={<PortalProspects />} />
+          <Route path="prospects/new" element={<PortalProspectForm />} />
+          <Route path="prospects/:id" element={<PortalProspectDetail />} />
+          <Route path="prospects/:id/edit" element={<PortalProspectForm />} />
+          <Route path="import" element={<PortalImport />} />
+          <Route path="invitations" element={<PortalInvitations />} />
+          <Route path="department" element={<PortalDepartment />} />
+          <Route path="compliance" element={<PortalCompliance />} />
+          <Route path="settings" element={<PortalSettings />} />
         </Route>
       </Routes>
     </BrowserRouter>
