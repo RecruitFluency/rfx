@@ -122,12 +122,16 @@ Tests: `npm test` (unit), `npm run test:e2e` (50 checks against the local stack)
 
 Nothing here has been applied to production. Each step needs a go-ahead.
 
-1. **Database.** `supabase link --project-ref xpzenyjmpqzmhdeuqmto`, then
-   `supabase migration repair --status applied 20261017173246` (marks the baseline as
-   already there), then `supabase db push` (applies only the coach dashboard migration).
+1. **Database. Done on 2026-10-19.** All five migrations were applied to production (in smaller
+   pieces through the Supabase tool, so production's migration history shows different version names).
+   Everything uses `if not exists`, so a later `supabase db push` would be harmless, but to keep the
+   history tidy mark the local files as applied first:
+   `supabase migration repair --status applied 20261017173246 20261019120000 20261019180000 20261019200000 20261019220000 20261019230000`.
 2. **Function secrets** (Supabase → Edge Functions → Secrets):
    - `VEKT_WEBHOOK_SECRET`: **set this.** Until it is set, `vekt-webhook` still accepts the
-     old secret written in its source code, which anyone with the code can use.
+     old secret written in its source code, which anyone with the code can use. Set it at the same
+     time as you update the ElevenLabs agents' webhook header to the new value, or voice interviews
+     stop saving.
    - `VEKT_APP_SECRET` (already used by vekt-fit-read), `ANTHROPIC_API_KEY`, `GHL_PIT`
    - `VEKT_GHL_WEBHOOK_TOKEN` (a long random string), optionally `GHL_WEBHOOK_PUBLIC_KEY`
    - `VEKT_COACH_APP_ORIGIN` = the dashboard URL (locks down CORS)
