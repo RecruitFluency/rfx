@@ -354,4 +354,28 @@ check(exr.rows.length === (await jamie("roster")).athletes.length && exr.rows.fi
   check((await post("vekt-invites", { action: "parent_load", token: jordan.parent_token })).share.url.includes(jordan.ref_code), "parents get the same link to share with other team parents");
 }
 
+// ---- Team unlock ----
+{
+  const { data: j } = await admin.from("vekt_athletes").select("manage_token").eq("id", "30000000-0000-4000-8000-000000000001").single();
+  const me = await post("vekt-invites", { action: "me_load", token: j.manage_token });
+  check(me.team?.unlocked && me.team.size >= 3 && me.team.suggested.formation?.includes("4-3-3") && me.team.suggested.style?.includes("High press") && !me.team.suggested.formation.includes("3-5-2"),
+    "three teammates at one club unlock the team: systems at least two of them picked are suggested", me.team);
+  check(!/Mateo|Eli/.test(JSON.stringify(me.team)), "team suggestions never name teammates");
+  const { data: k } = await admin.from("vekt_athletes").select("manage_token").eq("id", "30000000-0000-4000-8000-000000000003").single();
+  const kai = await post("vekt-invites", { action: "me_load", token: k.manage_token });
+  check(kai.team && !kai.team.unlocked && Object.keys(kai.team.suggested).length === 0, "an athlete outside the class range doesn't see the team's suggestions", kai.team);
+}
+
+// ---- Club free tier ----
+{
+  const director = async (action) => { const tok = await signIn("jamie.porter@lakeshorefc.example.com"); const r = await fetch(`${FN}/vekt-club`, { method: "POST", headers: { authorization: `Bearer ${tok}`, "content-type": "application/json" }, body: JSON.stringify({ action }) }); return r.json(); };
+  const withPlan = await director("me");
+  check(withPlan.plan?.free_families === 25 && withPlan.plan.families >= 3 && withPlan.plan.free === true, "club sees how many families it has on the free plan", withPlan.plan);
+  await setConfig("club_free_families", "");
+  check((await director("me")).plan === null, "no offer is shown until the free-plan size is set");
+  await setConfig("club_free_families", "2");
+  check((await director("me")).plan.free === false, "past the free size the club is told its plan is complete");
+  await setConfig("club_free_families", "25");
+}
+
 console.log(`\n${passed} checks passed`);

@@ -16,6 +16,7 @@ interface Load {
   pending: { recruit_id: string; program: string }[];
   clubs: { id: string; club: string; allowed: boolean; text: string }[];
   share: { url: string; joined: number };
+  team: { size: number; needed: number; unlocked: boolean; suggested: Record<string, string[]> } | null;
 }
 
 const shareText = (sport: string) => `I'm on VEKT, a free ${sport.toLowerCase()} recruiting profile that shows college coaches how you actually fit their program. Start yours:`;
@@ -104,12 +105,15 @@ export default function Me() {
       </Section>
 
       <Section title="Bring your teammates">
-        <div className="flex flex-wrap items-center justify-between gap-4 border border-white/[0.16] rounded p-5">
-          <div>
-            <p className="text-white">{d.share.joined ? `${d.share.joined} ${d.share.joined === 1 ? "teammate has" : "teammates have"} joined from your link.` : "Know someone who should be on VEKT?"}</p>
-            <p className="text-sm text-vekt-grey mt-1">Send your link. Each teammate builds their own profile, and a parent approves it if they're under 18. They never see yours.</p>
+        <div className="flex flex-col gap-4 border border-white/[0.16] rounded p-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-white">{d.share.joined ? `${d.share.joined} ${d.share.joined === 1 ? "teammate has" : "teammates have"} joined from your link.` : "Know someone who should be on VEKT?"}</p>
+              <p className="text-sm text-vekt-grey mt-1">Send your link. Each teammate builds their own profile, and a parent approves it if they're under 18. They never see yours.</p>
+            </div>
+            <ShareButton url={d.share.url} title="Join me on VEKT" text={shareText(sport.label)} label="Invite teammates" />
           </div>
-          <ShareButton url={d.share.url} title="Join me on VEKT" text={shareText(sport.label)} label="Invite teammates" />
+          <TeamUnlock team={d.team} club={a.club} sport={sport} value={value} onUse={(systems) => setValue({ ...value, systems })} />
         </div>
       </Section>
 
@@ -128,5 +132,32 @@ export default function Me() {
       <ShareButton floating url={d.share.url} title="Join me on VEKT" text={shareText(sport.label)} label="Invite teammates" className="hidden sm:block" />
       <SaveBar onSave={() => save(false)} onSubmit={() => save(true)} busy={busy} note={note} submitLabel={shared.length && updateAll ? "Save and update programs" : "Save profile"} />
     </PublicFrame>
+  );
+}
+
+// Team unlock: once 3 teammates (same club and class, give or take a year) are on VEKT,
+// the systems most of them say the team plays can be added to this profile in one tap.
+function TeamUnlock({ team, club, sport, value, onUse }: { team: Load["team"]; club: string | null; sport: NonNullable<ReturnType<typeof sportFor>>; value: ProfileValue; onUse: (systems: Record<string, string[]>) => void }) {
+  if (!team) return <p className="text-sm text-vekt-grey border-t border-white/[0.08] pt-4">Add your club and grad year under The basics to see how many teammates are on VEKT.</p>;
+  const groups = sport.systems.filter((g) => team.suggested[g.key]?.length);
+  const merged = { ...(value.systems ?? {}) };
+  for (const g of groups) merged[g.key] = [...new Set([...(merged[g.key] ?? []), ...team.suggested[g.key]])];
+  const already = groups.every((g) => team.suggested[g.key].every((o) => value.systems?.[g.key]?.includes(o)));
+  return (
+    <div className="border-t border-white/[0.08] pt-4 flex flex-col gap-3">
+      <div className="flex items-center gap-3">
+        <div className="flex gap-1" aria-hidden="true">{Array.from({ length: team.needed }, (_, i) => <span key={i} className={`w-6 h-1.5 rounded-sm ${i < team.size ? "bg-white" : "bg-white/15"}`} />)}</div>
+        <span className="text-sm text-white">{team.unlocked ? "Team unlocked" : `${Math.min(team.size, team.needed)} of ${team.needed} from ${club} on VEKT`}</span>
+      </div>
+      {!team.unlocked ? (
+        <p className="text-sm text-vekt-grey">At {team.needed}, VEKT can fill in the systems your team plays from what your teammates say, so you don't have to.</p>
+      ) : groups.length ? (
+        <>
+          <p className="text-sm text-white/85">Your teammates say your team plays: {groups.map((g) => `${team.suggested[g.key].join(", ")}`).join(" · ")}.</p>
+          {already ? <p className="text-xs text-vekt-grey">Already on your profile.</p>
+            : <button type="button" className="self-start text-sm text-white underline underline-offset-4" onClick={() => onUse(merged)}>Add these to my profile</button>}
+        </>
+      ) : <p className="text-sm text-vekt-grey">Once your teammates add the systems your team plays, they'll show up here.</p>}
+    </div>
   );
 }

@@ -19,6 +19,7 @@ export async function clubApi<T = any>(action: string, body: Record<string, unkn
 export interface ClubMe {
   account: { id: string; first_name: string; last_name: string; email: string; role: "director" | "coach" };
   club: { id: string; name: string; state: string | null; sports: string[] };
+  plan: { free_families: number; families: number; free: boolean } | null;
 }
 
 export type StageKey = "not_on_vekt" | "profile" | "seen" | "invited" | "read" | "interested" | "committed";

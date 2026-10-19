@@ -106,11 +106,21 @@ function linkedPosition(athletes: any[], id: string | null) {
 
 const csvSafe = (v: unknown) => s(v, 200);
 
+// Free while growing: the club dashboard is free up to app_config.club_free_families
+// approved families (families who said yes to the club). Unset = no offer shown.
+async function planFor(supabase: any, clubId: string) {
+  const { data: cfg } = await supabase.from("app_config").select("value").eq("key", "club_free_families").limit(1);
+  const limit = Number(cfg?.[0]?.value);
+  if (!Number.isInteger(limit) || limit <= 0) return null;
+  const { count } = await supabase.from("club_athletes").select("id", { count: "exact", head: true }).eq("club_id", clubId).not("family_approved_at", "is", null);
+  return { free_families: limit, families: count ?? 0, free: (count ?? 0) <= limit };
+}
+
 type Ctx = { supabase: any; c: Club; body: any };
 const actions: Record<string, (x: Ctx) => Promise<unknown>> = {
   async me({ supabase, c }) {
     const { data: club } = await supabase.from("vekt_clubs").select("id, name, state, sports").eq("id", c.club_id).single();
-    return { account: { id: c.id, first_name: c.first_name, last_name: c.last_name, email: c.email, role: c.role }, club };
+    return { account: { id: c.id, first_name: c.first_name, last_name: c.last_name, email: c.email, role: c.role }, club, plan: await planFor(supabase, c.club_id) };
   },
 
   async health({ supabase, c, body }) {

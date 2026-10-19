@@ -137,12 +137,12 @@ update public.app_config set value = 'http://localhost:5174' where key = 'profil
 insert into public.vekt_athletes (id, full_name, sport, team_gender, grad_year, state, club, athlete_email, parent_name, parent_email, is_minor, parent_approved_at, feed_visible, feed_approved_at, profile) values
   ('30000000-0000-4000-8000-000000000001', 'Jordan Ellis', 'soccer', 'men', 2028, 'OH', 'Lakeshore FC', 'jordan.ellis@example.com', 'Morgan Ellis', 'morgan.ellis@example.com', true, now() - interval '6 days', false, null,
    (select to_jsonb(p) - 'id' - 'recruit_id' - 'sport' - 'submitted_at' - 'created_at' - 'updated_at' from public.athlete_profiles p where recruit_id = '20000000-0000-4000-8000-000000000001')),
-  ('30000000-0000-4000-8000-000000000002', 'Mateo Reyes', 'soccer', 'men', 2029, 'TX', 'Metro United', 'mateo.reyes@example.com', 'Ana Reyes', 'ana.reyes@example.com', true, now() - interval '20 days', true, now() - interval '20 days',
+  ('30000000-0000-4000-8000-000000000002', 'Mateo Reyes', 'soccer', 'men', 2029, 'OH', 'Lakeshore FC', 'mateo.reyes@example.com', 'Ana Reyes', 'ana.reyes@example.com', true, now() - interval '20 days', true, now() - interval '20 days',
    '{"primary_position": "Center back", "secondary_positions": ["Defensive midfielder"], "systems": {"formation": ["4-3-3", "3-5-2"], "style": ["High press"]}, "skills": {"first_touch": "solid", "aerial_duels": "strength"}, "measurables": {"height": "74", "sprint_30m": "4.18"}, "attributes": {"foot": "Left"}}'),
   ('30000000-0000-4000-8000-000000000003', 'Kai Thompson', 'soccer', 'men', 2030, 'CA', 'Ridgeway SC', null, 'Lee Thompson', 'lee.thompson@example.com', true, now() - interval '9 days', true, now() - interval '9 days',
    '{"primary_position": "Center back", "systems": {"formation": ["4-3-3"], "style": ["Possession build-out"]}, "skills": {"first_touch": "strength"}, "measurables": {"height": "71"}}'),
-  ('30000000-0000-4000-8000-000000000004', 'Eli Brooks', 'soccer', 'men', 2028, 'FL', 'Bayside Academy', 'eli.brooks@example.com', 'Dana Brooks', 'dana.brooks@example.com', true, now() - interval '30 days', true, now() - interval '30 days',
-   '{"primary_position": "Striker", "systems": {"formation": ["4-2-3-1"]}, "measurables": {"height": "70", "sprint_30m": "3.98"}}'),
+  ('30000000-0000-4000-8000-000000000004', 'Eli Brooks', 'soccer', 'men', 2028, 'OH', 'Lakeshore F.C.', 'eli.brooks@example.com', 'Dana Brooks', 'dana.brooks@example.com', true, now() - interval '30 days', true, now() - interval '30 days',
+   '{"primary_position": "Striker", "systems": {"formation": ["4-3-3", "4-2-3-1"], "style": ["High press"]}, "measurables": {"height": "70", "sprint_30m": "3.98"}}'),
   ('30000000-0000-4000-8000-000000000005', 'Ava Lindqvist', 'soccer', 'women', 2029, 'WA', 'Sound FC', 'ava.l@example.com', 'Erik Lindqvist', 'erik.l@example.com', true, now() - interval '12 days', true, now() - interval '12 days',
    '{"primary_position": "Central midfielder"}');
 
@@ -246,3 +246,4 @@ insert into public.college_programs (name, conference, division, city, state, co
   ('Prairie View Tech (sample)', 'Demo Plains Conference', 'NAIA', 'Prairie View', 'KS', 'private', 3.10, 32000, 64.0, 3800, '{soccer,wrestling,track_field}', 2, 'Sample row, not real data'),
   ('Northfield State (sample)', 'Demo Conference', 'D1', 'Northfield', 'OH', 'public', 3.45, 27000, 58.0, 26000, '{soccer,volleyball,football,basketball}', 4, 'Sample row, not real data'),
   ('Western Ridge College (sample)', 'Demo Junior College League', 'NJCAA', 'Western Ridge', 'CO', 'public', 2.90, 9000, 100.0, 6000, '{soccer,baseball,softball}', 2, 'Sample row, not real data');
+update public.app_config set value = '25' where key = 'club_free_families'; -- local demo only

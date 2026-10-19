@@ -113,6 +113,11 @@ inbox. VEKT never messages anyone's contacts.
   approved (by a parent if under 18).
 - **Parent page**: "Share with parents", using the same link.
 - **Coach and club sidebars**: "Share with a coach" / "Share with a director".
+- **Team unlock** (`_shared/team.ts`): once 3 approved profiles from the same club (same sport and side,
+  grad years within one) are on VEKT, each athlete sees the systems at least 2 teammates say the team plays
+  and can add them in one tap. Only agreed-on options are shown, never who picked them.
+- **Club free tier**: the club sidebar shows "Free while you grow · N of M families" when
+  `app_config.club_free_families` holds a number. It's empty in production until you set the terms.
 
 ## Run it locally
 
@@ -140,7 +145,7 @@ Nothing here has been applied to production. Each step needs a go-ahead.
    The share-link migration (`20261019240000`) is applied too.
    Everything uses `if not exists`, so a later `supabase db push` would be harmless, but to keep the
    history tidy mark the local files as applied first:
-   `supabase migration repair --status applied 20261017173246 20261019120000 20261019180000 20261019200000 20261019220000 20261019230000 20261019240000`.
+   `supabase migration repair --status applied 20261017173246 20261019120000 20261019180000 20261019200000 20261019220000 20261019230000 20261019240000 20261019250000`.
 2. **Function secrets** (Supabase → Edge Functions → Secrets):
    - `VEKT_WEBHOOK_SECRET`: **set this.** Until it is set, `vekt-webhook` still accepts the
      old secret written in its source code, which anyone with the code can use. Set it at the same

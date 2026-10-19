@@ -27,6 +27,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { createGhlClient, GhlError } from "../_shared/ghl.ts";
 import { splitName, suppressionKey } from "../_shared/format.ts";
 import { nextSendTime, zoneForState } from "../_shared/quiet.ts";
+import { teamStatus } from "../_shared/team.ts";
 import { sportFor, videoKinds, videoLink, type Sport } from "../_shared/sports.ts";
 import { cleanEvaluation, cleanProfile } from "../_shared/profile.ts";
 
@@ -689,6 +690,16 @@ async function shareInfo(supabase: any, cfg: Record<string, string>, a: { id: st
   return { url: a.ref_code ? `${base}/join?ref=${a.ref_code}` : `${base}/join`, joined: count ?? 0 };
 }
 
+// Team unlock: teammates on VEKT (same club, sport, side, class within one year).
+// Returns counts and agreed-on systems only, never names.
+async function teamFor(supabase: any, a: any) {
+  const sport = sportFor(a.sport);
+  if (!sport || !a.club || a.grad_year == null) return null;
+  const { data: others } = await supabase.from("vekt_athletes").select("id, sport, team_gender, grad_year, club, parent_approved_at, profile")
+    .eq("sport", a.sport).gte("grad_year", a.grad_year - 1).lte("grad_year", a.grad_year + 1).not("parent_approved_at", "is", null).neq("id", a.id).limit(2000);
+  return teamStatus(sport, a, others || []);
+}
+
 async function parentLoad(supabase: any, token: string) {
   const { data } = await supabase.from("vekt_athletes").select("id, ref_code, full_name, sport, grad_year, parent_name, parent_approved_at, feed_visible").eq("parent_token", token).limit(1);
   if (!data?.[0]) return json({ error: "This link isn't valid." }, 404);
@@ -727,7 +738,7 @@ async function saveClubLinks(supabase: any, athleteId: string, choices: unknown)
 }
 
 async function meLoad(supabase: any, token: string) {
-  const { data } = await supabase.from("vekt_athletes").select(ATHLETE_PUBLIC + ", athlete_email, parent_email, ref_code").eq("manage_token", token).limit(1);
+  const { data } = await supabase.from("vekt_athletes").select(ATHLETE_PUBLIC + ", team_gender, athlete_email, parent_email, ref_code").eq("manage_token", token).limit(1);
   const a = data?.[0];
   if (!a) return json({ error: "This link isn't valid." }, 404);
   const { data: videos } = await supabase.from("athlete_videos").select("kind, url, title, recorded_on, notes").eq("athlete_id", a.id).order("sort_order");
@@ -754,7 +765,7 @@ async function meLoad(supabase: any, token: string) {
   }
   const { athlete_email: _e, parent_email: _p, ref_code: _r, ...pub } = a;
   return json({ athlete: { ...pub, first_name: firstName(a.full_name) }, videos: videos || [], programs, pending, clubs: await familyClubLinks(supabase, a.id),
-    share: await shareInfo(supabase, await config(supabase), a) });
+    share: await shareInfo(supabase, await config(supabase), a), team: await teamFor(supabase, a) });
 }
 
 async function meSave(supabase: any, token: string, body: any) {

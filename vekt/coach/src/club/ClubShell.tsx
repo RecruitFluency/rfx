@@ -42,6 +42,13 @@ export default function ClubShell() {
             </NavLink>
           ))}
         </nav>
+        {club.plan && (
+          <div className="mx-6 mb-5 border border-white/[0.12] rounded p-3">
+            <div className="vekt-label mb-2">{club.plan.free ? "Free while you grow" : "Free plan complete"}</div>
+            <div className="h-1.5 bg-white/[0.08] rounded-sm overflow-hidden" aria-hidden="true"><div className="h-full bg-white" style={{ width: `${Math.min(100, Math.round((club.plan.families / club.plan.free_families) * 100))}%` }} /></div>
+            <div className="text-xs text-vekt-grey mt-2">{club.plan.free ? `${club.plan.families} of ${club.plan.free_families} families on the free plan` : `${club.plan.families} families on VEKT. We'll reach out about your plan.`}</div>
+          </div>
+        )}
         <div className="px-6 pb-5"><ShareButton up url={`${window.location.origin}/login`} title="VEKT for club directors" label="Share with a director"
           text="Our club uses VEKT to see where every player stands with college programs, and which programs are engaging. Worth a look:" /></div>
         <div className="px-6 py-6 border-t border-white/[0.08]">
