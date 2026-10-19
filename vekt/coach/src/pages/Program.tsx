@@ -5,9 +5,11 @@ import { useLoad, useSession } from "../session";
 import type { Staff } from "../lib/types";
 import { Button, Drawer, Empty, ErrorNote, Field, Input, PageHeader, Panel, PanelTitle, Segmented, Spinner, Textarea } from "../components/ui";
 import { programName, usd } from "../lib/format";
+import { sportFor } from "../../../supabase/functions/_shared/sports.ts";
+import { Chips } from "../components/ProfileForm";
 
 interface ProgramData {
-  program: { id: string; institution: string; sport: string; team_gender: "men" | "women" | null; must_haves: Record<string, any>; reminder_days: number[]; tactical_identity: string | null; profile_confirmed: boolean };
+  program: { id: string; institution: string; sport: string; sport_key: string | null; team_gender: "men" | "women" | null; must_haves: Record<string, any>; reminder_days: number[]; tactical_identity: string | null; profile_confirmed: boolean; systems: Record<string, string[]> };
   staff: Staff[];
 }
 
@@ -41,10 +43,44 @@ export default function ProgramPage() {
             </div>
           ) : <Empty title="No staff profiles yet" hint="Add each coach who works with recruits. The Fit Read shows how the athlete will likely respond to each one." />}
         </Panel>
+        <Systems data={data} can={can} onSaved={reload} />
         <MustHaves data={data} can={can} onSaved={reload} />
       </div>
       <StaffDrawer staff={editing} programId={program!.id} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); reload(); }} />
     </div>
+  );
+}
+
+// The formations and schemes this program runs. Each recruit's profile and club
+// director's read are checked against these in the Fit Read.
+function Systems({ data, can, onSaved }: { data: ProgramData; can: boolean; onSaved: () => void }) {
+  const sport = sportFor(data.program.sport_key ?? data.program.sport);
+  const [systems, setSystems] = useState<Record<string, string[]>>(data.program.systems || {});
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  if (!sport) return null;
+  const save = async () => {
+    setBusy(true); setMsg(null);
+    try {
+      const m = data.program.must_haves || {};
+      await api("program_save", { program_id: data.program.id, systems, must_haves: { ...m, positions: m.positions || [], club_levels: m.club_levels || [] } });
+      setMsg("Saved. Fit Reads now check each recruit against these."); onSaved();
+    } catch (e) { setMsg((e as Error).message); } finally { setBusy(false); }
+  };
+  return (
+    <Panel>
+      <PanelTitle>Systems you run</PanelTitle>
+      <div className="p-6 flex flex-col gap-6">
+        {sport.systems.length ? sport.systems.map((g) => (
+          <div key={g.key}>
+            <div className="vekt-label mb-3">{g.label}</div>
+            {can ? <Chips label={g.label} options={g.options} value={systems[g.key] ?? []} onChange={(v) => setSystems((x) => ({ ...x, [g.key]: v }))} />
+              : <p className="text-sm text-white">{(systems[g.key] ?? []).join(", ") || "Not set"}</p>}
+          </div>
+        )) : <p className="text-sm text-vekt-grey">{sport.label} has no team systems to set. Recruits' events and personal bests show in their profile.</p>}
+      </div>
+      {can && sport.systems.length > 0 && <div className="px-6 pb-6 flex items-center gap-4"><Button onClick={save} loading={busy}>Save systems</Button>{msg && <span className="text-sm text-vekt-grey">{msg}</span>}</div>}
+    </Panel>
   );
 }
 

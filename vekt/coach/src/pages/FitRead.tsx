@@ -9,6 +9,7 @@ import { useLoad, useSession } from "../session";
 import type { FitReport, MustHave, RecruitDetail } from "../lib/types";
 import { Button, ErrorNote, MatchMark, Spinner, Textarea, VerdictMark } from "../components/ui";
 import { date, firstName, programName } from "../lib/format";
+import { PlayerGame } from "../components/PlayerGame";
 
 export default function FitReadPage() {
   const { id } = useParams();
@@ -155,7 +156,11 @@ function FitReadView({ detail, report, onDecided }: { detail: RecruitDetail; rep
         {!report.must_haves.length && <p className="text-vekt-grey">Set your must-haves on the Staff & must-haves page.</p>}
       </Section>
 
-      <Section n={5} title="One-to-one with your staff" intro={`What your staff said it wants, against what ${first} showed${director ? " and what their club director saw" : ""}.`}>
+      <Section n={5} title="Their game" intro={`Positions, the systems ${first} knows against the ones you run, and hard skills rated by ${first} and their club director separately.`}>
+        <PlayerGame player={detail.player} first={first} />
+      </Section>
+
+      <Section n={6} title="One-to-one with your staff" intro={`What your staff said it wants, against what ${first} showed${director ? " and what their club director saw" : ""}.`}>
         {groups.map((g) => (
           <div key={g.key} className="mb-10">
             <div className="vekt-label mb-3">{g.label}</div>
@@ -181,7 +186,7 @@ function FitReadView({ detail, report, onDecided }: { detail: RecruitDetail; rep
         ))}
       </Section>
 
-      <Section n={6} title={`How ${first} will respond to each coach`} intro="Based on how each coach on your staff corrects, motivates and handles setbacks.">
+      <Section n={7} title={`How ${first} will respond to each coach`} intro="Based on how each coach on your staff corrects, motivates and handles setbacks.">
         {report.coaches.length ? (
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-px bg-white/[0.08] border border-white/[0.08]">
             {report.coaches.map((c) => (
@@ -202,7 +207,7 @@ function FitReadView({ detail, report, onDecided }: { detail: RecruitDetail; rep
         ) : <p className="text-vekt-grey">Add your staff on the Staff & must-haves page to see a read for each coach.</p>}
       </Section>
 
-      <Section n={7} title={`${report.open_questions.length === 1 ? "One thing" : `${["", "One", "Two", "Three"][report.open_questions.length] ?? report.open_questions.length} things`} to check before an offer`}
+      <Section n={8} title={`${report.open_questions.length === 1 ? "One thing" : `${["", "One", "Two", "Three"][report.open_questions.length] ?? report.open_questions.length} things`} to check before an offer`}
         intro="What the conversations couldn't settle. Check these yourself.">
         <div className="grid lg:grid-cols-2 gap-px bg-white/[0.08] border border-white/[0.08]">
           {report.open_questions.map((q) => (
@@ -218,7 +223,7 @@ function FitReadView({ detail, report, onDecided }: { detail: RecruitDetail; rep
         </div>
       </Section>
 
-      <Section n={8} title="Your move">
+      <Section n={9} title="Your move">
         <Decision recruitId={r.id} name={r.recruit_name} decision={r.decision} contactStatus={r.contact_status} clearDate={r.contact_clear_date} onDone={onDecided} />
       </Section>
 

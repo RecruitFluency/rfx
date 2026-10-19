@@ -15,6 +15,8 @@ import Activity from "./pages/Activity";
 import ProgramPage from "./pages/Program";
 import Department from "./pages/Department";
 import Compliance from "./pages/Compliance";
+import AthleteProfile from "./pages/public/AthleteProfile";
+import ClubEval from "./pages/public/ClubEval";
 import { Spinner } from "./components/ui";
 
 // The spreadsheet reader is large; load it only on the import page.
@@ -26,6 +28,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/athlete/:token" element={<AthleteProfile />} />
+          <Route path="/club/:token" element={<ClubEval />} />
           <Route element={<Shell />}>
             <Route index element={<Overview />} />
             <Route path="recruits" element={<Recruits />} />

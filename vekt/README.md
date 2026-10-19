@@ -12,7 +12,9 @@ college coach dashboard.
 | `supabase/functions/vekt-invites` | Invite pages and sending (existing). Now sends everything through `vekt_outbox`, with reminders, dashboard invites and decisions. |
 | `supabase/functions/vekt-coach` | New: the dashboard API. |
 | `supabase/functions/vekt-ghl-webhook` | New: GoHighLevel delivery, STOP, unsubscribe and bounce events. |
-| `coach/` | New: the coach dashboard (Vite + React), deployed on Vercel. |
+| `supabase/migrations/20261019180000_player_profiles.sql` | New: athlete profiles, club director evaluations, program systems. |
+| `supabase/functions/_shared/sports.ts` | The sport catalog: positions, systems, hard skills, measurables and events for 18 sports. |
+| `coach/` | New: the coach dashboard (Vite + React), deployed on Vercel. Also serves the athlete (`/athlete/<token>`) and club director (`/club/<token>`) pages. |
 
 Every table keeps the production pattern: row-level security on, no policies.
 Only the functions (service role) touch data; `vekt-coach` scopes each request
@@ -29,6 +31,25 @@ The model writes the words. The facts a coach would check are computed in code
   the same. Pending until the director answers. Moderate otherwise.
 - **Must-haves**: position, grad year, club level, club team, GPA, family budget,
   checked against the program's settings.
+
+## Player profiles: athletes and club directors
+
+No accounts. Each person uses the private link from their invite email:
+
+- **Athlete** (`/athlete/<invite token>`): opens once a parent approves. Positions, the systems
+  they're comfortable in, hard skills (Strength / Solid / Developing / Not yet, never numbers),
+  measurables, personal bests for individual sports, film, intended major.
+- **Club director** (`/club/<club invite token>`): their own read of the same skills, the positions
+  and systems the athlete has played, what their team runs (remembered for their other athletes),
+  and the numbers they've seen measured. They see their other VEKT athletes by name and can have
+  every link emailed to them; one link never opens another athlete.
+- **College staff** pick the systems they run (Staff & must-haves). The Fit Read and Side-by-Side
+  show, computed in code: systems played against yours, the hard-skills read (where athlete and
+  director agree, and where the athlete rates themselves higher), and measurables marked
+  confirmed when the director's number matches.
+
+Each program gets its own copy of the profile, matching what the parent agreed to share.
+Set `app_config.profile_base_url` to the dashboard URL so invite emails include these links.
 
 ## Run it locally
 

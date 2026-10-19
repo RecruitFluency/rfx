@@ -104,3 +104,31 @@ insert into public.invite_events (comparison_id, recruit_id, recipient_role, cha
   ('b0000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000004', 'parent', 'email', 'dry_run', 'Demo invite', now() - interval '4 days');
 
 update public.app_config set value = 'http://localhost:5174' where key = 'coach_app_url';
+
+-- Player profiles (hard skills, positions, systems) for the demo.
+update public.program_dna set systems = '{"formation": ["4-3-3", "3-5-2"], "style": ["High press", "Possession build-out"]}'
+where id = 'a0000000-0000-4000-8000-000000000001';
+
+insert into public.athlete_profiles (recruit_id, sport, primary_position, secondary_positions, systems, skills, measurables, attributes, film_links, intended_major, submitted_at) values
+  ('20000000-0000-4000-8000-000000000001', 'soccer', 'Center back', '{Defensive midfielder}',
+   '{"formation": ["4-3-3", "4-2-3-1"], "style": ["High press", "Possession build-out"]}',
+   '{"first_touch": "strength", "passing_range": "strength", "weak_foot": "solid", "scanning_and_decision_speed": "solid", "1v1_defending": "solid", "aerial_duels": "strength", "work_rate_off_the_ball": "strength", "positioning": "strength", "recovery_runs": "developing", "playing_out_under_pressure": "strength", "organizing_the_line": "solid", "finishing": "developing"}',
+   '{"height": "74", "weight": "176", "sprint_30m": "4.25", "vertical": "26"}', '{"foot": "Right"}',
+   '{https://example.com/film/jordan-ellis}', 'Business', now() - interval '6 days'),
+  ('20000000-0000-4000-8000-000000000002', 'soccer', 'Center back', '{Fullback}',
+   '{"formation": ["4-4-2", "4-2-3-1"], "style": ["Low block", "Counterattack"]}',
+   '{"first_touch": "solid", "passing_range": "solid", "weak_foot": "solid", "1v1_defending": "strength", "aerial_duels": "strength", "positioning": "solid", "recovery_runs": "strength", "playing_out_under_pressure": "solid", "organizing_the_line": "strength"}',
+   '{"height": "73", "weight": "185", "sprint_30m": "4.05"}', '{"foot": "Left"}',
+   '{}', 'Kinesiology', now() - interval '5 days');
+
+insert into public.club_evaluations (recruit_id, evaluator_name, evaluator_email, team_name, team_level, primary_position, positions_played, systems_played, team_systems, skills, measurables, notes, submitted_at) values
+  ('20000000-0000-4000-8000-000000000001', 'Chris Dalton', 'chris.dalton@example.com', 'Lakeshore FC U17', 'MLS NEXT', 'Center back', '{Defensive midfielder}',
+   '{"formation": ["4-3-3"], "style": ["High press", "Possession build-out"]}', '{"formation": ["4-3-3"], "style": ["High press", "Possession build-out"]}',
+   '{"first_touch": "strength", "passing_range": "strength", "weak_foot": "solid", "scanning_and_decision_speed": "solid", "1v1_defending": "solid", "aerial_duels": "strength", "work_rate_off_the_ball": "strength", "positioning": "strength", "recovery_runs": "developing", "playing_out_under_pressure": "strength", "organizing_the_line": "strength", "finishing": "developing"}',
+   '{"height": "74", "sprint_30m": "4.30"}', 'Played every minute at center back this season; covers DM when we chase games.', now() - interval '4 days'),
+  ('20000000-0000-4000-8000-000000000002', 'Ana Ferreira', 'ana.ferreira@example.com', 'Metro United U17', 'ECNL', 'Center back', '{}',
+   '{"formation": ["4-4-2"], "style": ["Low block"]}', '{"formation": ["4-4-2"], "style": ["Low block", "Counterattack"]}',
+   '{"first_touch": "developing", "passing_range": "developing", "weak_foot": "solid", "1v1_defending": "strength", "aerial_duels": "strength", "positioning": "solid", "recovery_runs": "strength", "playing_out_under_pressure": "developing", "organizing_the_line": "solid"}',
+   '{"height": "73", "sprint_30m": "4.10"}', 'Elite athlete. Still learning to play out of pressure; we mostly play direct.', now() - interval '3 days');
+
+update public.app_config set value = 'http://localhost:5174' where key = 'profile_base_url';

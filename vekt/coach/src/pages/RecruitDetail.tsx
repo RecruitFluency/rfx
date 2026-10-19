@@ -7,6 +7,7 @@ import type { RecruitDetail as Detail, RecruitRow } from "../lib/types";
 import { Badge, Button, ButtonLink, ErrorNote, Field, PageHeader, Panel, PanelTitle, Segmented, Spinner, StageBadge, Textarea, Toggle, Input } from "../components/ui";
 import { date, dateTime, eventLabel, firstName, roleTo, usd } from "../lib/format";
 import { InviteDrawer } from "./Recruits";
+import { PlayerGame } from "../components/PlayerGame";
 
 const STEPS = [
   { key: "invited", label: "Invited" },
@@ -98,6 +99,12 @@ export default function RecruitDetail() {
             </dl>
             {(r.notes || r.coach_open_question) && <div className="px-6 pb-6 text-sm text-white/80 font-light">{r.coach_open_question && <p><span className="vekt-label mr-2">Your question</span>{r.coach_open_question}</p>}{r.notes && <p className="mt-2"><span className="vekt-label mr-2">Notes</span>{r.notes}</p>}</div>}
           </Panel>
+          {!data.fit_read?.report && (
+            <Panel>
+              <PanelTitle>Their game</PanelTitle>
+              <div className="p-6"><PlayerGame player={data.player} first={firstName(r.recruit_name)} /></div>
+            </Panel>
+          )}
           {data.fit_read?.report && <SeasonCheck recruitId={r.id} name={r.recruit_name} checks={data.season_checks} onSaved={reload} />}
           {me?.can.write && !r.athlete_id && <button onClick={remove} className="self-start text-xs text-vekt-grey hover:text-white">Remove from board</button>}
         </div>

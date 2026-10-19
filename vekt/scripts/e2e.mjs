@@ -166,4 +166,32 @@ const anon = createClient(API, env.ANON_KEY, { auth: { persistSession: false } }
 const { data: leak } = await anon.from("comparison_recruits").select("id");
 check(!leak?.length, "the public key reads nothing (RLS on, no policies)");
 
+// ---- Player profiles: athlete, club director, program systems ----
+const tok = async (name) => (await admin.from("comparison_recruits").select("id, invite_token, club_invite_token").eq("recruit_name", name)).data[0];
+const sam = await tok("Sam Ortiz");
+check((await post("vekt-invites", { action: "profile_load", token: sam.invite_token })).status === "needs_consent", "athlete profile waits for a parent's approval");
+check((await post("vekt-invites", { action: "profile_save", token: sam.invite_token, profile: {} })).status === 403, "no saving before a parent approves");
+const theoT = await tok("Theo Brandt");
+const prof = await post("vekt-invites", { action: "profile_save", token: theoT.invite_token, submit: true, profile: {
+  primary_position: "Center back", systems: { formation: ["3-5-2", "made-up"] }, skills: { first_touch: "solid", aerial_duels: "strength", weak_foot: 7 }, measurables: { height: "75" } } });
+check(prof.status === "saved", "athlete saves their profile");
+const { data: [tp] } = await admin.from("athlete_profiles").select("systems, skills").eq("recruit_id", theoT.id);
+check(JSON.stringify(tp.systems) === '{"formation":["3-5-2"]}' && !("weak_foot" in tp.skills), "only catalog values are stored", tp);
+check((await post("vekt-invites", { action: "club_save", token: theoT.invite_token, evaluation: {} })).status === 404, "the athlete's link can't open the club director's form");
+const ce = await post("vekt-invites", { action: "club_save", token: theoT.club_invite_token, submit: true, evaluation: {
+  primary_position: "Center back", team_systems: { formation: ["3-5-2"] }, skills: { first_touch: "developing", aerial_duels: "strength" }, measurables: { height: "75" } } });
+check(ce.status === "saved", "club director saves their read");
+const cl = await post("vekt-invites", { action: "club_load", token: (await tok("Jordan Ellis")).club_invite_token });
+check(cl.others.some((o) => o.name === "Chris Vance") && !JSON.stringify(cl.others).includes("-4"), "club director sees their other athletes by name, without their links");
+const theoDetail = await dana("recruit", { id: R.theo });
+const pl = theoDetail.player;
+check(pl.skills.compared === 2 && pl.skills.same === 1 && pl.skills.athlete_higher === 1, "hard-skills read compares the two forms", pl.skills);
+check(pl.systems.find((x) => x.group === "formation").verdict === "plays_yours", "systems checked against the program's");
+check(pl.measurables.find((x) => x.key === "height").status === "confirmed", "a matching number shows as confirmed by the director");
+check((await marco("program_save", { program_id: PROGRAM, systems: { formation: ["4-4-2"] } })).status === 403, "assistants can't change the program's systems");
+await dana("program_save", { program_id: PROGRAM, systems: { formation: ["4-4-2", "nonsense"] }, must_haves: { positions: "Center back" } });
+check((await dana("program_get", { program_id: PROGRAM })).program.systems.formation.join() === "4-4-2", "head coach sets the systems they run");
+const list2 = await dana("recruits", { program_id: PROGRAM });
+check(list2.recruits.find((r) => r.recruit_name === "Theo Brandt").club_eval_in === true, "recruit list shows who has sent a profile and a club read");
+
 console.log(`\n${passed} checks passed`);

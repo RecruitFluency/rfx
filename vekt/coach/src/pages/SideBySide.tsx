@@ -156,7 +156,30 @@ export default function SideBySidePage() {
         </Grid>
       </Section>
 
-      <Section n={4} title="Each coach, each athlete">
+      <Section n={4} title="Their game" intro="Systems against yours, and how closely each athlete's hard-skills read matches their club director's.">
+        <Grid>
+          <Head />
+          <Row label="Hard-skills read" sub="Athlete and club director, rated separately" cells={athletes.map((a) => a.player?.skills?.compared
+            ? <span className="flex flex-col gap-1"><span className="vekt-display text-[20px]">{a.player.skills.same} of {a.player.skills.compared} the same</span><span className="text-xs text-vekt-grey font-light">{a.player.skills.athlete_higher ? `Rates self higher on ${a.player.skills.athlete_higher}` : "No inflated ratings"}</span></span> : none)} />
+          {(athletes.find((a) => a.player?.systems?.length)?.player?.systems ?? []).map((g) => (
+            <Row key={g.group} label={g.label} sub={`You run ${g.program.join(", ")}`} cells={athletes.map((a) => {
+              const x = a.player?.systems?.find((y) => y.group === g.group);
+              if (!x || x.verdict === "unknown") return none;
+              const m = x.verdict === "plays_yours" ? "strong" : x.verdict === "comfortable" ? "match" : "gap";
+              const label = x.verdict === "plays_yours" ? "Plays it" : x.verdict === "comfortable" ? "Says they know it" : "New to them";
+              return <span className="flex flex-col gap-1.5"><span className="inline-flex items-center gap-2"><MatchMark match={m} label={false} /><span className="font-mono text-[11px] uppercase tracking-[0.1em]">{label}</span></span><span className="text-xs text-vekt-grey">{[...new Set([...x.athlete, ...x.director])].join(", ")}</span></span>;
+            })} />
+          ))}
+          {(athletes.find((a) => a.player?.measurables?.length)?.player?.measurables ?? []).slice(0, 4).map((m) => (
+            <Row key={m.key} label={m.label} sub={m.unit !== "time" ? m.unit : undefined} cells={athletes.map((a) => {
+              const x = a.player?.measurables?.find((y) => y.key === m.key);
+              return x ? <span className="flex flex-col gap-1"><span className="text-white">{x.athlete ?? x.director}</span><span className="text-xs text-vekt-grey">{x.status === "confirmed" ? "Confirmed by director" : x.status === "differs" ? `Director: ${x.director}` : x.status === "self_reported" ? "Self-reported" : "From director"}</span></span> : none;
+            })} />
+          ))}
+        </Grid>
+      </Section>
+
+      <Section n={5} title="Each coach, each athlete">
         {staff.length ? (
           <Grid>
             <Head />
@@ -170,7 +193,7 @@ export default function SideBySidePage() {
         ) : <p className="text-vekt-grey">Add your staff on the Staff & must-haves page.</p>}
       </Section>
 
-      <Section n={5} title="Still open, athlete by athlete">
+      <Section n={6} title="Still open, athlete by athlete">
         <div className="grid gap-px bg-white/[0.08] border border-white/[0.08]" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(220px, 1fr))` }}>
           {athletes.map((a) => (
             <div key={a.id} className="bg-vekt-black p-6">
@@ -185,7 +208,7 @@ export default function SideBySidePage() {
         </div>
       </Section>
 
-      <Section n={6} title="Your move" intro="Interested replies wait for NCAA contact rules, and a parent is copied. Not a fit stays with your staff.">
+      <Section n={7} title="Your move" intro="Interested replies wait for NCAA contact rules, and a parent is copied. Not a fit stays with your staff.">
         <div className="grid gap-px bg-white/[0.08] border border-white/[0.08]" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(220px, 1fr))` }}>
           {athletes.map((a) => (
             <div key={a.id} className="bg-vekt-black p-6">

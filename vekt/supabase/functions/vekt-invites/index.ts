@@ -4,6 +4,9 @@
 //   confirm_load   / confirm_submit   college coach confirms recruits + contacts   (recruit_comparisons.confirm_token)
 //   consent_load   / consent_submit   parent/guardian consent for the athlete      (comparison_recruits.invite_token)
 //   start_load                         athlete or club coach opens their conversation (invite_token / club_invite_token)
+//   profile_load   / profile_save     athlete's player profile: positions, systems, hard skills (invite_token, after a parent approves)
+//   club_load      / club_save        club director's own read of the same, plus their other athletes (club_invite_token)
+//   club_links                         email the club director every link they have
 // Internal actions (header x-vekt-internal = service role key; only our own functions have it):
 //   prepare        turn the coach's spoken recruit list into rows, email the coach the confirm link
 //   release_due    send held invites whose NCAA contact date has now passed, then dispatch
@@ -20,6 +23,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { createGhlClient, GhlError } from "../_shared/ghl.ts";
 import { splitName, suppressionKey } from "../_shared/format.ts";
 import { nextSendTime, zoneForState } from "../_shared/quiet.ts";
+import { sportFor } from "../_shared/sports.ts";
+import { cleanEvaluation, cleanProfile } from "../_shared/profile.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -218,7 +223,8 @@ async function inviteRecruit(supabase: any, cfg: Record<string, string>, comp: a
         role: "athlete", name: r.recruit_name, email: r.athlete_email, phone: r.athlete_phone, smsAllowed: !!r.sms_opt_in, state: r.state, kind,
         subject: `${program} wants to get to know you`,
         lines: [`The coaching staff at ${program} asked us to talk with you. It's about 15 minutes, by voice, and there are no right or wrong answers. It helps them understand how to coach you.`,
-          `A parent or guardian approves first. Once they do, your link opens.`],
+          `A parent or guardian approves first. Once they do, your link opens.`,
+          ...(cfg.profile_base_url ? [`You can also fill in your player profile (positions, the systems you play in, your skills and numbers) here: ${cfg.profile_base_url}/athlete/${r.invite_token}`] : [])],
         cta: "Start when you're ready", url: startUrl,
         sms: `Vekt: ${program} asked us to talk with you (15 min, no wrong answers). Start here once a parent approves: ${startUrl}`,
       }));
@@ -230,7 +236,8 @@ async function inviteRecruit(supabase: any, cfg: Record<string, string>, comp: a
       role: "club_coach", name: r.club_coach_name || "Coach", email: r.club_coach_email, phone: r.club_coach_phone, smsAllowed: false, kind,
       subject: `${program} is recruiting ${r.recruit_name} and asked for your read`,
       lines: [`The staff at ${program} is recruiting ${r.recruit_name} and wants your read as their coach. You've watched them develop, and nobody knows how they respond to coaching better than you.`,
-        `It's a 10 to 15 minute voice conversation. You won't see what the athlete said, and they won't see what you say.`],
+        `It's a 10 to 15 minute voice conversation. You won't see what the athlete said, and they won't see what you say.`,
+        ...(cfg.profile_base_url ? [`Afterwards, a five-minute form for their hard skills, positions and the systems they've played in: ${cfg.profile_base_url}/club/${r.club_invite_token}`] : [])],
       cta: "Give your read", url: coachUrl, sms: "",
     }));
   }
@@ -429,6 +436,101 @@ async function startLoad(supabase: any, token: string) {
   });
 }
 
+// ---- Player profile (athlete) and club evaluation (club director) ---------------
+const PROFILE_COLS = "primary_position, secondary_positions, systems, skills, measurables, attributes, marks, film_links, intended_major, submitted_at, updated_at";
+const EVAL_COLS = "team_name, team_level, primary_position, positions_played, systems_played, team_systems, skills, measurables, notes, submitted_at, updated_at";
+
+async function profileLoad(supabase: any, token: string) {
+  const hit = await recruitByToken(supabase, token);
+  if (!hit || hit.role !== "athlete") return json({ error: "This link isn't valid." }, 404);
+  const r = hit.r;
+  const comp = await loadComparison(supabase, { id: r.comparison_id });
+  if (!r.consent_id) return json({ status: "needs_consent", athlete_first_name: firstName(r.recruit_name), program: comp?.program_name });
+  const sport = sportFor(comp?.sport);
+  const { data } = await supabase.from("athlete_profiles").select(PROFILE_COLS).eq("recruit_id", r.id).limit(1);
+  return json({
+    status: "ready", athlete_first_name: firstName(r.recruit_name), program: comp?.program_name, sport: sport?.key ?? null,
+    known: { position: r.position, grad_year: r.grad_year, club: r.club_or_school },
+    profile: data?.[0] ?? null,
+  });
+}
+
+async function profileSave(supabase: any, token: string, body: any) {
+  const hit = await recruitByToken(supabase, token);
+  if (!hit || hit.role !== "athlete") return json({ error: "This link isn't valid." }, 404);
+  if (!hit.r.consent_id) return json({ error: "A parent or guardian needs to approve first." }, 403);
+  const comp = await loadComparison(supabase, { id: hit.r.comparison_id });
+  const sport = sportFor(comp?.sport);
+  if (!sport) return json({ error: "This sport isn't set up for profiles yet." }, 400);
+  const row = { ...cleanProfile(sport, body.profile || {}), recruit_id: hit.r.id, updated_at: new Date().toISOString(), ...(body.submit === true ? { submitted_at: new Date().toISOString() } : {}) };
+  const { error } = await supabase.from("athlete_profiles").upsert(row, { onConflict: "recruit_id" });
+  if (error) return json({ error: "Couldn't save. Please try again." }, 400);
+  return json({ status: "saved" });
+}
+
+async function clubLoad(supabase: any, token: string) {
+  const hit = await recruitByToken(supabase, token);
+  if (!hit || hit.role !== "club_coach") return json({ error: "This link isn't valid." }, 404);
+  const r = hit.r;
+  const comp = await loadComparison(supabase, { id: r.comparison_id });
+  const sport = sportFor(comp?.sport);
+  const { data } = await supabase.from("club_evaluations").select(EVAL_COLS).eq("recruit_id", r.id).limit(1);
+  // Their other athletes on VEKT (same email): names and status only. Each link
+  // stays in its own email, so a forwarded link never opens the others.
+  let others: { name: string; program: string | null; done: boolean }[] = [];
+  let teamSystems: Record<string, string[]> | null = null;
+  if (r.club_coach_email) {
+    const { data: rs } = await supabase.from("comparison_recruits").select("id, recruit_name, club_coach_done, comparison_id")
+      .ilike("club_coach_email", r.club_coach_email).neq("id", r.id).limit(50);
+    const ids = (rs || []).map((x: any) => x.id);
+    const { data: evals } = ids.length ? await supabase.from("club_evaluations").select("recruit_id, team_systems, submitted_at").in("recruit_id", ids).order("updated_at", { ascending: false }) : { data: [] };
+    const done = new Set((evals || []).filter((e: any) => e.submitted_at).map((e: any) => e.recruit_id));
+    for (const x of rs || []) {
+      const c = await loadComparison(supabase, { id: x.comparison_id });
+      others.push({ name: x.recruit_name, program: c?.program_name ?? null, done: !!x.club_coach_done && done.has(x.id) });
+    }
+    teamSystems = (evals || []).find((e: any) => Object.keys(e.team_systems || {}).length)?.team_systems ?? null;
+  }
+  return json({
+    athlete_name: r.recruit_name, program: comp?.program_name, sport: sport?.key ?? null, coach_name: r.club_coach_name,
+    known: { position: r.position, grad_year: r.grad_year, club: r.club_or_school },
+    conversation_done: !!r.club_coach_done,
+    evaluation: data?.[0] ?? null, previous_team_systems: teamSystems, others,
+  });
+}
+
+async function clubSave(supabase: any, token: string, body: any) {
+  const hit = await recruitByToken(supabase, token);
+  if (!hit || hit.role !== "club_coach") return json({ error: "This link isn't valid." }, 404);
+  const comp = await loadComparison(supabase, { id: hit.r.comparison_id });
+  const sport = sportFor(comp?.sport);
+  if (!sport) return json({ error: "This sport isn't set up for evaluations yet." }, 400);
+  const row = {
+    ...cleanEvaluation(sport, body.evaluation || {}), recruit_id: hit.r.id,
+    evaluator_name: hit.r.club_coach_name, evaluator_email: hit.r.club_coach_email,
+    updated_at: new Date().toISOString(), ...(body.submit === true ? { submitted_at: new Date().toISOString() } : {}),
+  };
+  const { error } = await supabase.from("club_evaluations").upsert(row, { onConflict: "recruit_id" });
+  if (error) return json({ error: "Couldn't save. Please try again." }, 400);
+  return json({ status: "saved" });
+}
+
+// Email the club director one message listing each athlete's links (theirs only).
+async function clubLinks(supabase: any, token: string) {
+  const hit = await recruitByToken(supabase, token);
+  if (!hit || hit.role !== "club_coach" || !hit.r.club_coach_email) return json({ error: "This link isn't valid." }, 404);
+  const cfg = await config(supabase);
+  const { data: rs } = await supabase.from("comparison_recruits").select("recruit_name, club_invite_token, contact_status, comparison_id")
+    .ilike("club_coach_email", hit.r.club_coach_email).eq("contact_status", "cleared").limit(50);
+  const base = cfg.profile_base_url || cfg.invite_base_url;
+  const lines = (rs || []).map((x: any) => `${x.recruit_name}: ${base}/club/${x.club_invite_token}`);
+  await deliver(supabase, cfg, { comparison_id: hit.r.comparison_id, recruit_id: hit.r.id }, {
+    role: "club_coach", name: hit.r.club_coach_name || "Coach", email: hit.r.club_coach_email, phone: null, smsAllowed: false, kind: "coach",
+    subject: "Your VEKT links", lines: ["Here is each athlete's link. Each one opens that athlete's read only.", ...lines], cta: "Open the first one", url: lines.length ? `${base}/club/${rs[0].club_invite_token}` : base, sms: "",
+  });
+  return json({ status: "sent", count: lines.length });
+}
+
 async function releaseDue(supabase: any) {
   const cfg = await config(supabase);
   const today = new Date().toISOString().slice(0, 10);
@@ -558,6 +660,11 @@ Deno.serve(async (req) => {
       case "consent_load": return await consentLoad(supabase, body.token);
       case "consent_submit": return await consentSubmit(supabase, body.token, body, req);
       case "start_load": return await startLoad(supabase, body.token);
+      case "profile_load": return await profileLoad(supabase, body.token);
+      case "profile_save": return await profileSave(supabase, body.token, body);
+      case "club_load": return await clubLoad(supabase, body.token);
+      case "club_save": return await clubSave(supabase, body.token, body);
+      case "club_links": return await clubLinks(supabase, body.token);
       default: return json({ error: "Unknown action" }, 400);
     }
   } catch (e) {

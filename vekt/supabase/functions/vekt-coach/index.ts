@@ -11,6 +11,8 @@
 // recorded in vekt_audit_log. Conversation answers (scenario_responses) are
 // never returned: coaches see the Fit Read, not a minor's words.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { sportFor } from "../_shared/sports.ts";
+import { measurablesTable, skillsRead, systemsFit } from "../_shared/profile.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": Deno.env.get("VEKT_COACH_APP_ORIGIN") || "*",
@@ -202,6 +204,32 @@ function listRow(r: any, read: any) {
   };
 }
 
+// The hard-skills side: the athlete's profile, the club director's evaluation, and
+// how both line up with the systems this program runs. Computed here, not by the model.
+async function playerFor(supabase: any, programId: string, recruitIds: string[]) {
+  const out = new Map<string, any>();
+  if (!recruitIds.length) return out;
+  const { data: p } = await supabase.from("program_dna").select("sport, systems").eq("id", programId).single();
+  const sport = sportFor(p?.sport);
+  if (!sport) return out;
+  const { data: profiles } = await supabase.from("athlete_profiles").select("*").in("recruit_id", recruitIds);
+  const { data: evals } = await supabase.from("club_evaluations").select("*").in("recruit_id", recruitIds);
+  for (const id of recruitIds) {
+    const a = (profiles || []).find((x: any) => x.recruit_id === id) ?? null;
+    const d = (evals || []).find((x: any) => x.recruit_id === id) ?? null;
+    if (!a && !d) { out.set(id, { sport: sport.key, profile: null, evaluation: null }); continue; }
+    out.set(id, {
+      sport: sport.key,
+      profile: a && { primary_position: a.primary_position, secondary_positions: a.secondary_positions, attributes: a.attributes, marks: a.marks, film_links: a.film_links, intended_major: a.intended_major, systems: a.systems, submitted_at: a.submitted_at },
+      evaluation: d && { evaluator_name: d.evaluator_name, team_name: d.team_name, team_level: d.team_level, primary_position: d.primary_position, positions_played: d.positions_played, team_systems: d.team_systems, systems_played: d.systems_played, notes: d.notes, submitted_at: d.submitted_at },
+      skills: skillsRead(sport, a, d),
+      systems: systemsFit(sport, p?.systems ?? {}, a, d),
+      measurables: measurablesTable(sport, a, d),
+    });
+  }
+  return out;
+}
+
 // ---- Actions -----------------------------------------------------------------------
 type Ctx = { supabase: any; c: Coach; body: any };
 
@@ -247,7 +275,11 @@ const actions: Record<string, (x: Ctx) => Promise<unknown>> = {
     const pid = program(c, body.program_id);
     const { data: rs } = await supabase.from("comparison_recruits").select(LIST_COLS).eq("program_id", pid).order("created_at", { ascending: false }).limit(1000);
     const reads = await readsFor(supabase, pid, (rs || []).filter((r: any) => r.athlete_id).map((r: any) => r.athlete_id));
-    return { recruits: (rs || []).map((r: any) => listRow(r, reads.get(r.athlete_id))) };
+    const ids = (rs || []).map((r: any) => r.id);
+    const { data: pr } = ids.length ? await supabase.from("athlete_profiles").select("recruit_id").in("recruit_id", ids).not("submitted_at", "is", null) : { data: [] };
+    const { data: ev } = ids.length ? await supabase.from("club_evaluations").select("recruit_id").in("recruit_id", ids).not("submitted_at", "is", null) : { data: [] };
+    const hasP = new Set((pr || []).map((x: any) => x.recruit_id)), hasE = new Set((ev || []).map((x: any) => x.recruit_id));
+    return { recruits: (rs || []).map((r: any) => ({ ...listRow(r, reads.get(r.athlete_id)), profile_in: hasP.has(r.id), club_eval_in: hasE.has(r.id) })) };
   },
 
   async recruit({ supabase, c, body }) {
@@ -258,7 +290,9 @@ const actions: Record<string, (x: Ctx) => Promise<unknown>> = {
     const { data: checks } = await supabase.from("season_one_checks").select("id, season, read_held_up, still_on_roster, what_we_missed, created_at").eq("recruit_id", r.id).order("created_at", { ascending: false });
     const { data: p } = await supabase.from("program_dna").select("institution, sport, division, team_gender").eq("id", r.program_id).single();
     const { invite_token: _a, club_invite_token: _b, ...safe } = r;
+    const player = (await playerFor(supabase, r.program_id, [r.id])).get(r.id) ?? null;
     return {
+      player,
       recruit: { ...safe, stage: stage(r, !!read?.report), consented: !!r.consent_id },
       program: p,
       fit_read: read ? { id: read.id, report: read.report, fit_narrative: read.fit_narrative, verification_level: read.verification_level, updated_at: read.updated_at } : null,
@@ -394,11 +428,12 @@ const actions: Record<string, (x: Ctx) => Promise<unknown>> = {
     // The per-athlete Fit Reads, for the side-by-side tables.
     const { data: rs } = await supabase.from("comparison_recruits").select(LIST_COLS).in("id", sbs.recruit_ids);
     const reads = await readsFor(supabase, sbs.program_id, (rs || []).filter((r: any) => r.athlete_id).map((r: any) => r.athlete_id));
+    const players = await playerFor(supabase, sbs.program_id, sbs.recruit_ids);
     const athletes = sbs.recruit_ids.map((id: string) => {
       const r = (rs || []).find((x: any) => x.id === id);
       if (!r) return null;
       const read = reads.get(r.athlete_id);
-      return { ...listRow(r, read), report: read?.report ?? null };
+      return { ...listRow(r, read), report: read?.report ?? null, player: players.get(id) ?? null };
     }).filter(Boolean);
     const { data: staff } = await supabase.from("program_staff").select("name, title, traits").eq("program_id", sbs.program_id).order("sort_order");
     return { side_by_side: sbs, athletes, staff: staff || [] };
@@ -427,10 +462,10 @@ const actions: Record<string, (x: Ctx) => Promise<unknown>> = {
   async program_get({ supabase, c, body }) {
     const pid = program(c, body.program_id);
     const { data: p } = await supabase.from("program_dna")
-      .select("id, institution, sport, division, team_gender, licensed, coach_name, must_haves, reminder_days, tactical_identity, profile_confirmed")
+      .select("id, institution, sport, division, team_gender, licensed, coach_name, must_haves, reminder_days, tactical_identity, profile_confirmed, systems")
       .eq("id", pid).single();
     const { data: staff } = await supabase.from("program_staff").select("*").eq("program_id", pid).order("sort_order");
-    return { program: p, staff: staff || [] };
+    return { program: { ...p, sport_key: sportFor(p?.sport)?.key ?? null }, staff: staff || [] };
   },
 
   async program_save({ supabase, c, body }) {
@@ -446,6 +481,18 @@ const actions: Record<string, (x: Ctx) => Promise<unknown>> = {
     if (num(m.min_gpa, 0, 5)) must_haves.min_gpa = num(m.min_gpa, 0, 5);
     if (int(m.max_family_cost, 0, 200000)) must_haves.max_family_cost = int(m.max_family_cost, 0, 200000);
     const patch: Record<string, unknown> = { must_haves };
+    if (body.systems && typeof body.systems === "object") {
+      const { data: cur } = await supabase.from("program_dna").select("sport").eq("id", pid).single();
+      const sport = sportFor(cur?.sport);
+      if (sport) {
+        const systems: Record<string, string[]> = {};
+        for (const g of sport.systems) {
+          const picked: string[] = (Array.isArray(body.systems[g.key]) ? body.systems[g.key] : []).filter((x: unknown): x is string => typeof x === "string" && g.options.includes(x));
+          if (picked.length) systems[g.key] = [...new Set<string>(picked)];
+        }
+        patch.systems = systems;
+      }
+    }
     if (["men", "women"].includes(body.team_gender)) patch.team_gender = body.team_gender;
     if (Array.isArray(body.reminder_days)) {
       const days = body.reminder_days.map((d: unknown) => int(d, 1, 30)).filter((d: number | null) => d).slice(0, 3).sort((a: number, b: number) => a - b);

@@ -101,6 +101,8 @@ export default function Recruits() {
                       <Badge tone={r.has_athlete_contact ? "progress" : "neutral"}>Athlete</Badge>
                       <Badge tone={r.has_parent_contact ? "progress" : "neutral"}>Parent</Badge>
                       <Badge tone={r.has_club_contact ? "progress" : "neutral"}>Director</Badge>
+                      {r.profile_in && <Badge tone="done">Profile</Badge>}
+                      {r.club_eval_in && <Badge tone="done">Club read</Badge>}
                     </div>
                   </td>
                   <td className={td}><StageBadge stage={r.stage} /></td>
