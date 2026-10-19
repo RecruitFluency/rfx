@@ -218,7 +218,7 @@ insert into public.club_accounts (club_id, role, first_name, last_name, email) v
 insert into public.club_athletes (club_id, vekt_athlete_id, full_name, sport, team, grad_year, position, parent_name, parent_email, status, committed_program, committed_division, committed_at, invited_at, family_approved_at, family_consent_text) values
   ('40000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001', 'Jordan Ellis', 'soccer', 'U17 MLS NEXT', 2028, 'Center back', 'Morgan Ellis', 'morgan.ellis@example.com', 'active', null, null, null, now() - interval '30 days', now() - interval '28 days', 'Demo consent'),
   ('40000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000004', 'Eli Brooks', 'soccer', 'U17 MLS NEXT', 2028, 'Striker', 'Dana Brooks', 'dana.brooks@example.com', 'active', null, null, null, now() - interval '30 days', now() - interval '27 days', 'Demo consent'),
-  ('40000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000002', 'Mateo Reyes', 'soccer', 'U16 MLS NEXT', 2029, 'Center back', 'Ana Reyes', 'ana.reyes@example.com', 'active', null, null, null, now() - interval '25 days', now() - interval '20 days', 'Demo consent'),
+  ('40000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000002', 'Mateo Reyes', 'soccer', 'U17 MLS NEXT', 2029, 'Center back', 'Ana Reyes', 'ana.reyes@example.com', 'active', null, null, null, now() - interval '25 days', now() - interval '20 days', 'Demo consent'),
   ('40000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000003', 'Kai Thompson', 'soccer', 'U15', 2030, 'Center back', 'Lee Thompson', 'lee.thompson@example.com', 'active', null, null, null, now() - interval '10 days', null, null),
   ('40000000-0000-4000-8000-000000000001', null, 'Chris Vance', 'soccer', 'U16 MLS NEXT', 2029, 'Winger', 'Jo Vance', 'jo.vance@example.com', 'active', null, null, null, null, null, null),
   ('40000000-0000-4000-8000-000000000001', null, 'Ryan Cole', 'soccer', 'U19', 2027, 'Goalkeeper', 'Pat Cole', 'pat.cole@example.com', 'committed', 'Harbor Point College', 'D3', current_date - 40, null, null, null),
@@ -247,3 +247,8 @@ insert into public.college_programs (name, conference, division, city, state, co
   ('Northfield State (sample)', 'Demo Conference', 'D1', 'Northfield', 'OH', 'public', 3.45, 27000, 58.0, 26000, '{soccer,volleyball,football,basketball}', 4, 'Sample row, not real data'),
   ('Western Ridge College (sample)', 'Demo Junior College League', 'NJCAA', 'Western Ridge', 'CO', 'public', 2.90, 9000, 100.0, 6000, '{soccer,baseball,softball}', 2, 'Sample row, not real data');
 update public.app_config set value = '25' where key = 'club_free_families'; -- local demo only
+
+-- Demo public club page (local only).
+update public.vekt_clubs set slug = 'lakeshore-fc', public_page = true where id = '40000000-0000-4000-8000-000000000001';
+update public.club_athletes set placement_public = true, placement_consent_at = now(), family_approved_at = coalesce(family_approved_at, now()), family_consent_text = coalesce(family_consent_text, 'Demo consent')
+  where club_id = '40000000-0000-4000-8000-000000000001' and full_name = 'Ryan Cole';

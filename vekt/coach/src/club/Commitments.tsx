@@ -5,6 +5,7 @@ import { useLoad, useSession } from "../session";
 import { Empty, ErrorNote, PageHeader, Panel, PanelTitle, Spinner, Stat, Table, td, th } from "../components/ui";
 import { date } from "../lib/format";
 import { StatusDrawer } from "./StatusDrawer";
+import { PublicPagePanel } from "./PublicPagePanel";
 
 interface Resp { committed: ClubAthlete[]; close: ClubAthlete[]; by_year: Record<string, number>; by_division: Record<string, number>; active: number }
 
@@ -54,6 +55,7 @@ export default function Commitments() {
           )}
         </Panel>
       </div>
+      <PublicPagePanel />
       <StatusDrawer athlete={open} onClose={() => setOpen(null)} onSaved={reload} />
     </div>
   );

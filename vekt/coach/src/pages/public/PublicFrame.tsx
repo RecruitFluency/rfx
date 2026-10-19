@@ -1,5 +1,5 @@
 // Layout for athletes, parents and club directors: no navigation, no login.
-export function PublicFrame({ children }: { children: React.ReactNode }) {
+export function PublicFrame({ children, footer }: { children: React.ReactNode; footer?: string }) {
   return (
     <div className="min-h-screen">
       <header className="px-4 sm:px-8 h-16 flex items-center border-b border-white/[0.08]">
@@ -7,7 +7,7 @@ export function PublicFrame({ children }: { children: React.ReactNode }) {
       </header>
       <main className="px-4 sm:px-8 py-10 sm:py-14 max-w-3xl mx-auto">{children}</main>
       <footer className="px-4 sm:px-8 pb-12 max-w-3xl mx-auto text-xs text-vekt-grey font-light">
-        VEKT is a recruiting fit tool. What you share here goes only to the program that invited you. VEKT never promises an offer, a roster spot or a scholarship.
+        {footer ?? "VEKT is a recruiting fit tool. What you share here goes only to the program that invited you. VEKT never promises an offer, a roster spot or a scholarship."}
       </footer>
     </div>
   );

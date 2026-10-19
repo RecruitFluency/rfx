@@ -8,6 +8,7 @@
 // (club_athletes.family_approved_at) and the profile itself is approved.
 // Same pattern as vekt-coach: RLS on, no policies, service role, scoping in code.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { clubPageData } from "../_shared/clubpage.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": Deno.env.get("VEKT_COACH_APP_ORIGIN") || "*",
@@ -105,6 +106,7 @@ function linkedPosition(athletes: any[], id: string | null) {
 }
 
 const csvSafe = (v: unknown) => s(v, 200);
+const slugify = (v: string) => v.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
 
 // Free while growing: the club dashboard is free up to app_config.club_free_families
 // approved families (families who said yes to the club). Unset = no offer shown.
@@ -315,6 +317,23 @@ const actions: Record<string, (x: Ctx) => Promise<unknown>> = {
     if (error) fail(400, error.message);
     await audit(supabase, c, "club_programs_import", null, { rows: rows.length });
     return { added: rows.length };
+  },
+
+  // The club's public page: placement record and Founding VEKT teams. Off by default.
+  async page_get({ supabase, c }) {
+    const { data: club } = await supabase.from("vekt_clubs").select("name, state, sports, slug, public_page").eq("id", c.club_id).single();
+    const { data: rows } = await supabase.from("club_athletes").select("full_name, team, grad_year, status, committed_program, committed_division, family_approved_at, placement_public").eq("club_id", c.club_id);
+    return { slug: club.slug ?? slugify(club.name), saved_slug: club.slug, public_page: club.public_page, preview: clubPageData(club, rows || []) };
+  },
+
+  async page_save({ supabase, c, body }) {
+    director(c);
+    const slug = slugify(s(body.slug, 60));
+    if (!/^[a-z0-9][a-z0-9-]{2,39}$/.test(slug)) fail(400, "Use 3 to 40 letters, numbers or dashes for the page address.");
+    const { error } = await supabase.from("vekt_clubs").update({ slug, public_page: body.public_page === true }).eq("id", c.club_id);
+    if (error) fail(400, /duplicate|unique/i.test(error.message) ? "That page address is taken. Try another." : error.message);
+    await audit(supabase, c, body.public_page === true ? "club_page_on" : "club_page_off", null, { slug });
+    return { slug, public_page: body.public_page === true };
   },
 
   async export_roster({ supabase, c }) {

@@ -11,6 +11,7 @@
 //   join                               an athlete (or parent) starts a VEKT profile without an invite (no token)
 //   parent_load    / parent_save      parent approves the profile and, separately, the coach video feed (parent_token)
 //   me_load / me_save / me_share       the athlete's own profile, videos and sharing (manage_token)
+//   club_page                          a club's public page, by slug, only if the director turned it on
 // Internal actions (header x-vekt-internal = service role key; only our own functions have it):
 //   prepare        turn the coach's spoken recruit list into rows, email the coach the confirm link
 //   release_due    send held invites whose NCAA contact date has now passed, then dispatch
@@ -28,6 +29,7 @@ import { createGhlClient, GhlError } from "../_shared/ghl.ts";
 import { splitName, suppressionKey } from "../_shared/format.ts";
 import { nextSendTime, zoneForState } from "../_shared/quiet.ts";
 import { teamStatus } from "../_shared/team.ts";
+import { clubPageData } from "../_shared/clubpage.ts";
 import { sportFor, videoKinds, videoLink, type Sport } from "../_shared/sports.ts";
 import { cleanEvaluation, cleanProfile } from "../_shared/profile.ts";
 
@@ -719,22 +721,40 @@ async function parentSave(supabase: any, token: string, body: any) {
     parent_approved_at: a.parent_approved_at ?? now, parent_consent_text: FEED_CONSENT + (feed ? ` ${FEED_TEXT}` : ""),
     feed_visible: feed, feed_approved_at: feed ? now : null, updated_at: now,
   }).eq("id", a.id);
-  await saveClubLinks(supabase, a.id, body.clubs);
+  await saveClubLinks(supabase, a.id, body.clubs, body.placements);
   return json({ status: "saved", feed_visible: feed });
 }
 
 // Clubs that invited this athlete, and whether the family lets each one see engagement.
 async function familyClubLinks(supabase: any, athleteId: string) {
-  const { data } = await supabase.from("club_athletes").select("id, family_approved_at, club:vekt_clubs(name)").eq("vekt_athlete_id", athleteId).not("invited_at", "is", null);
-  return (data || []).map((r: any) => ({ id: r.id, club: r.club?.name ?? "Your club", allowed: !!r.family_approved_at, text: clubText(r.club?.name ?? "the club") }));
+  const { data } = await supabase.from("club_athletes").select("id, family_approved_at, placement_public, club:vekt_clubs(name)").eq("vekt_athlete_id", athleteId).not("invited_at", "is", null);
+  return (data || []).map((r: any) => ({ id: r.id, club: r.club?.name ?? "Your club", allowed: !!r.family_approved_at, text: clubText(r.club?.name ?? "the club"),
+    placement: !!r.placement_public, placement_text: placementText(r.club?.name ?? "the club") }));
 }
-async function saveClubLinks(supabase: any, athleteId: string, choices: unknown) {
-  if (!choices || typeof choices !== "object") return;
-  for (const l of await familyClubLinks(supabase, athleteId)) {
+const placementText = (club: string) => `Once committed, ${club}'s public VEKT page may show the athlete's first name, last initial, grad year and the program they committed to. Nothing else.`;
+async function saveClubLinks(supabase: any, athleteId: string, choices: unknown, placements?: unknown) {
+  const links = await familyClubLinks(supabase, athleteId);
+  if (choices && typeof choices === "object") for (const l of links) {
     const want = (choices as Record<string, unknown>)[l.id];
     if (typeof want !== "boolean" || want === l.allowed) continue;
     await supabase.from("club_athletes").update(want ? { family_approved_at: new Date().toISOString(), family_consent_text: l.text } : { family_approved_at: null, family_consent_text: null }).eq("id", l.id).eq("vekt_athlete_id", athleteId);
   }
+  if (placements && typeof placements === "object") for (const l of links) {
+    const want = (placements as Record<string, unknown>)[l.id];
+    if (typeof want !== "boolean" || want === l.placement) continue;
+    await supabase.from("club_athletes").update({ placement_public: want, placement_consent_at: want ? new Date().toISOString() : null }).eq("id", l.id).eq("vekt_athlete_id", athleteId);
+  }
+}
+
+// A club's public page: placement record and Founding VEKT teams. Off until the director turns it on.
+async function clubPage(supabase: any, slug: unknown) {
+  const sl = s(slug, 40).toLowerCase();
+  if (!/^[a-z0-9][a-z0-9-]{2,39}$/.test(sl)) return json({ error: "This page doesn't exist." }, 404);
+  const { data: clubs } = await supabase.from("vekt_clubs").select("id, name, state, sports, public_page").eq("slug", sl).limit(1);
+  const c = clubs?.[0];
+  if (!c || !c.public_page) return json({ error: "This page doesn't exist." }, 404);
+  const { data: rows } = await supabase.from("club_athletes").select("full_name, team, grad_year, status, committed_program, committed_division, family_approved_at, placement_public").eq("club_id", c.id);
+  return json(clubPageData(c, rows || []));
 }
 
 async function meLoad(supabase: any, token: string) {
@@ -784,7 +804,8 @@ async function meSave(supabase: any, token: string, body: any) {
   if (a.is_minor && body.feed_visible === false) { patch.feed_visible = false; patch.feed_approved_at = null; }
   await supabase.from("vekt_athletes").update(patch).eq("id", a.id);
   // Same rule for the club: adults decide; a minor can only turn it off.
-  if (body.clubs && typeof body.clubs === "object") await saveClubLinks(supabase, a.id, a.is_minor ? Object.fromEntries(Object.entries(body.clubs).filter(([, v]) => v === false)) : body.clubs);
+  const offOnly = (m: unknown) => m && typeof m === "object" ? (a.is_minor ? Object.fromEntries(Object.entries(m).filter(([, v]) => v === false)) : m) : undefined;
+  if (body.clubs || body.placements) await saveClubLinks(supabase, a.id, offOnly(body.clubs), offOnly(body.placements));
   await saveVideos(supabase, a.id, sport, body.videos);
   const synced = body.update_all === false ? 0 : await syncShares(supabase, a, profile);
   return json({ status: "saved", synced });
@@ -1000,6 +1021,7 @@ Deno.serve(async (req) => {
       }
     }
     if (body.action === "join") return await join(supabase, body);
+    if (body.action === "club_page") return await clubPage(supabase, body.slug);
     if (!isUuid(body.token)) return json({ error: "This link isn't valid." }, 400);
     switch (body.action) {
       case "confirm_load": return await confirmLoad(supabase, body.token);

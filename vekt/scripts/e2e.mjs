@@ -378,4 +378,26 @@ check(exr.rows.length === (await jamie("roster")).athletes.length && exr.rows.fi
   await setConfig("club_free_families", "25");
 }
 
+// ---- Public club page ----
+const clubCallCoach = async (action, body = {}) => { const tk = await signIn("riley.shaw@lakeshorefc.example.com"); const r = await fetch(`${FN}/vekt-club`, { method: "POST", headers: { authorization: `Bearer ${tk}`, "content-type": "application/json" }, body: JSON.stringify({ action, ...body }) }); return { status: r.status, ...(await r.json()) }; };
+{
+  const tok = await signIn("jamie.porter@lakeshorefc.example.com");
+  const dir = async (action, body = {}) => { const r = await fetch(`${FN}/vekt-club`, { method: "POST", headers: { authorization: `Bearer ${tok}`, "content-type": "application/json" }, body: JSON.stringify({ action, ...body }) }); return { status: r.status, ...(await r.json()) }; };
+  const page = await post("vekt-invites", { action: "club_page", slug: "lakeshore-fc" });
+  check(page.club?.name === "Lakeshore FC" && page.committed >= 2 && page.by_level.D3 >= 1, "public page shows the placement record by level", page);
+  check(page.named.length === 1 && page.named[0].name === "Ryan C." && !JSON.stringify(page).includes("Santos") && !JSON.stringify(page).includes("@"), "only opted-in families are named, as first name and last initial, with no contact details", page.named);
+  check(page.founding_teams.includes("U17 MLS NEXT"), "a team with three families on VEKT is a Founding VEKT team", page.founding_teams);
+  await dir("page_save", { slug: "lakeshore-fc", public_page: false });
+  check((await post("vekt-invites", { action: "club_page", slug: "lakeshore-fc" })).status === 404, "a page the director turned off isn't reachable");
+  check((await dir("page_save", { slug: "x", public_page: true })).status === 400, "page addresses must be 3 to 40 characters");
+  await dir("page_save", { slug: "lakeshore-fc", public_page: true });
+  const { data: j } = await admin.from("vekt_athletes").select("parent_token").eq("id", "30000000-0000-4000-8000-000000000001").single();
+  const pl = await post("vekt-invites", { action: "parent_load", token: j.parent_token });
+  check(pl.clubs[0].placement === false && /first name, last initial/.test(pl.clubs[0].placement_text), "parents see the public-listing choice, off by default");
+  await post("vekt-invites", { action: "parent_save", token: j.parent_token, approve: true, feed_visible: false, placements: { [pl.clubs[0].id]: true } });
+  const { data: jc } = await admin.from("club_athletes").select("placement_public, placement_consent_at").eq("id", pl.clubs[0].id).single();
+  check(jc.placement_public && jc.placement_consent_at, "a parent's yes is recorded with the time");
+  check((await clubCallCoach("page_save", { slug: "anything", public_page: true })).status === 403, "club coaches can't change the public page");
+}
+
 console.log(`\n${passed} checks passed`);

@@ -5,7 +5,7 @@ import { Button, ErrorNote, Spinner, Toggle } from "../../components/ui";
 import { PublicFrame } from "./PublicFrame";
 import { ShareButton } from "../../components/ShareButton";
 
-interface ClubLink { id: string; club: string; allowed: boolean; text: string }
+interface ClubLink { id: string; club: string; allowed: boolean; text: string; placement: boolean; placement_text: string }
 interface Load { share: { url: string; joined: number }; clubs: ClubLink[]; athlete_first_name: string; sport: string; grad_year: number | null; parent_approved_at: string | null; feed_visible: boolean; consent_text: string; feed_text: string }
 
 // Parent approval: the profile itself, and separately, the coach-only film feed.
@@ -15,13 +15,14 @@ export default function Parent() {
   const [approve, setApprove] = useState(false);
   const [feed, setFeed] = useState(false);
   const [clubs, setClubs] = useState<Record<string, boolean>>({});
+  const [placements, setPlacements] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  useEffect(() => { publicApi<Load>("parent_load", token).then((x) => { setD(x); setApprove(!!x.parent_approved_at); setFeed(x.feed_visible); setClubs(Object.fromEntries(x.clubs.map((c) => [c.id, c.allowed]))); }).catch((e) => setError(e.message)); }, [token]);
+  useEffect(() => { publicApi<Load>("parent_load", token).then((x) => { setD(x); setApprove(!!x.parent_approved_at); setFeed(x.feed_visible); setClubs(Object.fromEntries(x.clubs.map((c) => [c.id, c.allowed]))); setPlacements(Object.fromEntries(x.clubs.map((c) => [c.id, c.placement]))); }).catch((e) => setError(e.message)); }, [token]);
   const save = async () => {
     setBusy(true); setError(null);
-    try { await publicApi("parent_save", token, { approve, feed_visible: feed, clubs }); setSaved(true); } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
+    try { await publicApi("parent_save", token, { approve, feed_visible: feed, clubs, placements }); setSaved(true); } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   };
   if (error && !d) return <PublicFrame><ErrorNote message={error} /></PublicFrame>;
   if (!d) return <PublicFrame><Spinner /></PublicFrame>;
@@ -41,6 +42,7 @@ export default function Parent() {
         {d.clubs.map((c) => (
           <div key={c.id} className="border border-white/[0.16] rounded p-5">
             <Toggle checked={!!clubs[c.id]} onChange={(v) => setClubs((x) => ({ ...x, [c.id]: v }))} label={`Let ${c.club} see which college programs engage`} hint={c.text} />
+            <div className="mt-4 pt-4 border-t border-white/[0.08]"><Toggle checked={!!placements[c.id]} onChange={(v) => setPlacements((x) => ({ ...x, [c.id]: v }))} label={`List ${d.athlete_first_name}'s commitment on ${c.club}'s public page`} hint={c.placement_text} /></div>
           </div>
         ))}
         {error && <ErrorNote message={error} />}

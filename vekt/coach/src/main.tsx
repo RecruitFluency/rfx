@@ -20,6 +20,7 @@ import ClubEval from "./pages/public/ClubEval";
 import Join from "./pages/public/Join";
 import Parent from "./pages/public/Parent";
 import Me from "./pages/public/Me";
+import ClubPage from "./pages/public/ClubPage";
 import Feed from "./pages/Feed";
 import WatchList from "./pages/WatchList";
 import Roster from "./pages/Roster";
@@ -47,6 +48,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
           <Route path="/join" element={<Join />} />
           <Route path="/parent/:token" element={<Parent />} />
           <Route path="/me/:token" element={<Me />} />
+          <Route path="/c/:slug" element={<ClubPage />} />
           <Route path="/director" element={<ClubShell />}>
             <Route index element={<Health />} />
             <Route path="pipeline" element={<Pipeline />} />
