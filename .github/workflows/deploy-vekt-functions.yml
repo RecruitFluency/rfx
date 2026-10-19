@@ -25,6 +25,7 @@ jobs:
     steps:
       - name: Skip until the token secret is added
         if: env.SUPABASE_ACCESS_TOKEN == ''
+        working-directory: .
         run: echo "::notice::Add the SUPABASE_ACCESS_TOKEN repository secret to deploy the VEKT functions."
       - uses: actions/checkout@v4
         if: env.SUPABASE_ACCESS_TOKEN != ''
