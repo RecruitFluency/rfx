@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { api } from "../lib/api";
+import { downloadCsv } from "../lib/download";
 import { useLoad, useSession } from "../session";
 import type { RecruitRow, StageKey } from "../lib/types";
 import { Badge, Button, ButtonLink, Drawer, Empty, ErrorNote, Input, PageHeader, Panel, Select, Spinner, StageBadge, Toggle, td, th, Table } from "../components/ui";
@@ -42,11 +43,7 @@ export default function Recruits() {
   // One CSV with the columns recruiting systems import, plus each recruit's VEKT Fit Read link.
   const exportCsv = async () => {
     const { rows } = await api<{ rows: Record<string, string | number>[] }>("export_board", { program_id: program!.id });
-    if (!rows.length) return;
-    const cell = (v: unknown) => { const t = v == null ? "" : String(v); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
-    const head = Object.keys(rows[0]);
-    const blob = new Blob([[head.join(","), ...rows.map((r) => head.map((h) => cell(r[h])).join(","))].join("\n")], { type: "text/csv" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `vekt-board-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+    downloadCsv(rows, "vekt-board");
   };
 
   const compare = async () => {

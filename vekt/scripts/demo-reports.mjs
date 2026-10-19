@@ -210,4 +210,8 @@ console.log(`demo Side-by-Side: /side-by-side/${sbs.id}`);
 for (const email of ["dana.whitfield", "marco.ruiz", "alex.mercer", "priya.nand"]) {
   await admin.auth.admin.createUser({ email: `${email}@northfield.example.edu`, password: "demo-password-1", email_confirm: true }).catch(() => null);
 }
+for (const email of ["jamie.porter", "riley.shaw"]) {
+  await admin.auth.admin.createUser({ email: `${email}@lakeshorefc.example.com`, password: "demo-password-1", email_confirm: true }).catch(() => null);
+}
 console.log("demo sign-in: dana.whitfield@northfield.example.edu / demo-password-1");
+console.log("club director sign-in: jamie.porter@lakeshorefc.example.com / demo-password-1");

@@ -23,11 +23,11 @@ export function contactLabel(c: AthleteCard["contact"]) {
   return c.open ? "Contact open" : c.date ? `Contact opens ${date(c.date)}` : "Contact date unknown";
 }
 
-export function VideoPlayer({ v, autoPlay }: { v: { url: string; youtube_id: string | null; title: string | null }; autoPlay?: boolean }) {
+export function VideoPlayer({ v, autoPlay, onPlay }: { v: { url: string; youtube_id: string | null; title: string | null }; autoPlay?: boolean; onPlay?: () => void }) {
   const [play, setPlay] = useState(!!autoPlay);
   if (!v.youtube_id) {
     return (
-      <a href={v.url} target="_blank" rel="noreferrer noopener" className="aspect-video w-full bg-vekt-panel border border-white/[0.08] flex flex-col items-center justify-center gap-3 text-white hover:border-white/30">
+      <a href={v.url} target="_blank" rel="noreferrer noopener" onClick={onPlay} className="aspect-video w-full bg-vekt-panel border border-white/[0.08] flex flex-col items-center justify-center gap-3 text-white hover:border-white/30">
         <ExternalLink className="w-6 h-6" /><span className="text-sm">Open video ({new URL(v.url).hostname.replace(/^www\./, "")})</span>
       </a>
     );
@@ -36,7 +36,7 @@ export function VideoPlayer({ v, autoPlay }: { v: { url: string; youtube_id: str
     return <iframe className="aspect-video w-full bg-black" src={`https://www.youtube-nocookie.com/embed/${v.youtube_id}?autoplay=1&rel=0&modestbranding=1`} title={v.title ?? "Video"} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />;
   }
   return (
-    <button type="button" onClick={() => setPlay(true)} className="group relative aspect-video w-full bg-vekt-panel overflow-hidden" aria-label={`Play ${v.title ?? "video"}`}>
+    <button type="button" onClick={() => { setPlay(true); onPlay?.(); }} className="group relative aspect-video w-full bg-vekt-panel overflow-hidden" aria-label={`Play ${v.title ?? "video"}`}>
       <img src={`https://i.ytimg.com/vi/${v.youtube_id}/hqdefault.jpg`} alt="" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
       <span className="absolute inset-0 flex items-center justify-center"><span className="w-16 h-16 rounded-full bg-black/60 border border-white/40 flex items-center justify-center"><Play className="w-7 h-7 text-white ml-1" /></span></span>
     </button>
@@ -97,7 +97,7 @@ export default function Feed() {
         <div ref={scroller} className="max-w-[760px] mx-auto h-[calc(100vh-220px)] min-h-[520px] overflow-y-auto snap-y snap-mandatory border border-white/[0.08] rounded">
           {data.videos.map((v) => (
             <article key={v.id} className="snap-start min-h-full flex flex-col justify-center gap-5 p-4 sm:p-6 border-b border-white/[0.08]">
-              <VideoPlayer v={v} />
+              <VideoPlayer v={v} onPlay={() => { api("film_play", { program_id: program!.id, athlete_id: v.athlete_id }).catch(() => undefined); }} />
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-baseline gap-x-3">

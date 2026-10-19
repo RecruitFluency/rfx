@@ -76,6 +76,31 @@ Set `app_config.profile_base_url` to the dashboard URL so invite emails include 
   including each recruit's VEKT Fit Read link. A live Teamworks sync needs their API through a partner
   agreement.
 
+## Club director dashboard
+
+Club directors sign in at the same login; a club account opens `/director` instead of the coach app.
+Data comes from `vekt-club` (same pattern: RLS on, no policies, scoping in code, writes in `vekt_audit_log`).
+
+- **Club health**: players, on VEKT, programs engaging, coach actions, Interested, committed; 12-week
+  college activity; interest by level; every player with views, saves, invites and Interested.
+- **Player pipeline**: one column per stage (not on VEKT, profile live, seen by coaches, invited, Fit Read
+  done, Interested, committed). Click a player to record a commitment or mark them not pursuing college.
+- **Coach engagement**: each college program and what it did (views, film plays, saves, invites, Interested).
+- **Recruiting funnel**: how many players reached each step, overall and by class. Counts, not percentages.
+- **Commitments**: placement record by class and level, plus the players closest to a decision.
+- **Program research**: filter colleges by level, state, public/private, cost and sport. The list loads from
+  a spreadsheet (CSV/XLSX); a club's own imports are visible only to that club. The seeded rows are labelled
+  samples, not real data.
+- **Roster & export**: add or paste players, invite each family to VEKT, and export a CSV (formula-safe).
+
+**Consent.** Inviting a player starts *their own* VEKT profile. The club sees college engagement only after
+the family says yes to the club specifically (`club_athletes.family_approved_at`), separate from approving
+the profile and from the coach film feed. A parent decides for a minor (the athlete can only turn it off);
+an athlete 18+ decides themselves. The club never sees Fit Reads. Coach activity is logged in
+`coach_actions` when staff open a profile, play film or save to a watch list.
+
+Demo sign-in (local only): `jamie.porter@lakeshorefc.example.com` / `demo-password-1` (Lakeshore FC is fictional).
+
 ## Run it locally
 
 ```bash
@@ -107,7 +132,7 @@ Nothing here has been applied to production. Each step needs a go-ahead.
    - `VEKT_GHL_WEBHOOK_TOKEN` (a long random string), optionally `GHL_WEBHOOK_PUBLIC_KEY`
    - `VEKT_COACH_APP_ORIGIN` = the dashboard URL (locks down CORS)
    - Never set `VEKT_FIT_MOCK` or `VEKT_GHL_MOCK` in production.
-3. **Deploy functions**: `supabase functions deploy vekt-invites vekt-webhook vekt-fit-read vekt-coach vekt-ghl-webhook --no-verify-jwt`.
+3. **Deploy functions**: `supabase functions deploy vekt-invites vekt-webhook vekt-fit-read vekt-coach vekt-club vekt-ghl-webhook --no-verify-jwt`.
 4. **Schedules** (Supabase cron or GHL): every 5 minutes call `vekt-invites` with
    `{"action":"dispatch"}`; daily call `release_due` and `send_reminders`. Each needs the
    header `x-vekt-internal: <service role key>`.
@@ -121,7 +146,10 @@ Nothing here has been applied to production. Each step needs a go-ahead.
 7. **Dashboard**: new Vercel project from `vekt/coach` (root directory `vekt/coach`), with
    `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Then set `app_config.coach_app_url`.
 8. **First accounts**: insert a `vekt_departments` row, link `program_dna.department_id`,
-   and add the department admin to `coach_accounts`; they add the rest of their staff.
+   and add the department admin to `coach_accounts`; they add the rest of their staff. For a club,
+   insert a `vekt_clubs` row and its director in `club_accounts`.
+9. **Program research list**: load your sourced spreadsheet into `college_programs` (club_id null for the
+   shared list) and delete the five sample rows.
 
 ## Known limits
 

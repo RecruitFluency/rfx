@@ -430,3 +430,6 @@ verify_jwt = false
 
 [functions.vekt-ghl-webhook]
 verify_jwt = false
+
+[functions.vekt-club]
+verify_jwt = false

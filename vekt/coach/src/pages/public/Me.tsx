@@ -13,6 +13,7 @@ interface Load {
   videos: VideoValue[];
   programs: { recruit_id: string; program: string; status: "shared" | "declined"; last_synced_at: string | null }[];
   pending: { recruit_id: string; program: string }[];
+  clubs: { id: string; club: string; allowed: boolean; text: string }[];
 }
 
 // The athlete's own profile: one place to update, shared program by program.
@@ -23,6 +24,7 @@ export default function Me() {
   const [videos, setVideos] = useState<VideoValue[]>([]);
   const [info, setInfo] = useState({ grad_year: "", club: "", state: "" });
   const [feed, setFeed] = useState(false);
+  const [clubs, setClubs] = useState<Record<string, boolean>>({});
   const [updateAll, setUpdateAll] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -30,6 +32,7 @@ export default function Me() {
 
   const load = () => publicApi<Load>("me_load", token).then((x) => {
     setD(x); setValue(x.athlete.profile ?? {}); setVideos(x.videos); setFeed(x.athlete.feed_visible);
+    setClubs(Object.fromEntries((x.clubs ?? []).map((c) => [c.id, c.allowed])));
     setInfo({ grad_year: x.athlete.grad_year ? String(x.athlete.grad_year) : "", club: x.athlete.club ?? "", state: x.athlete.state ?? "" });
   }).catch((e) => setError(e.message));
   useEffect(() => { load(); }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -37,7 +40,7 @@ export default function Me() {
   const save = async (submit: boolean) => {
     setBusy(submit ? "submit" : "save"); setNote(null);
     try {
-      const out = await publicApi<{ synced: number }>("me_save", token, { profile: value, videos: videos.filter((v) => v.url.trim()), ...info, feed_visible: feed, update_all: submit ? updateAll : false });
+      const out = await publicApi<{ synced: number }>("me_save", token, { profile: value, videos: videos.filter((v) => v.url.trim()), ...info, feed_visible: feed, clubs, update_all: submit ? updateAll : false });
       setNote(submit ? (out.synced ? `Saved and sent to ${out.synced} ${out.synced === 1 ? "program" : "programs"}.` : "Saved.") : "Saved.");
     } catch (e) { setNote((e as Error).message); } finally { setBusy(null); }
   };
@@ -85,6 +88,14 @@ export default function Me() {
                   {a.feed_visible && <button className="ml-2 text-white underline underline-offset-4" onClick={() => setFeed(false)}>Turn off</button>}</p>
               : <Toggle checked={feed} onChange={setFeed} label="Let verified college coaches see my videos" hint="They see your name, class, position, club, state, profile and videos, never your email or phone." />}
           </div>
+          {d.clubs?.map((c) => (
+            <div key={c.id} className="pt-2">
+              {a.is_minor
+                ? <p className="text-vekt-grey">{c.allowed ? `${c.club} can see which college programs engage with your profile (a parent turned this on).` : `${c.club} invited you. A parent decides whether the club sees which programs engage.`}
+                    {c.allowed && clubs[c.id] && <button className="ml-2 text-white underline underline-offset-4" onClick={() => setClubs((x) => ({ ...x, [c.id]: false }))}>Turn off</button>}</p>
+                : <Toggle checked={!!clubs[c.id]} onChange={(v) => setClubs((x) => ({ ...x, [c.id]: v }))} label={`Let ${c.club} see which college programs engage`} hint={c.text} />}
+            </div>
+          ))}
         </div>
       </Section>
 

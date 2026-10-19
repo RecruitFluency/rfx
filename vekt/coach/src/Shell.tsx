@@ -18,11 +18,12 @@ export function Frame({ children }: { children: React.ReactNode }) {
 }
 
 export default function Shell() {
-  const { loading, session, me, meError, signOut } = useSession();
+  const { loading, session, me, meError, club, signOut } = useSession();
   const location = useLocation();
   if (!configured) return <Frame><p className="text-vekt-grey">Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to connect the dashboard.</p></Frame>;
   if (loading) return <Spinner />;
   if (!session) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (!me && club) return <Navigate to="/director" replace />;
   if (!me) {
     return (
       <Frame>

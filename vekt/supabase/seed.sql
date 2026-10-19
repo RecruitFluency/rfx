@@ -190,3 +190,59 @@ insert into public.program_roster (program_id, name, position, final_season, sta
   ('a0000000-0000-4000-8000-000000000001', 'Andre Wells', 'Striker', 2026, 'returning', false, 16000),
   ('a0000000-0000-4000-8000-000000000001', 'Felix Nunez', 'Striker', 2028, 'returning', false, null),
   ('a0000000-0000-4000-8000-000000000001', 'Pete Okoro', 'Striker', 2029, 'transfer_risk', false, null);
+
+-- Club director demo: a fictional club, its director, roster and what college staff did.
+-- Lakeshore FC here is a made-up demo club. Extra programs below are fictional too.
+insert into public.program_dna (id, coach_name, institution, sport, division, team_gender, licensed, session_type, profile_confirmed) values
+  ('a0000000-0000-4000-8000-000000000003', 'Kim Alvarez', 'Harbor Point College', 'soccer', 'D3', 'men', true, 'program_profile', true),
+  ('a0000000-0000-4000-8000-000000000004', 'Sean Doyle', 'Eastlake University', 'soccer', 'D2', 'men', true, 'program_profile', true),
+  ('a0000000-0000-4000-8000-000000000005', 'Tess Monroe', 'Prairie View Tech', 'soccer', 'NAIA', 'men', true, 'program_profile', true);
+
+insert into public.recruit_comparisons (id, program_id, kind, status, sport, division, team_gender, coach_name, coach_email, coach_attested_at) values
+  ('b0000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000003', 'board', 'invites_sent', 'soccer', 'D3', 'men', 'Kim Alvarez', 'kim.alvarez@harborpoint.example.edu', now() - interval '9 days'),
+  ('b0000000-0000-4000-8000-000000000004', 'a0000000-0000-4000-8000-000000000004', 'board', 'invites_sent', 'soccer', 'D2', 'men', 'Sean Doyle', 'sean.doyle@eastlake.example.edu', now() - interval '5 days');
+
+insert into public.comparison_recruits (id, comparison_id, program_id, source, recruit_name, position, grad_year, club_or_school, state, athlete_email, parent_name, parent_email,
+  contact_status, athlete_invited_at, decision, decision_at, vekt_athlete_id) values
+  ('20000000-0000-4000-8000-000000000011', 'b0000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000003', 'feed', 'Jordan Ellis', 'Center back', 2028, 'Lakeshore FC', 'OH', null, null, null,
+   'cleared', now() - interval '9 days', 'interested', now() - interval '3 days', '30000000-0000-4000-8000-000000000001'),
+  ('20000000-0000-4000-8000-000000000012', 'b0000000-0000-4000-8000-000000000004', 'a0000000-0000-4000-8000-000000000004', 'feed', 'Eli Brooks', 'Striker', 2028, 'Lakeshore FC', 'FL', null, null, null,
+   'cleared', now() - interval '5 days', null, null, '30000000-0000-4000-8000-000000000004');
+
+insert into public.vekt_clubs (id, name, state, sports) values
+  ('40000000-0000-4000-8000-000000000001', 'Lakeshore FC', 'OH', '{soccer}');
+insert into public.club_accounts (club_id, role, first_name, last_name, email) values
+  ('40000000-0000-4000-8000-000000000001', 'director', 'Jamie', 'Porter', 'jamie.porter@lakeshorefc.example.com'),
+  ('40000000-0000-4000-8000-000000000001', 'coach', 'Riley', 'Shaw', 'riley.shaw@lakeshorefc.example.com');
+
+insert into public.club_athletes (club_id, vekt_athlete_id, full_name, sport, team, grad_year, position, parent_name, parent_email, status, committed_program, committed_division, committed_at, invited_at, family_approved_at, family_consent_text) values
+  ('40000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000001', 'Jordan Ellis', 'soccer', 'U17 MLS NEXT', 2028, 'Center back', 'Morgan Ellis', 'morgan.ellis@example.com', 'active', null, null, null, now() - interval '30 days', now() - interval '28 days', 'Demo consent'),
+  ('40000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000004', 'Eli Brooks', 'soccer', 'U17 MLS NEXT', 2028, 'Striker', 'Dana Brooks', 'dana.brooks@example.com', 'active', null, null, null, now() - interval '30 days', now() - interval '27 days', 'Demo consent'),
+  ('40000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000002', 'Mateo Reyes', 'soccer', 'U16 MLS NEXT', 2029, 'Center back', 'Ana Reyes', 'ana.reyes@example.com', 'active', null, null, null, now() - interval '25 days', now() - interval '20 days', 'Demo consent'),
+  ('40000000-0000-4000-8000-000000000001', '30000000-0000-4000-8000-000000000003', 'Kai Thompson', 'soccer', 'U15', 2030, 'Center back', 'Lee Thompson', 'lee.thompson@example.com', 'active', null, null, null, now() - interval '10 days', null, null),
+  ('40000000-0000-4000-8000-000000000001', null, 'Chris Vance', 'soccer', 'U16 MLS NEXT', 2029, 'Winger', 'Jo Vance', 'jo.vance@example.com', 'active', null, null, null, null, null, null),
+  ('40000000-0000-4000-8000-000000000001', null, 'Ryan Cole', 'soccer', 'U19', 2027, 'Goalkeeper', 'Pat Cole', 'pat.cole@example.com', 'committed', 'Harbor Point College', 'D3', current_date - 40, null, null, null),
+  ('40000000-0000-4000-8000-000000000001', null, 'Diego Santos', 'soccer', 'U19', 2027, 'Central midfielder', 'Rosa Santos', 'rosa.santos@example.com', 'committed', 'Eastlake University', 'D2', current_date - 12, null, null, null),
+  ('40000000-0000-4000-8000-000000000001', null, 'Noah Kim', 'soccer', 'U19', 2027, 'Fullback', null, null, 'not_pursuing', null, null, null, null, null, null),
+  ('40000000-0000-4000-8000-000000000001', null, 'Liam Foster', 'soccer', 'U17 MLS NEXT', 2028, 'Defensive midfielder', 'Kate Foster', 'kate.foster@example.com', 'active', null, null, null, null, null, null),
+  ('40000000-0000-4000-8000-000000000001', null, 'Owen Price', 'soccer', 'U16 MLS NEXT', 2029, 'Fullback', null, null, 'active', null, null, null, null, null, null);
+
+-- What college staff did with linked athletes over the last few weeks.
+insert into public.coach_actions (program_id, coach_account_id, athlete_id, action, created_at)
+select p, null, a, act, now() - (d || ' days')::interval from (values
+  ('a0000000-0000-4000-8000-000000000001'::uuid, '30000000-0000-4000-8000-000000000001'::uuid, 'profile_view', 20), ('a0000000-0000-4000-8000-000000000001'::uuid, '30000000-0000-4000-8000-000000000001'::uuid, 'film_play', 19),
+  ('a0000000-0000-4000-8000-000000000003'::uuid, '30000000-0000-4000-8000-000000000001'::uuid, 'profile_view', 12), ('a0000000-0000-4000-8000-000000000003'::uuid, '30000000-0000-4000-8000-000000000001'::uuid, 'film_play', 12),
+  ('a0000000-0000-4000-8000-000000000003'::uuid, '30000000-0000-4000-8000-000000000001'::uuid, 'watch_add', 11), ('a0000000-0000-4000-8000-000000000005'::uuid, '30000000-0000-4000-8000-000000000001'::uuid, 'profile_view', 4),
+  ('a0000000-0000-4000-8000-000000000004'::uuid, '30000000-0000-4000-8000-000000000004'::uuid, 'film_play', 8), ('a0000000-0000-4000-8000-000000000004'::uuid, '30000000-0000-4000-8000-000000000004'::uuid, 'profile_view', 7),
+  ('a0000000-0000-4000-8000-000000000005'::uuid, '30000000-0000-4000-8000-000000000004'::uuid, 'film_play', 2), ('a0000000-0000-4000-8000-000000000001'::uuid, '30000000-0000-4000-8000-000000000002'::uuid, 'film_play', 15),
+  ('a0000000-0000-4000-8000-000000000001'::uuid, '30000000-0000-4000-8000-000000000002'::uuid, 'watch_add', 15), ('a0000000-0000-4000-8000-000000000005'::uuid, '30000000-0000-4000-8000-000000000002'::uuid, 'film_play', 1),
+  ('a0000000-0000-4000-8000-000000000001'::uuid, '30000000-0000-4000-8000-000000000003'::uuid, 'film_play', 6)
+) v(p, a, act, d);
+
+-- A few sample research rows, clearly labelled. Load the real list from a spreadsheet.
+insert into public.college_programs (name, conference, division, city, state, control, avg_gpa, cost_per_year, acceptance_rate, enrollment, sports, staff_count, source) values
+  ('Harbor Point College (sample)', 'Demo Coast Conference', 'D3', 'Harbor Point', 'ME', 'private', 3.55, 61000, 48.0, 2100, '{soccer,lacrosse,swimming_diving}', 3, 'Sample row, not real data'),
+  ('Eastlake University (sample)', 'Demo Lakes Conference', 'D2', 'Eastlake', 'MI', 'public', 3.30, 24000, 71.0, 14000, '{soccer,basketball,volleyball,baseball}', 3, 'Sample row, not real data'),
+  ('Prairie View Tech (sample)', 'Demo Plains Conference', 'NAIA', 'Prairie View', 'KS', 'private', 3.10, 32000, 64.0, 3800, '{soccer,wrestling,track_field}', 2, 'Sample row, not real data'),
+  ('Northfield State (sample)', 'Demo Conference', 'D1', 'Northfield', 'OH', 'public', 3.45, 27000, 58.0, 26000, '{soccer,volleyball,football,basketball}', 4, 'Sample row, not real data'),
+  ('Western Ridge College (sample)', 'Demo Junior College League', 'NJCAA', 'Western Ridge', 'CO', 'public', 2.90, 9000, 100.0, 6000, '{soccer,baseball,softball}', 2, 'Sample row, not real data');

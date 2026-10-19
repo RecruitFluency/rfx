@@ -13,7 +13,7 @@
 
 const PORT = Number(Deno.env.get("DEV_FUNCTIONS_PORT") ?? 54331);
 const UPSTREAM = Deno.env.get("DEV_SUPABASE_UPSTREAM") ?? "http://127.0.0.1:54321";
-const NAMES = ["vekt-invites", "vekt-webhook", "vekt-fit-read", "vekt-coach", "vekt-ghl-webhook"];
+const NAMES = ["vekt-invites", "vekt-webhook", "vekt-fit-read", "vekt-coach", "vekt-ghl-webhook", "vekt-club"];
 
 type Handler = (req: Request) => Response | Promise<Response>;
 const handlers = new Map<string, Handler>();

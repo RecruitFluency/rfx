@@ -167,7 +167,7 @@ const { data: leak } = await anon.from("comparison_recruits").select("id");
 check(!leak?.length, "the public key reads nothing (RLS on, no policies)");
 
 // ---- Player profiles: athlete, club director, program systems ----
-const tok = async (name) => (await admin.from("comparison_recruits").select("id, invite_token, club_invite_token").eq("recruit_name", name)).data[0];
+const tok = async (name) => (await admin.from("comparison_recruits").select("id, invite_token, club_invite_token").eq("recruit_name", name).eq("program_id", PROGRAM)).data[0];
 const sam = await tok("Sam Ortiz");
 check((await post("vekt-invites", { action: "profile_load", token: sam.invite_token })).status === "needs_consent", "athlete profile waits for a parent's approval");
 check((await post("vekt-invites", { action: "profile_save", token: sam.invite_token, profile: {} })).status === 403, "no saving before a parent approves");
@@ -268,5 +268,72 @@ const ex = await dana("export_board", { program_id: PROGRAM });
 const exJ = ex.rows.find((r) => r["First Name"] === "Jordan");
 check(exJ && exJ["VEKT Fit Read"].endsWith(`/recruits/${R.jordan}/fit-read`) && exJ["Self-Awareness"], "export carries each recruit's Fit Read link and self-awareness", exJ);
 check((await priya("roster_player_save", { program_id: PROGRAM, player: { name: "X", final_season: 2028 } })).status === 403, "compliance can't edit the roster");
+
+// ---- Club director dashboard ----
+{
+const clubCall = (token) => async (action, body = {}) => {
+  const res = await fetch(`${FN}/vekt-club`, { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ action, ...body }) });
+  return { status: res.status, ...(await res.json()) };
+};
+const jamieTok = await signIn("jamie.porter@lakeshorefc.example.com");
+const jamie = clubCall(jamieTok);
+const clubCoach = clubCall(await signIn("riley.shaw@lakeshorefc.example.com"));
+check((await jamie("me")).club?.name === "Lakeshore FC", "club director signs in to their club");
+check((await coach(jamieTok)("me")).status === 403, "a club account can't use the college coach API");
+check((await clubCall(await signIn("dana.whitfield@northfield.example.edu"))("me")).status === 403, "a college coach can't use the club API");
+const KAI = "30000000-0000-4000-8000-000000000003";
+const h1 = await jamie("health");
+const hRow = (h, n) => h.athletes.find((a) => a.full_name === n);
+check(hRow(h1, "Jordan Ellis").programs_engaged >= 3 && hRow(h1, "Jordan Ellis").interested === 2 && hRow(h1, "Jordan Ellis").stage === "interested", "club sees programs engaging with an athlete whose family said yes", hRow(h1, "Jordan Ellis"));
+const kai1 = hRow(h1, "Kai Thompson");
+const { count: kaiActs } = await admin.from("coach_actions").select("id", { count: "exact", head: true }).eq("athlete_id", KAI);
+check(kaiActs > 0 && !kai1.on_vekt && kai1.pending_parent && kai1.views === 0 && kai1.programs_engaged === 0, "no engagement shown until the family says yes to the club, even when coaches acted", kai1);
+check(h1.totals.committed === 2 && !h1.athletes.some((a) => a.full_name === "Noah Kim"), "health counts commitments and leaves out players not pursuing college");
+const fn1 = await jamie("funnel");
+const step = (k) => fn1.steps.find((s) => s.key === k).count;
+check(step("committed") === 2 && step("profile") === 3 && step("interested") === 1, "funnel counts VEKT steps separately from commitments recorded off VEKT", fn1.steps);
+const eng = await jamie("engagement");
+check(eng.programs.length === 4 && eng.programs[0].interested >= 1, "engagement lists each program, Interested first", eng.programs.map((p) => p.program));
+await dana("athlete_card", { program_id: PROGRAM, athlete_id: "30000000-0000-4000-8000-000000000002" });
+await dana("film_play", { program_id: PROGRAM, athlete_id: "30000000-0000-4000-8000-000000000002" });
+const { count: mActs } = await admin.from("coach_actions").select("id", { count: "exact", head: true }).eq("athlete_id", "30000000-0000-4000-8000-000000000002").eq("program_id", PROGRAM);
+check(mActs === 4, "opening a profile and playing film are logged for the club view", mActs);
+check((await clubCoach("athlete_save", { athlete: { full_name: "No Access" } })).status === 403, "club coaches can view but not edit");
+const np = await jamie("athlete_save", { athlete: { full_name: "Tess Rowan", sport: "soccer", grad_year: 2029, position: "Winger", parent_name: "Jo Rowan", parent_email: "jo.rowan@example.com" } });
+check(!!np.id, "director adds a player");
+check((await jamie("athlete_import", { rows: [{ full_name: "Paste A", grad_year: 2030, sport: "soccer" }, { full_name: "" }] })).added === 1, "paste a club roster; rows without a name are skipped");
+const ci = await jamie("athlete_invite", { id: np.id });
+const { data: npRow } = await admin.from("club_athletes").select("vekt_athlete_id, invited_at, family_approved_at").eq("id", np.id).single();
+const { data: npAth } = await admin.from("vekt_athletes").select("parent_token, manage_token, parent_approved_at, is_minor").eq("id", npRow.vekt_athlete_id).single();
+const { data: npOb } = await admin.from("vekt_outbox").select("id").eq("to_address", "jo.rowan@example.com");
+check(ci.status === "invited" && npRow.invited_at && npAth.is_minor && !npAth.parent_approved_at && npOb?.length >= 1, "inviting creates the athlete's own profile and emails the parent to approve", { ci, npOb });
+const pl = await post("vekt-invites", { action: "parent_load", token: npAth.parent_token });
+check(pl.clubs.length === 1 && pl.clubs[0].club === "Lakeshore FC" && pl.clubs[0].allowed === false, "the parent sees the club's request, off by default", pl.clubs);
+await post("vekt-invites", { action: "parent_save", token: npAth.parent_token, approve: true, feed_visible: false });
+check(hRow(await jamie("health"), "Tess Rowan").on_vekt === false, "approving the profile alone doesn't open it to the club");
+await post("vekt-invites", { action: "parent_save", token: npAth.parent_token, approve: true, feed_visible: false, clubs: { [pl.clubs[0].id]: true } });
+const tess = hRow(await jamie("health"), "Tess Rowan");
+check(tess.on_vekt === true && tess.stage === "profile", "the parent's yes to the club shows the athlete as on VEKT", tess);
+const { data: kaiAth } = await admin.from("vekt_athletes").select("manage_token").eq("id", KAI).single();
+const { data: kaiClub } = await admin.from("club_athletes").select("id").eq("vekt_athlete_id", KAI).single();
+await post("vekt-invites", { action: "me_save", token: kaiAth.manage_token, profile: {}, clubs: { [kaiClub.id]: true } });
+check(!hRow(await jamie("health"), "Kai Thompson").on_vekt, "a minor can't turn on the club view themselves");
+check((await jamie("athlete_status", { id: np.id, status: "committed" })).status === 400, "a commitment needs the program");
+await jamie("athlete_status", { id: np.id, status: "committed", committed_program: "Harbor Point College", committed_division: "D3" });
+check((await jamie("commitments")).committed.some((a) => a.full_name === "Tess Rowan" && a.committed_program === "Harbor Point College"), "director records a commitment");
+check((await jamie("programs_import", { rows: [{ name: "Club Only College", division: "D3", state: "ny", cost_per_year: "$41,000", acceptance_rate: "62%" }, { name: "" }] })).added === 1, "director loads programs from a spreadsheet");
+const pr = await jamie("programs", { division: "D3" });
+const own = pr.programs.find((p) => p.name === "Club Only College");
+check(own && own.state === "NY" && own.cost_per_year === 41000 && Number(own.acceptance_rate) === 62, "imported values are cleaned", own);
+await admin.from("vekt_clubs").insert({ id: "40000000-0000-4000-8000-000000000002", name: "Other Demo Club", sports: ["soccer"] });
+await admin.from("club_accounts").insert({ club_id: "40000000-0000-4000-8000-000000000002", role: "director", first_name: "Other", last_name: "Director", email: "other.director@example.com" });
+const other = clubCall(await signIn("other.director@example.com"));
+check(!(await other("programs", { division: "D3" })).programs.some((p) => p.name === "Club Only College"), "one club's imported programs stay private to that club");
+check((await other("athlete_status", { id: np.id, status: "active" })).status === 404 && (await other("health")).athletes.length === 0, "a club can't see or change another club's players");
+const exr = await jamie("export_roster");
+const { data: clubAudit } = await admin.from("vekt_audit_log").select("action").eq("detail->>club_id", "40000000-0000-4000-8000-000000000001");
+check(["club_athlete_add", "club_athlete_invite", "club_athlete_status", "club_programs_import"].every((a) => clubAudit.some((x) => x.action === a)), "club writes are audited");
+check(exr.rows.length === (await jamie("roster")).athletes.length && exr.rows.find((r) => r.Athlete === "Kai Thompson")["On VEKT"] === "Waiting on family", "roster export covers every player with where they stand");
+}
 
 console.log(`\n${passed} checks passed`);

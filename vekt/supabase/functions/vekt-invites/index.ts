@@ -629,13 +629,57 @@ async function join(supabase: any, body: any) {
   return json({ status: "check_email" });
 }
 
+// A club director invited one of their athletes: start (or link) the athlete's own
+// profile and ask the family to approve it and, separately, the club's view of it.
+async function clubInvite(supabase: any, body: any) {
+  if (!isUuid(body.club_athlete_id)) return json({ error: "Athlete not found." }, 404);
+  const { data } = await supabase.from("club_athletes").select("*, club:vekt_clubs(name)").eq("id", body.club_athlete_id).limit(1);
+  const r = data?.[0];
+  if (!r) return json({ error: "Athlete not found." }, 404);
+  const sport = sportFor(r.sport);
+  if (!sport) return json({ error: "Add the athlete's sport first." }, 400);
+  const minor = !!r.parent_email;
+  const cfg = await config(supabase);
+  const base = cfg.profile_base_url || cfg.invite_base_url;
+  let athlete: any = null;
+  if (r.vekt_athlete_id) athlete = (await supabase.from("vekt_athletes").select("*").eq("id", r.vekt_athlete_id).limit(1)).data?.[0];
+  if (!athlete) {
+    const { data: existing } = await supabase.from("vekt_athletes").select("*").eq("sport", sport.key).limit(500);
+    athlete = (existing || []).find((x: any) => lower(x.full_name) === lower(r.full_name) && ((r.parent_email && lower(x.parent_email) === lower(r.parent_email)) || (r.athlete_email && lower(x.athlete_email) === lower(r.athlete_email)))) ?? null;
+  }
+  if (!athlete) {
+    const { data: made, error } = await supabase.from("vekt_athletes").insert({
+      full_name: r.full_name, sport: sport.key, grad_year: r.grad_year, club: r.club?.name ?? r.team, athlete_email: r.athlete_email,
+      parent_name: r.parent_name, parent_email: r.parent_email, is_minor: minor, parent_approved_at: minor ? null : new Date().toISOString(),
+      profile: r.position ? { primary_position: r.position } : {},
+    }).select("*");
+    if (error) return json({ error: "Couldn't start the profile." }, 400);
+    athlete = made[0];
+  }
+  await supabase.from("club_athletes").update({ vekt_athlete_id: athlete.id, invited_at: new Date().toISOString() }).eq("id", r.id);
+  if (athlete.is_minor && !r.family_approved_at) {
+    const first = athlete.parent_approved_at ? [] : ["Nothing is shared with any college until you approve. You decide separately whether verified college coaches can see the videos."];
+    await deliver(supabase, cfg, { comparison_id: null }, {
+      role: "parent", name: athlete.parent_name || "Parent", email: athlete.parent_email, phone: null, smsAllowed: false, kind: "coach",
+      subject: `${r.club?.name ?? "Your club"} invited ${firstName(athlete.full_name)} to VEKT`,
+      lines: [`${r.club?.name ?? "Your club"} uses VEKT to help its players with college recruiting. ${firstName(athlete.full_name)} gets a free profile: positions, skills, numbers and video.`,
+        ...first, `If you want, you can also let ${r.club?.name ?? "the club"} see which college programs engage with the profile.`],
+      cta: "Review and approve", url: `${base}/parent/${athlete.parent_token}`, sms: "",
+    });
+  }
+  await emailManageLink(supabase, cfg, athlete);
+  return json({ status: "invited", vekt_athlete_id: athlete.id });
+}
+
 const FEED_CONSENT = "I am the parent or legal guardian. I approve this VEKT profile. I understand VEKT shares it with a college program only when we say yes to that program.";
+const clubText = (club: string) => `I agree that ${club} can see which college programs engage with this VEKT profile: profile views, film plays, watch-list saves, invites and Interested replies. The club doesn't see Fit Reads or our contact details shared with programs. I can turn this off at any time.`;
 const FEED_TEXT = "I agree that verified college coaches using VEKT may see my child's name, sport, grad year, position, club, state, profile and video links in a coach-only feed, and may save them to a watch list. Coaches cannot see our contact details there. I can turn this off at any time.";
 
 async function parentLoad(supabase: any, token: string) {
-  const { data } = await supabase.from("vekt_athletes").select("full_name, sport, grad_year, parent_name, parent_approved_at, feed_visible").eq("parent_token", token).limit(1);
+  const { data } = await supabase.from("vekt_athletes").select("id, full_name, sport, grad_year, parent_name, parent_approved_at, feed_visible").eq("parent_token", token).limit(1);
   if (!data?.[0]) return json({ error: "This link isn't valid." }, 404);
-  return json({ ...data[0], athlete_first_name: firstName(data[0].full_name), consent_text: FEED_CONSENT, feed_text: FEED_TEXT });
+  const { id, ...a } = data[0];
+  return json({ ...a, athlete_first_name: firstName(a.full_name), consent_text: FEED_CONSENT, feed_text: FEED_TEXT, clubs: await familyClubLinks(supabase, id) });
 }
 
 async function parentSave(supabase: any, token: string, body: any) {
@@ -649,7 +693,22 @@ async function parentSave(supabase: any, token: string, body: any) {
     parent_approved_at: a.parent_approved_at ?? now, parent_consent_text: FEED_CONSENT + (feed ? ` ${FEED_TEXT}` : ""),
     feed_visible: feed, feed_approved_at: feed ? now : null, updated_at: now,
   }).eq("id", a.id);
+  await saveClubLinks(supabase, a.id, body.clubs);
   return json({ status: "saved", feed_visible: feed });
+}
+
+// Clubs that invited this athlete, and whether the family lets each one see engagement.
+async function familyClubLinks(supabase: any, athleteId: string) {
+  const { data } = await supabase.from("club_athletes").select("id, family_approved_at, club:vekt_clubs(name)").eq("vekt_athlete_id", athleteId).not("invited_at", "is", null);
+  return (data || []).map((r: any) => ({ id: r.id, club: r.club?.name ?? "Your club", allowed: !!r.family_approved_at, text: clubText(r.club?.name ?? "the club") }));
+}
+async function saveClubLinks(supabase: any, athleteId: string, choices: unknown) {
+  if (!choices || typeof choices !== "object") return;
+  for (const l of await familyClubLinks(supabase, athleteId)) {
+    const want = (choices as Record<string, unknown>)[l.id];
+    if (typeof want !== "boolean" || want === l.allowed) continue;
+    await supabase.from("club_athletes").update(want ? { family_approved_at: new Date().toISOString(), family_consent_text: l.text } : { family_approved_at: null, family_consent_text: null }).eq("id", l.id).eq("vekt_athlete_id", athleteId);
+  }
 }
 
 async function meLoad(supabase: any, token: string) {
@@ -679,7 +738,7 @@ async function meLoad(supabase: any, token: string) {
     }
   }
   const { athlete_email: _e, parent_email: _p, ...pub } = a;
-  return json({ athlete: { ...pub, first_name: firstName(a.full_name) }, videos: videos || [], programs, pending });
+  return json({ athlete: { ...pub, first_name: firstName(a.full_name) }, videos: videos || [], programs, pending, clubs: await familyClubLinks(supabase, a.id) });
 }
 
 async function meSave(supabase: any, token: string, body: any) {
@@ -697,6 +756,8 @@ async function meSave(supabase: any, token: string, body: any) {
   if (!a.is_minor && typeof body.feed_visible === "boolean") { patch.feed_visible = body.feed_visible; patch.feed_approved_at = body.feed_visible ? new Date().toISOString() : null; }
   if (a.is_minor && body.feed_visible === false) { patch.feed_visible = false; patch.feed_approved_at = null; }
   await supabase.from("vekt_athletes").update(patch).eq("id", a.id);
+  // Same rule for the club: adults decide; a minor can only turn it off.
+  if (body.clubs && typeof body.clubs === "object") await saveClubLinks(supabase, a.id, a.is_minor ? Object.fromEntries(Object.entries(body.clubs).filter(([, v]) => v === false)) : body.clubs);
   await saveVideos(supabase, a.id, sport, body.videos);
   const synced = body.update_all === false ? 0 : await syncShares(supabase, a, profile);
   return json({ status: "saved", synced });
@@ -899,7 +960,7 @@ Deno.serve(async (req) => {
   try {
     const internal = req.headers.get("x-vekt-internal") || "";
     const svc = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-    if (["prepare", "release_due", "dispatch", "send_reminders", "invite_recruits", "send_decision"].includes(body.action)) {
+    if (["prepare", "release_due", "dispatch", "send_reminders", "invite_recruits", "send_decision", "club_invite"].includes(body.action)) {
       if (!svc || internal !== svc) return json({ error: "Unauthorized" }, 401);
       switch (body.action) {
         case "prepare": return json(await prepare(supabase, s(body.comparison_id)));
@@ -908,6 +969,7 @@ Deno.serve(async (req) => {
         case "send_reminders": return json(await sendReminders(supabase));
         case "invite_recruits": return json(await inviteRecruits(supabase, body));
         case "send_decision": return json(await sendDecision(supabase, body));
+        case "club_invite": return await clubInvite(supabase, body);
       }
     }
     if (body.action === "join") return await join(supabase, body);

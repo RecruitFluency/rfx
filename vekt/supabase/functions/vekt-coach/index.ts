@@ -590,6 +590,7 @@ const actions: Record<string, (x: Ctx) => Promise<unknown>> = {
     if (!a || a.sport !== ctx.sport?.key || !(inFeed || shared?.length)) fail(404, "Not found.");
     const { data: vids } = await supabase.from("athlete_videos").select("kind, url, youtube_id, title, recorded_on, notes").eq("athlete_id", a.id).order("sort_order");
     const { data: w } = await supabase.from("watch_list").select("note").eq("program_id", pid).eq("athlete_id", a.id).limit(1);
+    await supabase.from("coach_actions").insert({ program_id: pid, coach_account_id: c.id, athlete_id: a.id, action: "profile_view" });
     return { athlete: athleteCard(a, ctx), profile: a.profile, videos: vids || [], watched: !!w?.length, note: w?.[0]?.note ?? null };
   },
 
@@ -601,8 +602,19 @@ const actions: Record<string, (x: Ctx) => Promise<unknown>> = {
     const visible = (await feedAthletes(supabase, ctx)).some((a: any) => a.id === body.athlete_id);
     if (!visible) fail(404, "Not found.");
     await supabase.from("watch_list").upsert({ program_id: pid, athlete_id: body.athlete_id, added_by: c.id, note: opt(body.note, 500) }, { onConflict: "program_id,athlete_id" });
+    await supabase.from("coach_actions").insert({ program_id: pid, coach_account_id: c.id, athlete_id: body.athlete_id, action: "watch_add" });
     await audit(supabase, c, "watch", "athlete", body.athlete_id);
     return { watched: true };
+  },
+
+  // Logged when staff play an athlete's film in the feed; the athlete's club sees it as engagement.
+  async film_play({ supabase, c, body }) {
+    const pid = program(c, body.program_id);
+    if (!isUuid(body.athlete_id)) fail(404, "Not found.");
+    const ctx = await programCtx(supabase, pid);
+    if (!(await feedAthletes(supabase, ctx)).some((a: any) => a.id === body.athlete_id)) fail(404, "Not found.");
+    await supabase.from("coach_actions").insert({ program_id: pid, coach_account_id: c.id, athlete_id: body.athlete_id, action: "film_play" });
+    return { logged: true };
   },
 
   async watch_remove({ supabase, c, body }) {

@@ -26,7 +26,7 @@ export default function Login() {
     }
     const { error } = await supabase.auth.signInWithOtp({ email: email.trim().toLowerCase(), options: { shouldCreateUser: false } });
     setBusy(false);
-    if (error) setError("We couldn't send a code to that email. Use the school email your department set up.");
+    if (error) setError("We couldn't send a code to that email. Use the email your department or club set up.");
     else setSent(true);
   };
   const verify = async (e: React.FormEvent) => {
@@ -40,10 +40,10 @@ export default function Login() {
     <Frame>
       <div className="vekt-label mb-4">Coach login</div>
       <h1 className="vekt-display text-[52px] mb-4">Recruit the person.</h1>
-      <p className="text-vekt-grey mb-10 font-light">Sign in with your school email. We'll send you a one-time code.</p>
+      <p className="text-vekt-grey mb-10 font-light">Sign in with your school email, or the email your club account uses. We'll send you a one-time code.</p>
       {!sent ? (
         <form onSubmit={send} className="flex flex-col gap-5">
-          <Field label="School email"><Input type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@school.edu" /></Field>
+          <Field label="School or club email"><Input type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@school.edu" /></Field>
           {import.meta.env.DEV && <Field label="Password (local dev only)" hint="Leave blank to get an email code."><Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} /></Field>}
           {error && <ErrorNote message={error} />}
           <Button variant="primary" loading={busy} type="submit">Send code</Button>
