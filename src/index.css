@@ -21,19 +21,3 @@ body {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
 }
-
-/* VEKT Coach Portal type (brand guide v1.0) */
-.vekt-display {
-  font-family: 'Archivo', Helvetica, Arial, sans-serif;
-  font-weight: 900;
-  font-stretch: 72%;
-  text-transform: uppercase;
-  line-height: 0.92;
-}
-.vekt-label {
-  font-family: 'Geist Mono', ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #888888;
-}

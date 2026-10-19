@@ -24,10 +24,5 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
     },
-  },
-  {
-    // Supabase Edge Functions run on Deno.
-    files: ['supabase/functions/**/*.ts'],
-    languageOptions: { globals: { ...globals.browser, Deno: 'readonly' } },
   }
 );

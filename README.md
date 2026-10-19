@@ -2,14 +2,11 @@
 
 [Edit in StackBlitz next generation editor ⚡️](https://stackblitz.com/~/github.com/RecruitFluency/rfx)
 
-Three things live in this repo:
+Two things live in this repo:
 
 - **`/`** — the RFX marketing landing page
 - **`/app`** — the **Coach Database**: the internal tool that automates the monthly chore of
   updating the master list of college coaches from vendor spreadsheets
-- **`/portal`** — the **VEKT Coach Portal**: college coaches add prospects and their club
-  directors, send SMS/email invitations through GoHighLevel, and track each one through to the
-  finished Prospect Brief. Setup, rules and go-live checklist: [`docs/COACH_PORTAL.md`](docs/COACH_PORTAL.md)
 
 ## What the Coach Database does
 
